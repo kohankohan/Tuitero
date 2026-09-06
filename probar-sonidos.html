@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Twitero v17 — Selector y Probador de Sonidos de Scroll</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #060913;
+      --card-bg: #0c1222;
+      --card-bdr: rgba(29, 155, 240, 0.25);
+      --accent: #1d9bf0;
+      --green: #00c896;
+      --gold: #f4c020;
+      --text: #e7ecf3;
+      --dim: #8b98a9;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+      background-image: 
+        linear-gradient(rgba(29, 155, 240, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(29, 155, 240, 0.05) 1px, transparent 1px);
+      background-size: 36px 36px;
+    }
+    .header {
+      text-align: center;
+      max-width: 680px;
+      margin-bottom: 30px;
+    }
+    .tag {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--accent);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      margin: 8px 0;
+      color: #fff;
+    }
+    p {
+      color: var(--dim);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+    .grid {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+      max-width: 680px;
+    }
+    .sound-card {
+      background: var(--card-bg);
+      border: 1.5px solid var(--card-bdr);
+      border-radius: 12px;
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+    }
+    .sound-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 20px rgba(29, 155, 240, 0.15);
+    }
+    .sound-card.playing {
+      border-color: var(--green);
+      box-shadow: 0 0 25px rgba(0, 200, 150, 0.3);
+      transform: scale(1.01);
+    }
+    .sound-info {
+      flex: 1;
+    }
+    .sound-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .sound-desc {
+      font-size: 0.85rem;
+      color: var(--dim);
+      line-height: 1.4;
+    }
+    .actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    button {
+      background: rgba(29, 155, 240, 0.12);
+      border: 1px solid var(--accent);
+      color: #fff;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    button:hover {
+      background: var(--accent);
+      color: #000;
+      box-shadow: 0 0 14px rgba(29, 155, 240, 0.5);
+    }
+    button.btn-burst {
+      background: #1d9bf0;
+      color: #000;
+      font-weight: 800;
+    }
+    button.btn-burst:hover {
+      background: #60c4ff;
+    }
+    .pulse-dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #334155;
+      transition: background 0.1s;
+    }
+    .pulse-dot.active {
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+    }
+    .footer-box {
+      margin-top: 30px;
+      background: rgba(255,255,255,0.03);
+      border: 1px dashed rgba(255,255,255,0.15);
+      border-radius: 10px;
+      padding: 14px 20px;
+      text-align: center;
+      font-size: 0.88rem;
+      color: var(--dim);
+      max-width: 680px;
+      width: 100%;
+    }
+    .footer-box strong {
+      color: var(--gold);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="tag">TWITERO V17 · AUDIO LAB</div>
+    <h1>Selector de Sonido para el Scroll del Feed</h1>
+    <p>Probá cada opción con el botón de <strong>Ráfaga 1.5s</strong> para escuchar cómo suena al deslizar el timeline a máxima velocidad, terminando en el frenazo seco (clunk) en el tweet.</p>
+  </div>
+
+  <div class="grid" id="sound-grid">
+    <!-- Option 1 -->
+    <div class="sound-card" id="card-0">
+      <div class="sound-info">
+        <div class="sound-title">
+          <span class="pulse-dot" id="dot-0"></span>
+          1. Haptic Wheel (Rueda Háptica)
+        </div>
+        <div class="sound-desc">Chasquido mecánico seco y preciso, como una rueda de mouse táctil o el selector háptico de iPhone. Muy limpio.</div>
+      </div>
+      <div class="actions">
+        <button onclick="playSample(0)">1 Tick</button>
+        <button class="btn-burst" onclick="playBurst(0)">▶ Ráfaga 1.5s + Clunk</button>
+      </div>
+    </div>
+
+    <!-- Option 2 -->
+    <div class="sound-card" id="card-1">
+      <div class="sound-info">
+        <div class="sound-title">
+          <span class="pulse-dot" id="dot-1"></span>
+          2. Soft Air Whoosh (Deslizamiento de Aire)
+        </div>
+        <div class="sound-desc">Ráfaga de viento suave con ruido filtrado paso banda. Sensación aerodinámica de pasar páginas a gran velocidad sin fatiga auditiva.</div>
+      </div>
+      <div class="actions">
+        <button onclick="playSample(1)">1 Tick</button>
+        <button class="btn-burst" onclick="playBurst(1)">▶ Ráfaga 1.5s + Clunk</button>
+      </div>
+    </div>
+
+    <!-- Option 3 -->
+    <div class="sound-card" id="card-2">
+      <div class="sound-info">
+        <div class="sound-title">
+          <span class="pulse-dot" id="dot-2"></span>
+          3. Card Shuffle (Naipe / Cartulina Rápida)
+        </div>
+        <div class="sound-desc">Sonido de cartas de póker o naipes españoles deslizándose una tras otra a alta velocidad. Textura orgánica.</div>
+      </div>
+      <div class="actions">
+        <button onclick="playSample(2)">1 Tick</button>
+        <button class="btn-burst" onclick="playBurst(2)">▶ Ráfaga 1.5s + Clunk</button>
+      </div>
+    </div>
+
+    <!-- Option 4 -->
+    <div class="sound-card" id="card-3">
+      <div class="sound-info">
+        <div class="sound-title">
+          <span class="pulse-dot" id="dot-3"></span>
+          4. Modern UI Pop / Blip (Burbujita de Interfaz)
+        </div>
+        <div class="sound-desc">Gotas o blips ultracortos, apagados y armónicos, inspirados en las apps modernas de redes sociales (estilo Twitter/Telegram).</div>
+      </div>
+      <div class="actions">
+        <button onclick="playSample(3)">1 Tick</button>
+        <button class="btn-burst" onclick="playBurst(3)">▶ Ráfaga 1.5s + Clunk</button>
+      </div>
+    </div>
+
+    <!-- Option 5 -->
+    <div class="sound-card" id="card-4">
+      <div class="sound-info">
+        <div class="sound-title">
+          <span class="pulse-dot" id="dot-4"></span>
+          5. Muted Ratchet (Trinquete Acrílico / Rueda Hueca)
+        </div>
+        <div class="sound-desc">Percusión muy suave y hueca de baja resonancia, con ritmo de engranaje rápido. Sensación táctil de slot sutil.</div>
+      </div>
+      <div class="actions">
+        <button onclick="playSample(4)">1 Tick</button>
+        <button class="btn-burst" onclick="playBurst(4)">▶ Ráfaga 1.5s + Clunk</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-box">
+    Elegí el número que más te guste (<strong>1, 2, 3, 4 o 5</strong>) y avisame en el chat para dejarlo fijado en el juego.
+  </div>
+
+  <script>
+    let ctx = null;
+    function getCtx() {
+      if (!ctx) {
+        const A = window.AudioContext || window.webkitAudioContext;
+        ctx = new A();
+      }
+      if (ctx.state === "suspended") ctx.resume();
+      return ctx;
+    }
+
+    function playClunk() {
+      const c = getCtx();
+      const t = c.currentTime;
+      const o1 = c.createOscillator();
+      const g1 = c.createGain();
+      o1.type = "triangle";
+      o1.frequency.setValueAtTime(140, t);
+      o1.frequency.exponentialRampToValueAtTime(50, t + 0.09);
+      g1.gain.setValueAtTime(0.24, t);
+      g1.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
+      o1.connect(g1); g1.connect(c.destination);
+      o1.start(t); o1.stop(t + 0.09);
+
+      const o2 = c.createOscillator();
+      const g2 = c.createGain();
+      o2.type = "sine";
+      o2.frequency.setValueAtTime(80, t + 0.02);
+      g2.gain.setValueAtTime(0.28, t + 0.02);
+      g2.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
+      o2.connect(g2); g2.connect(c.destination);
+      o2.start(t + 0.02); o2.stop(t + 0.14);
+    }
+
+    const SOUND_ENGINES = [
+      // 0: Haptic Wheel
+      () => {
+        const c = getCtx();
+        const t = c.currentTime;
+        const o = c.createOscillator();
+        const g = c.createGain();
+        o.type = "triangle";
+        o.frequency.setValueAtTime(750 + Math.random() * 200, t);
+        g.gain.setValueAtTime(0.09, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.016);
+        o.connect(g); g.connect(c.destination);
+        o.start(t); o.stop(t + 0.016);
+      },
+
+      // 1: Soft Air Whoosh
+      () => {
+        const c = getCtx();
+        const t = c.currentTime;
+        const bSize = Math.floor(c.sampleRate * 0.04);
+        const buf = c.createBuffer(1, bSize, c.sampleRate);
+        const data = buf.getChannelData(0);
+        for(let j=0; j<bSize; j++) data[j] = Math.random()*2 - 1;
+        const noise = c.createBufferSource();
+        noise.buffer = buf;
+
+        const flt = c.createBiquadFilter();
+        flt.type = "bandpass";
+        flt.frequency.setValueAtTime(1800 + Math.random() * 400, t);
+        flt.Q.setValueAtTime(1.4, t);
+
+        const g = c.createGain();
+        g.gain.setValueAtTime(0.14, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.038);
+
+        noise.connect(flt); flt.connect(g); g.connect(c.destination);
+        noise.start(t);
+      },
+
+      // 2: Card Shuffle
+      () => {
+        const c = getCtx();
+        const t = c.currentTime;
+        const bSize = Math.floor(c.sampleRate * 0.035);
+        const buf = c.createBuffer(1, bSize, c.sampleRate);
+        const data = buf.getChannelData(0);
+        for(let j=0; j<bSize; j++) data[j] = Math.random()*2 - 1;
+        const noise = c.createBufferSource();
+        noise.buffer = buf;
+
+        const flt = c.createBiquadFilter();
+        flt.type = "bandpass";
+        flt.frequency.setValueAtTime(2400, t);
+        flt.Q.setValueAtTime(3.0, t);
+
+        const g = c.createGain();
+        g.gain.setValueAtTime(0.16, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.032);
+
+        noise.connect(flt); flt.connect(g); g.connect(c.destination);
+        noise.start(t);
+
+        const o = c.createOscillator();
+        const og = c.createGain();
+        o.type = "sine";
+        o.frequency.setValueAtTime(620, t);
+        og.gain.setValueAtTime(0.04, t);
+        og.gain.exponentialRampToValueAtTime(0.001, t + 0.02);
+        o.connect(og); og.connect(c.destination);
+        o.start(t); o.stop(t + 0.02);
+      },
+
+      // 3: Modern UI Pop / Blip
+      () => {
+        const c = getCtx();
+        const t = c.currentTime;
+        const o = c.createOscillator();
+        const g = c.createGain();
+        o.type = "sine";
+        const baseF = 440 + Math.random() * 120;
+        o.frequency.setValueAtTime(baseF, t);
+        o.frequency.exponentialRampToValueAtTime(baseF * 0.7, t + 0.03);
+        g.gain.setValueAtTime(0.12, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.03);
+        o.connect(g); g.connect(c.destination);
+        o.start(t); o.stop(t + 0.03);
+      },
+
+      // 4: Muted Ratchet
+      () => {
+        const c = getCtx();
+        const t = c.currentTime;
+        const o = c.createOscillator();
+        const g = c.createGain();
+        o.type = "triangle";
+        o.frequency.setValueAtTime(280 + Math.random() * 60, t);
+        g.gain.setValueAtTime(0.13, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.022);
+        o.connect(g); g.connect(c.destination);
+        o.start(t); o.stop(t + 0.022);
+      }
+    ];
+
+    function flashDot(idx) {
+      const dot = document.getElementById("dot-" + idx);
+      if (dot) {
+        dot.classList.add("active");
+        setTimeout(() => dot.classList.remove("active"), 40);
+      }
+    }
+
+    function playSample(idx) {
+      SOUND_ENGINES[idx]();
+      flashDot(idx);
+    }
+
+    let activeBurstTimeout = null;
+    let activeCard = null;
+
+    function playBurst(idx) {
+      if (activeBurstTimeout) clearInterval(activeBurstTimeout);
+      if (activeCard) activeCard.classList.remove("playing");
+
+      const card = document.getElementById("card-" + idx);
+      activeCard = card;
+      if (card) card.classList.add("playing");
+
+      let count = 0;
+      const totalTicks = 24;
+      const intervalMs = 60;
+
+      activeBurstTimeout = setInterval(() => {
+        SOUND_ENGINES[idx]();
+        flashDot(idx);
+        count++;
+
+        if (count >= totalTicks) {
+          clearInterval(activeBurstTimeout);
+          activeBurstTimeout = null;
+          setTimeout(() => {
+            playClunk();
+            if (card) card.classList.remove("playing");
+          }, 40);
+        }
+      }, intervalMs);
+    }
+  </script>
+</body>
+</html>

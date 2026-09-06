@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Twitero — Simulador de Redes Sociales</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/jpeg" href="favicon.jpg">
+  <link rel="shortcut icon" href="favicon.ico">
+
+  <!-- Open Graph / Facebook / WhatsApp -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://bit.ly/playtwitero">
+  <meta property="og:title" content="Twitero — Simulador de Redes Sociales">
+  <meta property="og:description" content="Elegí tu arquetipo, manejá tu timeline y sobreviví a la cultura de la cancelación en 20 turnos.">
+  <meta property="og:image" content="og-image.jpg">
+
+  <!-- Twitter / X Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://bit.ly/playtwitero">
+  <meta name="twitter:title" content="Twitero — Simulador de Redes Sociales">
+  <meta name="twitter:description" content="Elegí tu arquetipo, manejá tu timeline y sobreviví a la cultura de la cancelación en 20 turnos.">
+  <meta name="twitter:image" content="og-image.jpg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Space+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@twemoji/api@14.1.0/dist/twemoji.min.js"></script>
+</head>
+<body>
+<div id="app">
+
+<!-- GLOBAL FLOATING TOOLTIP (NEVER CLIPPED BY SCROLL/OVERFLOW) -->
+<div id="global-tooltip"></div>
+
+<!-- ══ SPLASH ════════════════════════════════════════════════ -->
+<div id="screen-splash" class="screen active">
+  <div class="splash-shell">
+    <div class="splash-meta-bar">
+      <span>TWITERO // SIMULADOR DE REDES</span>
+      
+      <!-- LANGUAGE DROPDOWN WITH BIG FLAGS -->
+      <div class="lang-dropdown-wrap">
+        <button class="lang-dropdown-btn" id="lang-dropdown-btn">🇪🇸 Español ▾</button>
+        <div class="lang-dropdown-menu" id="lang-dropdown-menu">
+          <div class="lang-opt active" data-lang="es">🇪🇸 Español <span class="lang-tag">Activo ✓</span></div>
+          <div class="lang-opt locked" data-lang="en">🇬🇧 English <span class="lang-tag">🔒 Pronto</span></div>
+          <div class="lang-opt locked" data-lang="ja">🇯🇵 日本語 <span class="lang-tag">🔒 近日</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- POSTER IMAGE (CLEAN NEO-INDUSTRIAL TWITERO BANNER) -->
+    <div class="splash-hero-poster">
+      <img src="splash.jpg" alt="Twitero">
+    </div>
+
+    <!-- CLEAN SPLASH BODY WITH CENTERED CTA -->
+    <div class="splash-body">
+      <div class="splash-desc">
+        <p>El simulador definitivo de fama digital. Construí tu comunidad en redes, gestioná tu salud mental y saldo financiero, enfrentá peleas en el timeline y eventos inesperados. Cada elección cuenta.</p>
+        
+        <!-- PROMINENT CTA BUTTON -->
+        <div class="splash-cta-wrap">
+          <button class="btn-cta" id="btn-start">▶ COMENZAR PARTIDA</button>
+          <button class="btn-ranking-splash" id="btn-splash-ranking">🏆 VER SALÓN DE LA FAMA</button>
+        </div>
+
+        <div class="splash-author-box">
+          <span>Pensado por <a href="https://x.com/kohantoys" target="_blank">@kohantoys</a></span>
+          <a href="https://cafecito.app/kohan" target="_blank" class="btn-cafecito-sm">☕ Invitame un Cafecito</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ GÉNERO ═══════════════════════════════════════════════ -->
+<div id="screen-gender" class="screen">
+  <div class="sel-header">
+    <h1>Selección de Género</h1>
+    <div class="step-label">PASO 01 / 03 — DEFINICIÓN DE PRONOMBRES</div>
+  </div>
+  <div class="step-track">
+    <div class="step-seg active"></div>
+    <div class="step-cross">+</div>
+    <div class="step-seg"></div>
+    <div class="step-cross">+</div>
+    <div class="step-seg"></div>
+  </div>
+  <div id="gender-grid" class="grid-3"></div>
+</div>
+
+<!-- ══ ARQUETIPO ════════════════════════════════════════════ -->
+<div id="screen-archetype" class="screen">
+  <div class="sel-header">
+    <h1>Selección de Arquetipo</h1>
+    <div class="step-label">PASO 02 / 03 — IDENTIDAD EN TWITTER · 12 DISPONIBLES</div>
+  </div>
+  <div class="step-track">
+    <div class="step-seg done"></div>
+    <div class="step-cross done">+</div>
+    <div class="step-seg active"></div>
+    <div class="step-cross">+</div>
+    <div class="step-seg"></div>
+  </div>
+  <div id="archetype-grid" class="grid-3x4"></div>
+</div>
+
+<!-- ══ PERSONALIDAD & HANDLE ════════════════════════════════ -->
+<div id="screen-personality" class="screen">
+  <div class="sel-header">
+    <h1>Personalidad & Cuenta</h1>
+    <div class="step-label">PASO 03 / 03 — ESTRATEGIA Y NOMBRE DE USUARIO</div>
+  </div>
+  <div class="step-track">
+    <div class="step-seg done"></div>
+    <div class="step-cross done">+</div>
+    <div class="step-seg done"></div>
+    <div class="step-cross done">+</div>
+    <div class="step-seg active"></div>
+  </div>
+
+  <!-- EDITABLE USER HANDLE INPUT -->
+  <div class="handle-customizer-box">
+    <div class="handle-label">// TU @HANDLE EN X (TWITTER) — EDITABLE:</div>
+    <div class="handle-input-wrap">
+      <span class="handle-prefix">@</span>
+      <input type="text" id="user-handle-input" class="handle-text-input" value="opinologo_ok" placeholder="tu_cuenta">
+    </div>
+  </div>
+
+  <div id="personality-grid" class="grid-4"></div>
+</div>
+
+<!-- ══ JUEGO PRINCIPAL ══════════════════════════════════════ -->
+<div id="screen-game" class="screen">
+
+  <!-- SIDEBAR STATS — SLIM VERSION (v12) -->
+  <aside class="sidebar">
+
+    <div class="sidebar-header">
+      <span class="spec-label" id="sb-turn-label">T-01/20</span>
+    </div>
+
+    <!-- Character Info -->
+    <div class="char-panel" id="char-panel-el">
+      <div class="char-avatar" id="char-icon">🥚</div>
+      <div>
+        <div class="char-name" id="char-name">OPINÓLOGO</div>
+        <div class="char-pers" id="char-pers">@opinologo_ok · ⬛ TROLL</div>
+      </div>
+    </div>
+
+    <!-- Seguidores — compact -->
+    <div class="stat-row stat-row-compact" data-tooltip="SEGUIDORES: Stat principal de progreso. Crece con tweets exitosos. Superar 80.000 antes del turno 20 desbloquea la victoria.">
+      <div class="stat-row-label">SEGUIDORES</div>
+      <div class="stat-big c-blue" id="stat-followers">800</div>
+      <div class="sparkline"><svg id="sparkline-svg" viewBox="0 0 244 36" preserveAspectRatio="none"></svg></div>
+    </div>
+
+    <!-- Dinero — compact -->
+    <div class="stat-row stat-row-compact" data-tooltip="DINERO: Saldo para comprar Boosters. Si cae a negativo 5 turnos seguidos = Bancarrota.">
+      <div class="stat-row-label">DINERO <span class="sv" id="stat-payout-label" style="color:var(--green)">+~$500/T</span></div>
+      <div class="stat-big c-gold" id="stat-money">$1,200</div>
+    </div>
+
+    <!-- Salud Mental bar -->
+    <div class="stat-row stat-row-compact" data-tooltip="SALUD MENTAL: Si cae a 0% sufrís Burnout Digital (Game Over). Se recupera descansando o con elecciones templadas.">
+      <div class="stat-row-label">SALUD MENTAL <span class="sv" id="stat-sm-val">100%</span></div>
+      <div class="prog-wrap">
+        <div class="prog-track"><div class="prog-fill" id="sm-fill" style="width:100%; background:var(--green)"></div></div>
+      </div>
+    </div>
+
+    <!-- Amor / Odio bar -->
+    <div class="stat-row stat-row-compact" data-tooltip="AMOR / ODIO: Balance de reputación. Odio alto aumenta el riesgo de cancelación.">
+      <div class="stat-row-label">AMOR / ODIO</div>
+      <div class="dual-wrap">
+        <div class="dual-love" id="dual-love" style="width:50%"></div>
+        <div class="dual-hate" id="dual-hate" style="width:50%"></div>
+      </div>
+      <div class="dual-meta"><span id="lbl-amor">💜 0</span><span id="lbl-odio">0 ❤️‍🔥</span></div>
+    </div>
+
+    <!-- Hidden stats (hover only) -->
+    <div class="hidden-stats-row">
+      <div class="hs-item" data-tooltip="CREDIBILIDAD: Sube con Hilos y datos rigurosos. Necesitás ≥40 para desbloquear Hilos analíticos.">CRED <span id="stat-cred">35</span></div>
+      <div class="hs-item" data-tooltip="ENGAGEMENT: Potencia cobros automáticos (+$0.6/punto). Se consume al armar Hilos y tweets clave.">ENG <span id="stat-engagement">120</span></div>
+      <div class="hs-item" data-tooltip="VIRALIDAD: Sube con memes y contenido rápido. Necesitás ≥40 para desbloquear Live-tweets masivos.">VIRAL <span id="stat-viral">35</span></div>
+    </div>
+
+    <!-- VER PERFIL button -->
+    <button class="btn-ver-perfil" id="btn-ver-perfil">📋 VER PERFIL COMPLETO</button>
+
+  </aside>
+
+  <!-- MAIN GAME CANVAS -->
+  <div class="game-main" id="game-main-el">
+
+    <!-- Top bar -->
+    <div class="game-topbar">
+      <div class="topbar-cell main-title" id="topbar-title">🐦 TIMELINE DEL DÍA</div>
+      <div class="topbar-cell stat-pill" id="tb-segs" data-tooltip="SEGUIDORES: Audiencia activa en tu red. Superar 80.000 antes del turno 20 desbloquea la victoria.">👥 800</div>
+      <div class="topbar-cell stat-pill" id="tb-din" data-tooltip="DINERO: Saldo bancario disponible para adquirir Boosters y sostener tu cuenta.">💰 $1,200</div>
+      <!-- Mini SM bar -->
+      <div class="topbar-cell topbar-minibar-wrap" data-tooltip="SALUD MENTAL: Si cae a 0% sufrís Burnout Digital.">
+        <span class="topbar-minibar-label">🧠</span>
+        <div class="topbar-minibar-track"><div class="topbar-minibar-fill topbar-sm-fill" id="tb-sm-fill" style="width:100%"></div></div>
+        <span class="topbar-minibar-val" id="tb-sm-val">100%</span>
+      </div>
+      <!-- Mini Odio bar -->
+      <div class="topbar-cell topbar-minibar-wrap" data-tooltip="ODIO: Si llega al 100% o pasás 3 turnos en zona roja, te cancelan.">
+        <span class="topbar-minibar-label">🔥</span>
+        <div class="topbar-minibar-track"><div class="topbar-minibar-fill topbar-odio-fill" id="tb-odio-fill" style="width:0%"></div></div>
+        <span class="topbar-minibar-val" id="tb-odio-val">0%</span>
+      </div>
+      <div class="topbar-cell turn-cell" id="turn-badge" data-tooltip="TURNO: Progreso de la simulación. La partida dura 20 turnos totales.">TURNO 01 / 20</div>
+    </div>
+
+    <!-- Cards section (tweet cards) -->
+    <div id="cards-section">
+      <div class="section-head" id="cards-section-head">
+        <h3 id="cards-section-title" class="section-title-standard">TUITS DISPONIBLES</h3>
+        <span class="sub" id="cards-subtitle">SELECCIONÁ UNA CARTA PARA PUBLICAR ESTE TURNO</span>
+      </div>
+      <div id="cancel-warning-banner"></div>
+      <div class="cards-area" id="cards-area"></div>
+
+      <!-- Boosters section -->
+      <div class="boosters-section" id="boosters-section">
+        <div class="section-head" style="padding-left:0; padding-right:0;">
+          <h3 class="section-title-standard">BOOSTERS DISPONIBLES</h3>
+          <span class="sub">ACTIVA UN BOOSTER PARA MULTIPLICAR EL EFECTO DE TU PRÓXIMO TWEET</span>
+        </div>
+        <div class="boosters-area" id="boosters-grid"></div>
+      </div>
+    </div>
+
+    <!-- Event section (archetype / special events) -->
+    <div id="event-section" style="display:none;">
+      <div id="interactive-event-box" style="display:none; flex-direction:column; gap:12px;">
+        <div class="section-head">
+          <div id="event-tag" class="event-glow-tag" style="background:var(--blue); color:#fff; padding:3px 10px; border-radius:4px; font-size:0.7rem; letter-spacing:0.1em; display:inline-block; margin-bottom:6px;">⚡ EVENTO</div>
+          <h3 id="event-title" class="section-title-standard" style="margin:0;"></h3>
+          <span id="event-desc" class="sub"></span>
+        </div>
+        <div class="cards-area" id="event-options-container" style="display:flex; gap:12px; flex-wrap:wrap;"></div>
+      </div>
+    </div>
+
+    <!-- REAL TWITTER/X SIMULATOR NARRATIVE PANEL -->
+    <div class="narrative-panel" id="narrative-panel"></div>
+
+  </div>
+</div>
+
+<!-- ══ PERFIL MODAL OVERLAY (v12) ═══════════════════════════ -->
+<div class="perfil-modal-overlay" id="perfil-modal-overlay">
+  <div class="perfil-modal-box">
+    <div class="perfil-modal-header">
+      <span class="spec-label">📋 PERFIL COMPLETO</span>
+      <button class="perfil-modal-close" id="btn-close-perfil">✕</button>
+    </div>
+    <div class="perfil-modal-body">
+      <div class="perfil-char-row" id="perfil-char-row">
+        <div class="perfil-avatar" id="perfil-avatar">🥚</div>
+        <div>
+          <div class="perfil-name" id="perfil-name">OPINÓLOGO</div>
+          <div class="perfil-handle" id="perfil-handle">@opinologo_ok</div>
+        </div>
+      </div>
+      <div id="perfil-identity-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FIN 1 (RESULTADO MODERNO TIPO ROGUELIKE // BALATRO / HADES) ══ -->
+<div id="screen-end1" class="screen">
+  <div class="end-shell end-shell-clean">
+    <div class="end-hero-card">
+      <div class="end-trophy-badge" id="end1-icon">🃏</div>
+      <div class="end-hero-title" id="end1-title">RESULTADO FINAL</div>
+      <div class="end-hero-sub" id="end1-sub">Fin de partida</div>
+    </div>
+
+    <!-- TIRA HORIZONTAL DE TELEMETRÍA -->
+    <div class="end-stats-strip" id="end1-stats"></div>
+
+    <!-- GANCHO DE REJUGABILIDAD (COLECCIÓN DE FINALES) -->
+    <div class="end-collection-badge" id="end1-collection-badge">
+      <div class="collection-header">
+        <span class="collection-title">🏆 COLECCIÓN DE FINALES</span>
+        <span class="collection-count" id="collection-count-text">1 / 14 DESCUBIERTOS</span>
+      </div>
+      <div class="collection-bar-track">
+        <div class="collection-bar-fill" id="collection-bar-fill" style="width: 7%;"></div>
+      </div>
+    </div>
+
+    <!-- JERARQUÍA DE ACCIONES (2 BOTONES PRINCIPALES + FILA SUTIL) -->
+    <div class="end-actions-master">
+      <button class="btn btn-primary-replay" id="btn-end1-restart">▶ JUGAR DE NUEVO <span class="key-hint-pill">␣ ESPACIO</span></button>
+      <button class="btn btn-secondary-tree" id="btn-end1-tree">🌳 VER ÁRBOL DE DECISIONES</button>
+      <div class="end-utility-row">
+        <button class="btn-util-pill" id="btn-end1-ranking">🏆 Ranking</button>
+        <button class="btn-util-pill" id="btn-end1-share">🐦 Compartir</button>
+        <button class="btn-util-pill" id="btn-next-end">📊 Gráfico</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FIN 2 (DASHBOARD ANALÍTICO LIMPIO Y UNIFICADO) ════════════ -->
+<div id="screen-end2" class="screen">
+  <div class="end-shell end-shell-wide">
+    <div class="end-narrative-banner">
+      <div class="banner-title" id="end2-final-title">🏆 EL PREFERIDO DE TODOS</div>
+      <div class="banner-text" id="end2-narrative"></div>
+    </div>
+
+    <!-- PROTAGONISTA: GRÁFICO FULL-WIDTH -->
+    <div class="end-chart-card">
+      <div class="chart-header">
+        <span>// EVOLUCIÓN EN EL TIMELINE (20 TURNOS)</span>
+        <div class="chart-legend">
+          <span class="legend-segs">▬ SEGUIDORES</span>
+          <span class="legend-din">╌ DINERO</span>
+        </div>
+      </div>
+      <svg id="end2-svg" viewBox="0 0 680 140" preserveAspectRatio="none" style="width:100%;height:140px;display:block;"></svg>
+    </div>
+
+    <!-- ACCIONES EN FILA HORIZONTAL ÚNICA -->
+    <div class="end2-actions-strip">
+      <button class="btn-strip-action" id="btn-end2-tree">🌳 Ver Árbol</button>
+      <button class="btn-strip-action" id="btn-end2-share">🐦 Compartir en X</button>
+      <button class="btn-strip-action" id="btn-end2-ranking">🏆 Salón de la Fama</button>
+      <button class="btn-strip-action" id="btn-copy-report">📋 Copiar Reporte</button>
+    </div>
+
+    <!-- CRÉDITOS MINIMALISTAS EN PIE DE PÁGINA -->
+    <div class="end2-footer-credits">
+      <span>Creado por <a href="https://x.com/kohantoys" target="_blank">@kohantoys</a></span>
+      <a href="https://cafecito.app/kohan" target="_blank" class="cafecito-pill">☕ Invitar un Cafecito</a>
+    </div>
+
+    <!-- BARRA INFERIOR DE NAVEGACIÓN -->
+    <div class="end2-nav-footer">
+      <button class="btn btn-secondary-back" id="btn-end2-back">⬅ Volver</button>
+      <button class="btn btn-primary" id="btn-play-again">▶ JUGAR DE NUEVO <span class="key-hint-pill">␣ ESPACIO</span></button>
+    </div>
+  </div>
+</div>
+
+  <!-- ══ SHARE MODAL OVERLAY (BIT.LY/PLAYTWITERO) ════════════ -->
+<div class="share-modal-overlay" id="share-modal-overlay">
+  <div class="share-modal-box">
+    <div class="share-modal-header">
+      <span class="spec-label">🐦 COMPARTIR RESULTADO EN X</span>
+      <button class="share-modal-close" id="btn-close-share-modal">✕</button>
+    </div>
+    <textarea id="modal-share-textarea" class="share-modal-textarea" readonly></textarea>
+    <div class="share-modal-actions">
+      <button class="btn-modal-copy" id="btn-modal-copy-tweet">📋 Copiar Tweet</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TUTORIAL MODAL OVERLAY ══════════════════════════════ -->
+<div class="tutorial-modal-overlay" id="tutorial-modal-overlay">
+  <div class="tutorial-modal-box">
+    <div class="tutorial-modal-header">
+      <span class="spec-label">📖 CÓMO JUGAR // GUÍA DE SUPERVIVENCIA</span>
+      <button class="tutorial-modal-close" id="btn-tutorial-skip-top">✕</button>
+    </div>
+    <div class="tutorial-slides-container">
+      <div class="tutorial-slide active" id="tut-slide-1">
+        <h3>PASO 1: TU OBJETIVO 🎯</h3>
+        <p>Sobreviví <strong>20 turnos</strong> ganando seguidores y monetizando tu fama. Para ganar y entrar al Salón de la Fama, superá los <strong>80.000 seguidores</strong> o acumulá más de <strong>$10.000</strong>.</p>
+        <p>Cuidá tu <strong>Salud Mental</strong> (si llega a cero sufrís un burnout) y evitá acumular deudas o caer en la <strong>Cancelación</strong>.</p>
+      </div>
+      <div class="tutorial-slide" id="tut-slide-2">
+        <h3>PASO 2: EL TIMELINE 📱</h3>
+        <p>Cada turno robás 3 cartas. Tienen distintos niveles de riesgo, impacto y % de éxito. Un buen tuit suma <em>engagement</em> y plata. Si falla, perdés seguidores y aumenta tu nivel de Odio bruscamente.</p>
+      </div>
+      <div class="tutorial-slide" id="tut-slide-3">
+        <h3>PASO 3: LOS BOOSTERS 🚀</h3>
+        <p>Usá tu plata en <strong>Boosters</strong> antes de tuitear. Multiplican tus resultados, pero son caros y tienen tiempos de enfriamiento. ⚠️ Cuidado: si el tuit falla, el booster también amplificará las pérdidas.</p>
+      </div>
+      <div class="tutorial-slide" id="tut-slide-4">
+        <h3>PASO 4: LA CANCELACIÓN ☠️</h3>
+        <p>Atento al <strong>Odio</strong>. Entrar en peleas o política lo dispara. Si llega al <strong>100%</strong>, acumulás 3 strikes de cancelación o pasás 3 turnos seguidos en Zona Roja (>85%), te cancelan y perdés. Jugá <em>Día de Desconexión</em> para enfriarlo.</p>
+      </div>
+    </div>
+    <div class="tutorial-modal-actions">
+      <button class="btn btn-secondary-back" id="btn-tutorial-prev" style="visibility:hidden">⬅ ATRÁS</button>
+      <div class="tutorial-dots">
+        <span class="dot active"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      </div>
+      <button class="btn btn-primary" id="btn-tutorial-next">SIGUIENTE ➡ <span class="key-hint-pill">␣ ESPACIO</span></button>
+    </div>
+    <div class="tutorial-skip-wrap">
+      <button class="btn-tutorial-skip" id="btn-tutorial-skip-bottom">SALTAR TUTORIAL</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ENTER HANDLE MODAL OVERLAY (v15) ═════════════════════ -->
+<div class="ranking-prompt-overlay" id="ranking-prompt-overlay">
+  <div class="ranking-prompt-box">
+    <div class="ranking-prompt-header">
+      <span class="ranking-prompt-icon">👑</span>
+    </div>
+    <div class="ranking-prompt-body">
+      <h3>¡PARTIDA COMPLETADA!</h3>
+      <p>Ingresá tu @ para entrar al Salón de la Fama</p>
+      <div class="handle-input-wrap" style="max-width:320px; margin: 12px auto;">
+        <span class="handle-prefix" style="font-family:var(--font-mono); color:var(--amber); font-weight:700;">@</span>
+        <input type="text" id="ranking-prompt-input" class="handle-text-input" placeholder="tu_usuario" maxlength="18">
+      </div>
+      <button class="btn btn-primary" id="btn-ranking-prompt-submit" style="width:100%; margin-top:10px;">⚡ ENTRAR AL SALÓN DE LA FAMA</button>
+      <button id="btn-ranking-prompt-skip" style="background:none; border:none; color:var(--gray-1); font-size:0.75rem; cursor:pointer; margin-top:8px; text-decoration:underline;">Saltar, no quiero guardar</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ RANKING MODAL OVERLAY (v15 DUAL: DIARIO + HISTÓRICO) ══════ -->
+<div class="ranking-modal-overlay" id="ranking-modal-overlay">
+  <div class="ranking-modal-box ranking-modal-dual">
+    <div class="ranking-modal-header">
+      <span class="spec-label">🏆 SALÓN DE LA FAMA // LEADERBOARD</span>
+      <button class="ranking-modal-close" id="btn-close-ranking-modal">✕</button>
+    </div>
+    <div class="ranking-modal-body">
+      <div class="ranking-dual-grid">
+        
+        <!-- RANKING DIARIO -->
+        <div class="ranking-col">
+          <div class="ranking-col-header">
+            <span class="ranking-col-title">📅 TOP 10 DE HOY (DIARIO)</span>
+          </div>
+          <div class="ranking-table-wrap">
+            <table class="ranking-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>CUENTA</th>
+                  <th>ARQUETIPO</th>
+                  <th>SEGS</th>
+                  <th>SCORE</th>
+                </tr>
+              </thead>
+              <tbody id="ranking-daily-body">
+                <!-- Daily rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- RANKING ALL-TIME -->
+        <div class="ranking-col">
+          <div class="ranking-col-header">
+            <span class="ranking-col-title">👑 TOP 10 HISTÓRICO (ALL-TIME)</span>
+          </div>
+          <div class="ranking-table-wrap">
+            <table class="ranking-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>CUENTA</th>
+                  <th>ARQUETIPO</th>
+                  <th>SEGS</th>
+                  <th>SCORE</th>
+                </tr>
+              </thead>
+              <tbody id="ranking-alltime-body">
+                <!-- All-time rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="ranking-modal-footer">
+      <button class="btn btn-primary ranking-modal-close" id="btn-ranking-ok" style="width:100%;">CERRAR ✕</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ALERT OVERLAY ══════════════════════════════════════ -->
+<div class="alert-overlay" id="alert-overlay">
+  <div class="alert-box" id="alert-box">
+    <div class="alert-meta"  id="alert-meta" style="display:none;"></div>
+    <div class="alert-icon" id="alert-icon">⚡</div>
+    <div class="alert-title" id="alert-title">ATENCIÓN</div>
+    <div class="alert-text"  id="alert-text"></div>
+    <button class="btn btn-primary" id="alert-ok-btn" style="width:100%; margin-top:6px;">[ ENTENDIDO ] <span class="key-hint-pill">␣ ESPACIO</span></button>
+  </div>
+</div>
+
+</div><!-- #app -->
+<script src="js/bundle.js"></script>
+</body>
+</html>
