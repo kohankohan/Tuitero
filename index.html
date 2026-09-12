@@ -555,7 +555,61 @@
   </div>
 </div>
 
+<!-- ══ STRIKE 2 — ALERTA CRÍTICA MODAL (3 STEPS, DINÁMICO) ══ -->
+<div class="tutorial-modal-overlay" id="strike2-modal-overlay">
+  <div class="tutorial-modal-box" style="border-top-color: var(--red); border-color: rgba(239,68,68,0.4); box-shadow: 0 0 40px rgba(239,68,68,0.18);">
+    <div class="tutorial-modal-header" style="border-bottom-color: rgba(239,68,68,0.25);">
+      <span class="spec-label" style="color:var(--red);">🚨 SEGUNDO STRIKE — ALERTA CRÍTICA (2/3)</span>
+      <button class="tutorial-modal-close" id="btn-close-strike2-modal">✕</button>
+    </div>
+    <div class="tutorial-slides-container">
+      <div class="tutorial-slide active" id="s2-slide-1">
+        <!-- Populated by JS: incident title + tweet + reason -->
+      </div>
+      <div class="tutorial-slide" id="s2-slide-2">
+        <h3>PELIGRO MÁXIMO: 2/3 ☠️</h3>
+        <div class="strike-meter-row">
+          <div class="strike-slot active-2">⚠️ STRIKE 1</div>
+          <div class="strike-slot active-2">🚨 STRIKE 2 — ACTIVO</div>
+          <div class="strike-slot danger-target">☠️ STRIKE 3: FIN</div>
+        </div>
+        <p>Un solo error más y tu cuenta queda <strong>suspendida de forma definitiva</strong>. La próxima infracción es Game Over inmediato.</p>
+      </div>
+      <div class="tutorial-slide" id="s2-slide-3">
+        <h3>MODO SUPERVIVENCIA 🛡️</h3>
+        <p>• Evitá <strong>Pelea, Política y Bait</strong> a cualquier costo — las chances de strike son altas.</p>
+        <p>• Jugá <strong>Día de Desconexión</strong> o <strong>Memes</strong> para bajar el Odio y recuperar Salud Mental.</p>
+        <p>• Si aparece una Racha Viral, <strong>no la aceptes</strong> salvo que estés segurx de ganar los 3 tweets.</p>
+      </div>
+    </div>
+    <div class="tutorial-modal-actions">
+      <button class="btn btn-secondary-back" id="btn-s2-prev" style="visibility:hidden">⬅ ATRÁS</button>
+      <div class="tutorial-dots" id="s2-dots">
+        <span class="dot active"></span><span class="dot"></span><span class="dot"></span>
+      </div>
+      <button class="btn btn-primary" id="btn-s2-next" style="background:var(--red); color:#fff;">SIGUIENTE ➡ <span class="key-hint-pill">␣ ESPACIO</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CANCELLATION GAME-OVER MODAL ══════════════════════════ -->
+<div class="tutorial-modal-overlay" id="canc-gameover-modal-overlay">
+  <div class="tutorial-modal-box" style="border-top-color: var(--red); border-color: rgba(239,68,68,0.5); box-shadow: 0 0 60px rgba(239,68,68,0.28); text-align:center;">
+    <div class="tutorial-modal-header" style="border-bottom-color: rgba(239,68,68,0.25); justify-content:center;">
+      <span class="spec-label" style="color:var(--red); font-size:0.8rem; letter-spacing:3px;">☠️ CUENTA SUSPENDIDA DEFINITIVAMENTE</span>
+    </div>
+    <div style="display:flex; flex-direction:column; align-items:center; gap:12px; padding: 8px 0;">
+      <div style="font-size:3.5rem; line-height:1; filter: drop-shadow(0 0 16px rgba(239,68,68,0.6));">☠️</div>
+      <div id="cgo-title" style="font-family:var(--font-display); font-size:1.8rem; font-weight:900; letter-spacing:1px; color:var(--red); text-transform:uppercase; line-height:1.1;"></div>
+      <div id="cgo-reason" style="font-family:var(--font-body); font-size:0.9rem; color:var(--off-white); line-height:1.55; max-width:380px;"></div>
+      <div id="cgo-tweet" style="font-family:var(--font-mono); font-size:0.82rem; color:var(--gray-1); border-left:3px solid var(--red); padding:8px 12px; text-align:left; margin-top:4px; max-width:380px;"></div>
+    </div>
+    <button class="btn btn-primary" id="btn-cgo-ok" style="width:100%; background:var(--red); border:none; font-size:1rem; margin-top:4px;">VER ESTADÍSTICAS FINALES ☠️</button>
+  </div>
+</div>
+
 <!-- ══ VIRAL STREAK EVENT MODAL (3 STEPS) ════════════════════ -->
+
 <div class="tutorial-modal-overlay" id="viral-modal-overlay">
   <div class="tutorial-modal-box" style="border: 2px solid var(--amber); box-shadow: 0 0 40px rgba(245, 158, 11, 0.25);">
     <div class="tutorial-modal-header" style="border-bottom-color: rgba(245, 158, 11, 0.3);">

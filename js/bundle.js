@@ -4877,6 +4877,9 @@ class SoundEngine {
     [440, 554, 659, 880, 1108, 1318].forEach((f, i) => this._note(f, "triangle", 0.38, 0.20, i * 0.08));
   }
 
+  // Alias — keeps compatibility with older calls to snd.legendary()
+  legendary() { this.legend(); }
+
   // ── Feed scroll sound (Opción 2: Soft Air Whoosh) ──
   tick(speed = 1) {
     this._go();
@@ -6328,11 +6331,14 @@ class UIEngine {
     this._setupCancellationModal();
     this._setupHateModal();
     this._setupViralModal();
+    this._setupStrike2Modal();
+    this._setupCancGameOverModal();
     this._setupProfileModal();
     this._setupShortcutsModal();
     this._setupGlobalKeyboardShortcuts();
     if(window.twemoji) window.twemoji.parse(document.body);
   }
+
 
   _setupGlobalKeyboardShortcuts() {
     window.addEventListener("keydown", (ev) => {
@@ -6738,7 +6744,111 @@ class UIEngine {
     overlay.classList.add("active");
   }
 
+  // ─── STRIKE 2 MODAL (3-step, dynamic) ────────────────────────
+  _setupStrike2Modal() {
+    this.s2Slide = 1;
+    this.s2Max = 3;
+    const overlay = document.getElementById("strike2-modal-overlay");
+    if (!overlay) return;
+
+    const updateS2 = () => {
+      overlay.querySelectorAll(".tutorial-slide").forEach((s, i) => s.classList.toggle("active", i + 1 === this.s2Slide));
+      overlay.querySelectorAll(".tutorial-dots .dot").forEach((d, i) => d.classList.toggle("active", i + 1 === this.s2Slide));
+      const prevBtn = document.getElementById("btn-s2-prev");
+      const nextBtn = document.getElementById("btn-s2-next");
+      if (prevBtn) prevBtn.style.visibility = this.s2Slide > 1 ? "visible" : "hidden";
+      if (nextBtn) nextBtn.textContent = this.s2Slide === this.s2Max ? "ENTENDIDO ✕" : "SIGUIENTE ➡";
+    };
+
+    const closeS2 = () => {
+      snd.click();
+      overlay.classList.remove("active");
+      if (this._onS2Close) { const cb = this._onS2Close; this._onS2Close = null; cb(); }
+    };
+
+    document.getElementById("btn-close-strike2-modal")?.addEventListener("click", closeS2);
+    document.getElementById("btn-s2-next")?.addEventListener("click", () => {
+      snd.click();
+      if (this.s2Slide < this.s2Max) { this.s2Slide++; updateS2(); } else { closeS2(); }
+    });
+    document.getElementById("btn-s2-prev")?.addEventListener("click", () => {
+      snd.click();
+      if (this.s2Slide > 1) { this.s2Slide--; updateS2(); }
+    });
+
+    // Space/Enter advances slides
+    overlay.addEventListener("keydown", (ev) => {
+      if (!overlay.classList.contains("active")) return;
+      if (ev.code === "Space" || ev.code === "Enter") {
+        ev.preventDefault();
+        const nextBtn = document.getElementById("btn-s2-next");
+        if (nextBtn) nextBtn.click();
+      }
+    });
+  }
+
+  _showStrike2Modal(canc, onClose) {
+    this._onS2Close = onClose || null;
+    this.s2Slide = 1;
+    const overlay = document.getElementById("strike2-modal-overlay");
+    if (!overlay) return;
+
+    // Populate slide 1 dynamically with the specific incident
+    const slide1 = document.getElementById("s2-slide-1");
+    if (slide1) {
+      slide1.innerHTML = `
+        <h3>EL ESCÁNDALO: ${canc.titulo || "SEGUNDO STRIKE"} 🚨</h3>
+        <p>${canc.motivo || "Un nuevo incidente sacudió tu timeline y acumuló reportes masivos contra tu cuenta."}</p>
+        ${canc.texto ? `<div style="font-family:var(--font-mono); font-size:0.82rem; color:var(--gray-1); border-left:3px solid var(--red); padding:8px 12px; margin-top:4px;">"${canc.texto}"</div>` : ""}
+      `;
+    }
+
+    overlay.querySelectorAll(".tutorial-slide").forEach((s, i) => s.classList.toggle("active", i === 0));
+    overlay.querySelectorAll(".tutorial-dots .dot").forEach((d, i) => d.classList.toggle("active", i === 0));
+    const prevBtn = document.getElementById("btn-s2-prev");
+    const nextBtn = document.getElementById("btn-s2-next");
+    if (prevBtn) prevBtn.style.visibility = "hidden";
+    if (nextBtn) nextBtn.textContent = "SIGUIENTE ➡";
+    snd.alert();
+    overlay.classList.add("active");
+    overlay.focus();
+  }
+
+  // ─── CANCELLATION GAME-OVER MODAL ────────────────────────────
+  _setupCancGameOverModal() {
+    const overlay = document.getElementById("canc-gameover-modal-overlay");
+    if (!overlay) return;
+    document.getElementById("btn-cgo-ok")?.addEventListener("click", () => {
+      snd.click();
+      overlay.classList.remove("active");
+      if (this._onCgoClose) { const cb = this._onCgoClose; this._onCgoClose = null; cb(); }
+    });
+    // Space/Enter confirms
+    overlay.addEventListener("keydown", (ev) => {
+      if (!overlay.classList.contains("active")) return;
+      if (ev.code === "Space" || ev.code === "Enter") {
+        ev.preventDefault();
+        document.getElementById("btn-cgo-ok")?.click();
+      }
+    });
+  }
+
+  _showCancGameOverModal(canc, onClose) {
+    this._onCgoClose = onClose || null;
+    const overlay = document.getElementById("canc-gameover-modal-overlay");
+    if (!overlay) return;
+    const titleEl  = document.getElementById("cgo-title");
+    const reasonEl = document.getElementById("cgo-reason");
+    const tweetEl  = document.getElementById("cgo-tweet");
+    if (titleEl)  titleEl.textContent  = canc?.titulo  || "CUENTA SUSPENDIDA DEFINITIVAMENTE";
+    if (reasonEl) reasonEl.textContent = canc?.motivo  || "";
+    if (tweetEl)  { tweetEl.textContent = canc?.texto ? `"${canc.texto}"` : ""; tweetEl.style.display = canc?.texto ? "block" : "none"; }
+    overlay.classList.add("active");
+    overlay.focus();
+  }
+
   _setupViralModal() {
+
     this.viralSlide = 1;
     this.viralMax = 3;
     const overlay = document.getElementById("viral-modal-overlay");
@@ -7212,7 +7322,25 @@ class UIEngine {
   }
 
   _renderFullTurn() {
-    if(this.eng.gameOver){ this._showEnd1(); return; }
+    if(this.eng.gameOver){
+      const finalId = this.eng.final?.id;
+      // Hate / Red Zone deaths → show dramatic gameover modal before end screen
+      if (finalId === "cancelacion_zonaroja") {
+        snd.fail();
+        const isMax = this.eng.odio >= 100;
+        this._showCancGameOverModal({
+          titulo: isMax ? "HOSTILIDAD EXTREMA — CUENTA CERRADA" : "TOXICIDAD CRÓNICA — EXPULSIÓN FORZADA",
+          motivo: isMax
+            ? "Tu odio llegó al 100%. La plataforma detectó toxicidad extrema y suspendió tu cuenta automáticamente."
+            : "Permaneciste 3 turnos consecutivos en Zona Roja (Odio ≥80%). Los moderadores forzaron el cierre permanente de tu perfil.",
+          texto: null
+        }, () => this._showEnd1());
+      } else {
+        this._showEnd1();
+      }
+      return;
+    }
+
 
     this.cardsAlreadyFlipped = false; // Permite flip una sola vez al inicio del turno
     this._updateStatsOnly();
@@ -7884,7 +8012,12 @@ class UIEngine {
                 true,
                 () => {
                   if (rvu.gameOver) {
-                    this._showEnd1();
+                    snd.fail();
+                    this._showCancGameOverModal({
+                      titulo: "RACHA VIRAL FALLIDA — CUENTA SUSPENDIDA",
+                      motivo: `Perdiste $${rvu.moneyLost.toLocaleString()} y acumulaste 2 strikes extra. Los moderadores suspendieron tu cuenta de forma definitiva.`,
+                      texto: null
+                    }, () => this._showEnd1());
                   } else {
                     afterTurnCallback();
                   }
@@ -7894,72 +8027,33 @@ class UIEngine {
               return;
             }
           }
-
-          if (res.cancellationEvent && !this.eng.gameOver) {
-            const strikeNum = res.cancellationEvent.strike;
+          // ── CANCELLATION EVENT ROUTING ──────────────────────────────
+          // NOTE: Strike 3 sets gameOver=true before returning, so we must
+          //       check for it BEFORE the !gameOver guard.
+          if (res.cancellationEvent) {
             const canc = res.cancellationEvent;
-            if (strikeNum === 1) {
-              this._showCancellationModal(afterTurnCallback);
-              return;
-            } else if (strikeNum === 2) {
-              snd.alert();
-              this._showAlert(
-                "🚨 SEGUNDO STRIKE — ALERTA CRÍTICA (2/3)",
-                `<div class="strike-meter-row">
-                   <div class="strike-slot active-2">⚠️ STRIKE 1: ACTIVO</div>
-                   <div class="strike-slot active-2">🚨 STRIKE 2: ACTIVO</div>
-                   <div class="strike-slot danger-target">☠️ STRIKE 3: GAME OVER</div>
-                 </div>
-                 <div class="strike-info-card critical">
-                   <strong>💀 A UN PASO DE LA CANCELACIÓN DEFINITIVA</strong><br>
-                   Acumulaste tu <strong>segundo strike</strong>. La comunidad y los moderadores tienen tu cuenta bajo vigilancia estricta.
-                 </div>
-                 <div class="strike-info-card critical">
-                   <strong>⚠️ REGLA DE EXPULSIÓN:</strong><br>
-                   Si recibís <strong>un solo strike más (3/3)</strong>, tu cuenta será eliminada y la partida terminará de inmediato sin apelación posible.
-                 </div>
-                 <div class="strike-info-card survival">
-                   <strong>🛡️ MODO SUPERVIVENCIA:</strong><br>
-                   Evitá cartas de pelea, militancia o bait a toda costa. Jugá cartas seguras y protegé tu salud mental para llegar con vida al final.
-                 </div>`,
-                "PELIGRO DE EXPULSIÓN",
-                true,
-                afterTurnCallback,
-                "🚨"
-              );
-              return;
-            } else if (strikeNum >= 3) {
+            const strikeNum = canc.strike;
+
+            if (strikeNum >= 3) {
+              // Game Over by 3rd strike — show dramatic popup, then end screen
               snd.fail();
-              this._showAlert(
-                "TERCER STRIKE — CANCELACIÓN DEFINITIVA",
-                `<div class="strike-meter-row">
-                   <div class="strike-slot active-2">☠️ STRIKE 1: ACTIVO</div>
-                   <div class="strike-slot active-2">☠️ STRIKE 2: ACTIVO</div>
-                   <div class="strike-slot danger-target">☠️ STRIKE 3: FATAL</div>
-                 </div>
-                 <div class="strike-info-card critical">
-                   <strong>💀 EXPULSIÓN DE LA PLATAFORMA</strong><br>
-                   Acumulaste <strong>3 infracciones graves</strong> en tu cuenta. La moderación y el repudio generalizado culminaron en la suspensión permanente e inapelable de tu perfil.
-                 </div>
-                 <div class="strike-info-card critical">
-                   <strong>🚨 MOTIVO DE LA CRISIS FINAL: ${canc.titulo || 'CANCELACIÓN'}</strong><br>
-                   ${canc.motivo || ''}<br><br>
-                   <em>"${canc.texto || ''}"</em>
-                 </div>
-                 <div class="strike-info-card survival">
-                   <strong>📜 RESOLUCIÓN:</strong><br>
-                   Tu carrera digital en Twitter ha llegado a su fin. Todos tus acuerdos comerciales y publicaciones quedaron revocados.
-                 </div>`,
-                "EXPULSIÓN DEFINITIVA",
-                true,
-                () => { this._showEnd1(); },
-                "☠️"
-              );
+              this._showCancGameOverModal(canc, () => this._showEnd1());
               return;
+            }
+
+            if (!this.eng.gameOver) {
+              if (strikeNum === 1) {
+                this._showCancellationModal(afterTurnCallback);
+                return;
+              } else if (strikeNum === 2) {
+                this._showStrike2Modal(canc, afterTurnCallback);
+                return;
+              }
             }
           }
 
           afterTurnCallback();
+
         };
 
         acceptBtn.onclick = doAccept;

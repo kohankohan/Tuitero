@@ -2465,3 +2465,162 @@ img.emoji {
   letter-spacing: 0.5px;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   MOBILE & LANDSCAPE SCREEN-FIT OPTIMIZATIONS (v17)
+   Ensures archetype grids, popups, and selection screens fit smoothly
+   without overflowing or breaking/locking scrolling on mobile devices.
+   ══════════════════════════════════════════════════════════════ */
+
+/* Safe bounds for modals & popups across all devices */
+.tutorial-modal-overlay,
+.alert-overlay,
+.ranking-modal-overlay {
+  padding: 12px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tutorial-modal-box,
+.alert-box {
+  max-height: calc(100vh - 24px);
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Compact rules for short screens / mobile landscape (e.g. phones rotated) */
+@media (max-height: 640px), (max-width: 900px) and (orientation: landscape) {
+  /* Selection Screens */
+  #screen-gender, #screen-archetype, #screen-personality {
+    padding: 12px 16px 20px;
+    justify-content: flex-start;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  .sel-header {
+    margin-bottom: 2px;
+  }
+  .sel-header h1 {
+    font-size: 1.5rem;
+  }
+  .sel-header .step-label {
+    font-size: 0.55rem;
+    margin-top: 2px;
+  }
+
+  .step-track {
+    margin: 6px 0 10px;
+  }
+  .step-seg {
+    width: 32px;
+    height: 2px;
+  }
+
+  .handle-customizer-box {
+    padding: 6px 12px;
+    margin-bottom: 8px;
+  }
+  .handle-prefix, .handle-text-input {
+    font-size: 0.9rem;
+    padding: 4px 0;
+  }
+
+  /* Grid adjustments for compact landscape view */
+  .grid-3x4 {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    max-width: 100%;
+  }
+  .grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    max-width: 100%;
+  }
+
+  .sel-card, .sel-card-clean {
+    padding: 8px 10px;
+    min-height: 80px;
+    gap: 4px;
+  }
+
+  .sel-card-clean .sc-icon-wrap, .sc-icon-wrap {
+    width: 28px;
+    height: 28px;
+    font-size: 1.1rem;
+    margin-bottom: 0;
+  }
+
+  .sel-card-clean .sc-name, .sc-name {
+    font-size: 0.85rem;
+  }
+
+  .sel-card-clean .sc-desc, .sc-desc {
+    font-size: 0.65rem;
+    line-height: 1.2;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Modals and Popups fit within screen */
+  .tutorial-modal-box {
+    padding: 14px 16px;
+    gap: 8px;
+    max-width: 480px;
+  }
+  .tutorial-modal-header {
+    padding-bottom: 6px;
+  }
+  .tutorial-slide h3 {
+    font-size: 1.1rem;
+  }
+  .tutorial-slide p {
+    font-size: 0.78rem;
+    line-height: 1.35;
+  }
+  .tutorial-slides-container {
+    min-height: auto;
+  }
+  .tutorial-modal-actions {
+    margin-top: 4px;
+    padding-top: 8px;
+  }
+  .strike-meter-row {
+    gap: 4px;
+    margin: 4px 0;
+  }
+  .strike-slot {
+    font-size: 0.62rem;
+    padding: 4px 6px;
+  }
+  .strike-info-card {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    margin: 4px 0;
+  }
+
+  /* Alert Overlay */
+  .alert-box {
+    padding: 16px;
+    gap: 8px;
+    max-width: 440px;
+  }
+  .alert-icon {
+    font-size: 2rem;
+  }
+  .alert-title {
+    font-size: 1.1rem;
+  }
+  .alert-text {
+    font-size: 0.78rem;
+    line-height: 1.35;
+  }
+}
+
+
