@@ -228,6 +228,11 @@
         <div class="topbar-minibar-track"><div class="topbar-minibar-fill topbar-odio-fill" id="tb-odio-fill" style="width:0%"></div></div>
         <span class="topbar-minibar-val" id="tb-odio-val">0%</span>
       </div>
+      <button class="topbar-cell booster-toggle-btn" id="btn-toggle-boosters-mobile" title="Abrir Tienda de Boosters">
+        <span class="btn-booster-icon">🚀</span>
+        <span class="btn-booster-text" id="tb-booster-label">BOOSTERS</span>
+        <span class="btn-booster-badge" id="tb-booster-badge">0</span>
+      </button>
       <div class="topbar-cell turn-cell" id="turn-badge" data-tooltip="TURNO: Progreso de la simulación. La partida dura 20 turnos totales.">TURNO 01 / 20</div>
     </div>
 
@@ -348,6 +353,7 @@
 <!-- ══ FIN 1 (RESULTADO MODERNO TIPO ROGUELIKE // BALATRO / HADES) ══ -->
 <div id="screen-end1" class="screen">
   <div class="end-shell end-shell-clean">
+    <div class="end-game-badge">🏆 FINAL DEL JUEGO 🏆</div>
     <div class="end-hero-card">
       <div class="end-trophy-badge" id="end1-icon">🃏</div>
       <div class="end-hero-title" id="end1-title">RESULTADO FINAL</div>
@@ -368,14 +374,17 @@
       </div>
     </div>
 
-    <!-- JERARQUÍA DE ACCIONES (2 BOTONES PRINCIPALES + FILA SUTIL) -->
+    <!-- JERARQUÍA DE ACCIONES (GRAN BOTÓN + GRILLA 2x2 + CAFECITO) -->
     <div class="end-actions-master">
       <button class="btn btn-primary-replay" id="btn-end1-restart">▶ JUGAR DE NUEVO <span class="key-hint-pill">␣ ESPACIO</span></button>
-      <button class="btn btn-secondary-tree" id="btn-end1-tree">🌳 VER ÁRBOL DE DECISIONES</button>
-      <div class="end-utility-row">
-        <button class="btn-util-pill" id="btn-end1-ranking">🏆 Ranking</button>
-        <button class="btn-util-pill" id="btn-end1-share">🐦 Compartir</button>
-        <button class="btn-util-pill" id="btn-next-end">📊 Gráfico</button>
+      <div class="end-actions-grid-2x2">
+        <button class="btn-end-grid-item" id="btn-end1-ranking">🏆 Ranking</button>
+        <button class="btn-end-grid-item" id="btn-end1-tree">🌳 Árbol de Decisiones</button>
+        <button class="btn-end-grid-item" id="btn-end1-share">🐦 Compartir en X</button>
+        <button class="btn-end-grid-item" id="btn-next-end">📊 Evolución en Turnos</button>
+      </div>
+      <div class="end-cafecito-wrap">
+        <a href="https://cafecito.app/kohan" target="_blank" class="btn-cafecito-end" id="btn-cafecito-link">☕ Invitame un Cafecito</a>
       </div>
     </div>
   </div>
@@ -743,6 +752,24 @@
     <div class="ranking-modal-footer">
       <button class="btn btn-primary ranking-modal-close" id="btn-ranking-ok" style="width:100%;">CERRAR ✕</button>
     </div>
+  </div>
+</div>
+
+<!-- ══ MOBILE BOOSTERS MODAL (DRAWER ZERO-SCROLL) ════════ -->
+<div class="mobile-boosters-overlay" id="mobile-boosters-overlay">
+  <div class="mobile-boosters-box">
+    <div class="mobile-boosters-header">
+      <span class="spec-label">🚀 TIENDA DE BOOSTERS</span>
+      <button class="mobile-boosters-close" id="btn-close-mobile-boosters">✕</button>
+    </div>
+    <div class="mobile-boosters-subtitle">Tocá un booster para activarlo o desactivarlo para tu próximo tweet:</div>
+    <div class="mobile-boosters-grid" id="mobile-boosters-grid">
+      <!-- Inyectado dinámicamente -->
+    </div>
+    <div class="mobile-boosters-active-status" id="mobile-boosters-status">
+      Ningún booster seleccionado
+    </div>
+    <button class="btn btn-primary" id="btn-mobile-boosters-ready" style="width:100%; margin-top:4px;">LISTO PARA TUITEAR ▶</button>
   </div>
 </div>
 
