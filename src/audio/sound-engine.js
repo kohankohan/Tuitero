@@ -119,6 +119,25 @@ class SoundEngine {
   // Alias — keeps compatibility with older calls to snd.legendary()
   legendary() { this.legend(); }
 
+  // ── Fanfarria triunfal de trompetas sintetizadas (Final del juego) ──
+  fanfare() {
+    this._go();
+    if (!this.ctx) return;
+    // Secuencia heróica: C4, E4, G4, C5 con doble golpe y acorde sostenido final brillante
+    const notes = [
+      { f: 523.25, d: 0.00, dur: 0.15, vol: 0.20 }, // C5
+      { f: 659.25, d: 0.14, dur: 0.15, vol: 0.20 }, // E5
+      { f: 783.99, d: 0.28, dur: 0.18, vol: 0.22 }, // G5
+      { f: 1046.50, d: 0.46, dur: 0.65, vol: 0.25 }, // C6 (brillante triunfal)
+      { f: 783.99, d: 0.46, dur: 0.60, vol: 0.18 }, // Armónico G5
+      { f: 523.25, d: 0.46, dur: 0.60, vol: 0.18 }, // Armónico C5
+    ];
+    notes.forEach(n => {
+      this._note(n.f, "triangle", n.dur, n.vol, n.d);
+      this._note(n.f * 1.002, "sawtooth", n.dur * 0.7, n.vol * 0.35, n.d); // textura metálica de bronce
+    });
+  }
+
   // ── Feed scroll sound (Opción 2: Soft Air Whoosh) ──
   tick(speed = 1) {
     this._go();

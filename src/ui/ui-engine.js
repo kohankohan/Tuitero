@@ -24,6 +24,7 @@ class UIEngine {
     this._setupViralModal();
     this._setupStrike2Modal();
     this._setupCancGameOverModal();
+    this._setupMobileBoostersModal();
     this._setupProfileModal();
     this._setupShortcutsModal();
     this._setupGlobalKeyboardShortcuts();
@@ -1282,16 +1283,80 @@ class UIEngine {
     });
   }
 
+  _setupMobileBoostersModal() {
+    const overlay = document.getElementById("mobile-boosters-overlay");
+    const toggleBtn = document.getElementById("btn-toggle-boosters-mobile");
+    const closeBtn = document.getElementById("btn-close-mobile-boosters");
+    const readyBtn = document.getElementById("btn-mobile-boosters-ready");
+
+    if (!overlay) return;
+
+    const openModal = () => {
+      snd.click();
+      overlay.classList.add("active");
+      this._renderBoosters();
+    };
+
+    const closeModal = () => {
+      snd.click();
+      overlay.classList.remove("active");
+    };
+
+    if (toggleBtn) toggleBtn.onclick = openModal;
+    if (closeBtn) closeBtn.onclick = closeModal;
+    if (readyBtn) readyBtn.onclick = closeModal;
+
+    overlay.onclick = (e) => {
+      if (e.target === overlay) closeModal();
+    };
+  }
+
   _renderBoosters() {
-    const grid=document.getElementById("boosters-grid"); if(!grid) return;
-    const available=this.eng.getAvailableBoosters();
-    if(available.length===0){ grid.innerHTML=`<div style="grid-column:span 3;padding:10px;font-family:var(--font-mono);font-size:0.7rem;color:var(--gray-1);text-align:center;">SIN BOOSTERS DISPONIBLES CON EL SALDO ACTUAL</div>`; return; }
+    const grid = document.getElementById("boosters-grid");
+    const mobileGrid = document.getElementById("mobile-boosters-grid");
+    const available = this.eng.getAvailableBoosters();
+
+    // Actualizar botón en la topbar
+    const tbBadge = document.getElementById("tb-booster-badge");
+    const tbLabel = document.getElementById("tb-booster-label");
+    const tbBtn = document.getElementById("btn-toggle-boosters-mobile");
+
+    if (tbBadge) tbBadge.textContent = available.length;
+    if (this.preparedBoosterId) {
+      const activeB = BOOSTERS.find(b => b.id === this.preparedBoosterId);
+      if (tbLabel) tbLabel.textContent = activeB ? `${activeB.icono} ACTIVO` : "BOOSTER";
+      if (tbBtn) tbBtn.classList.add("booster-active-pulse");
+    } else {
+      if (tbLabel) tbLabel.textContent = "BOOSTERS";
+      if (tbBtn) tbBtn.classList.remove("booster-active-pulse");
+    }
+
+    // Actualizar status bar del modal móvil
+    const mStatus = document.getElementById("mobile-boosters-status");
+    if (mStatus) {
+      if (this.preparedBoosterId) {
+        const activeB = BOOSTERS.find(b => b.id === this.preparedBoosterId);
+        mStatus.innerHTML = activeB
+          ? `<span style="color:var(--amber); font-weight:800;">⚡ ${activeB.icono} ${activeB.nombre} ACTIVO</span> — Próximo tweet multiplicado ${activeB.fx.mult}x`
+          : "Booster activado";
+      } else {
+        mStatus.textContent = "Ningún booster seleccionado (modo normal)";
+      }
+    }
+
+    if (available.length === 0) {
+      const emptyHtml = `<div style="grid-column:span 3;padding:10px;font-family:var(--font-mono);font-size:0.7rem;color:var(--gray-1);text-align:center;">SIN BOOSTERS DISPONIBLES CON EL SALDO ACTUAL</div>`;
+      if (grid) grid.innerHTML = emptyHtml;
+      if (mobileGrid) mobileGrid.innerHTML = emptyHtml;
+      return;
+    }
+
     const BOOSTER_KEYS = ['Q', 'W', 'E'];
-    grid.innerHTML=available.map((b, i)=>{
-      const isHl=this.preparedBoosterId===b.id;
+    const renderHtml = available.map((b, i) => {
+      const isHl = this.preparedBoosterId === b.id;
       const keyHint = BOOSTER_KEYS[i] ? `<span class="booster-key-pill">${BOOSTER_KEYS[i]}</span>` : '';
-      const tip=`<strong>${b.icono} ${b.nombre}</strong><br>${b.desc}<br><span style='color:#eab308;'>Cooldown: ${b.cooldown} turno${b.cooldown>1?'s':''}</span>`.replace(/"/g, '&quot;');
-      return `<div class="booster-tile ${isHl?"highlighted":""}" data-id="${b.id}" data-tooltip="${tip}">
+      const tip = `<strong>${b.icono} ${b.nombre}</strong><br>${b.desc}<br><span style='color:#eab308;'>Cooldown: ${b.cooldown} turno${b.cooldown>1?'s':''}</span>`.replace(/"/g, '&quot;');
+      return `<div class="booster-tile ${isHl ? "highlighted" : ""}" data-id="${b.id}" data-tooltip="${tip}">
         ${keyHint}
         <div class="b-icon">${b.icono}</div>
         <div class="b-name">${b.nombre}</div>
@@ -1299,23 +1364,33 @@ class UIEngine {
       </div>`;
     }).join("");
 
-    grid.querySelectorAll(".booster-tile").forEach(tile=>{
-      tile.onclick=()=>{
-        if(this.isResolvingAction) return;
-        const bId = tile.dataset.id;
-        if (this.preparedBoosterId === bId) {
-          this.preparedBoosterId = null;
-          snd.click();
-        } else {
-          this.preparedBoosterId = bId;
-          snd.boost();
-        }
-        this._renderCards();
-        document.querySelectorAll(".booster-tile").forEach(t=>{
-          t.classList.toggle("highlighted", t.dataset.id === this.preparedBoosterId);
-        });
-      };
-    });
+    if (grid) grid.innerHTML = renderHtml;
+    if (mobileGrid) mobileGrid.innerHTML = renderHtml;
+
+    const handleTileClick = (tile) => {
+      if (this.isResolvingAction) return;
+      const bId = tile.dataset.id;
+      if (this.preparedBoosterId === bId) {
+        this.preparedBoosterId = null;
+        snd.click();
+      } else {
+        this.preparedBoosterId = bId;
+        snd.boost();
+      }
+      this._renderCards();
+      this._renderBoosters();
+    };
+
+    if (grid) {
+      grid.querySelectorAll(".booster-tile").forEach(tile => {
+        tile.onclick = () => handleTileClick(tile);
+      });
+    }
+    if (mobileGrid) {
+      mobileGrid.querySelectorAll(".booster-tile").forEach(tile => {
+        tile.onclick = () => handleTileClick(tile);
+      });
+    }
   }
 
   _highlightCard(selectedEl, idx) {
@@ -1712,12 +1787,10 @@ class UIEngine {
               snd.fail();
               this._showAlert(
                 "💔 RACHA VIRAL QUEBRADA",
-                `<div class="strike-info-card critical">
-                   <strong>💥 FRACASO EN EL MOMENTO VIRAL</strong><br>
-                   Tu carta no superó la prueba del algoritmo bajo la mirada de toda la red. La ola de burlas y repudio te golpeó sin piedad.<br><br>
-                   • <strong>DINERO PERDIDO:</strong> -$${rvu.moneyLost.toLocaleString()} (marcas caídas y penalidades)<br>
-                   • <strong>PENALIZACIÓN:</strong> +2 STRIKES de moderación acumulados.<br>
-                   • <strong>ESTADO ACTUAL:</strong> ${rvu.strikes}/3 strikes. ${rvu.gameOver ? '¡Cuenta suspendida!' : '¡Estás a un solo strike de la cancelación total!'}
+                `<div class="strike-info-card critical" style="display:flex; flex-direction:column; gap:8px; text-align:left; padding:10px 14px;">
+                   <div style="font-size:0.86rem;">💸 <strong>DINERO PERDIDO:</strong> <span style="color:var(--red); font-weight:800;">-$${rvu.moneyLost.toLocaleString()}</span></div>
+                   <div style="font-size:0.86rem;">⚠️ <strong>PENALIZACIÓN:</strong> <span style="color:var(--red); font-weight:800;">+2 STRIKES</span></div>
+                   <div style="font-size:0.86rem;">🚨 <strong>ESTADO DE CUENTA:</strong> <span style="font-weight:800; color:var(--white);">${rvu.strikes}/3 STRIKES</span> <span style="color:var(--red); font-size:0.78rem;">${rvu.gameOver ? '(SUSPENDIDA)' : '(A 1 DEL GAME OVER)'}</span></div>
                  </div>`,
                 "DESAFÍO VIRAL FALLIDO",
                 true,
@@ -1808,6 +1881,7 @@ class UIEngine {
 
   _showEnd1() {
     this.showScreen("screen-end1");
+    snd.fanfare();
     const f=this.eng.final, e=this.eng;
     const genderedArch = getGenderedArchetype(e.arquetipo, e.genero);
     const set=(id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
