@@ -5,20 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Twitero — Simulador de Redes Sociales</title>
 
+  <meta name="description" content="Twitero es un simulador de redes sociales satírico y estratégico. Elegí tu arquetipo, dominá el algoritmo, monetizá tu fama y sobreviví a la cultura de la cancelación en 20 turnos.">
+  <meta name="keywords" content="twitero, juego twitter, simulador twitter, simulador redes sociales, juego de cartas satirico, juego online">
+  <meta name="author" content="Twitero">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#000000">
+  <link rel="canonical" href="https://twitero.vercel.app/">
+
   <!-- Favicon -->
   <link rel="icon" type="image/jpeg" href="favicon.jpg">
   <link rel="shortcut icon" href="favicon.ico">
 
   <!-- Open Graph / Facebook / WhatsApp -->
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://bit.ly/playtwitero">
+  <meta property="og:url" content="https://twitero.vercel.app/">
+  <meta property="og:site_name" content="Twitero">
+  <meta property="og:locale" content="es_AR">
   <meta property="og:title" content="Twitero — Simulador de Redes Sociales">
   <meta property="og:description" content="Elegí tu arquetipo, manejá tu timeline y sobreviví a la cultura de la cancelación en 20 turnos.">
   <meta property="og:image" content="og-image.jpg">
 
   <!-- Twitter / X Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:url" content="https://bit.ly/playtwitero">
+  <meta name="twitter:url" content="https://twitero.vercel.app/">
   <meta name="twitter:title" content="Twitero — Simulador de Redes Sociales">
   <meta name="twitter:description" content="Elegí tu arquetipo, manejá tu timeline y sobreviví a la cultura de la cancelación en 20 turnos.">
   <meta name="twitter:image" content="og-image.jpg">
@@ -194,6 +203,8 @@
 
     <!-- VER PERFIL button -->
     <button class="btn-ver-perfil" id="btn-ver-perfil">📋 VER PERFIL COMPLETO</button>
+    <!-- ATAJOS DE TECLADO button -->
+    <button class="btn-ver-shortcuts" id="btn-ver-shortcuts">⌨️ ATAJOS DE TECLADO</button>
 
   </aside>
 
@@ -227,6 +238,7 @@
         <span class="sub" id="cards-subtitle">SELECCIONÁ UNA CARTA PARA PUBLICAR ESTE TURNO</span>
       </div>
       <div id="cancel-warning-banner"></div>
+      <div id="racha-viral-banner" class="racha-viral-banner" style="display:none;"></div>
       <div class="cards-area" id="cards-area"></div>
 
       <!-- Boosters section -->
@@ -273,6 +285,62 @@
         </div>
       </div>
       <div id="perfil-identity-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ KEYBOARD SHORTCUTS MODAL OVERLAY ════════════════════════════ -->
+<div class="shortcuts-modal-overlay" id="shortcuts-modal-overlay">
+  <div class="shortcuts-modal-box">
+    <div class="shortcuts-modal-header">
+      <span class="spec-label">⌨️ ATAJOS DE TECLADO</span>
+      <button class="shortcuts-modal-close" id="btn-close-shortcuts">✕</button>
+    </div>
+    <div class="shortcuts-modal-body">
+      <div class="keyboard-visual-grid">
+        <!-- Number row -->
+        <div class="kb-group">
+          <div class="kb-group-title">JUGAR CARTAS DE LA MANO</div>
+          <div class="kb-keys-row">
+            <div class="kb-key"><span class="key-cap">1</span><span class="key-desc">Carta 1 (Izq)</span></div>
+            <div class="kb-key"><span class="key-cap">2</span><span class="key-desc">Carta 2 (Centro)</span></div>
+            <div class="kb-key"><span class="key-cap">3</span><span class="key-desc">Carta 3 (Der)</span></div>
+          </div>
+        </div>
+
+        <!-- Booster row -->
+        <div class="kb-group">
+          <div class="kb-group-title">ACTIVAR / PREPARAR BOOSTERS</div>
+          <div class="kb-keys-row">
+            <div class="kb-key"><span class="key-cap">Q</span><span class="key-desc">1er Booster</span></div>
+            <div class="kb-key"><span class="key-cap">W</span><span class="key-desc">2do Booster</span></div>
+            <div class="kb-key"><span class="key-cap">E</span><span class="key-desc">3er Booster</span></div>
+          </div>
+        </div>
+
+        <!-- Action keys -->
+        <div class="kb-group">
+          <div class="kb-group-title">ACCIONES Y NAVEGACIÓN</div>
+          <div class="kb-actions-grid">
+            <div class="kb-action-item">
+              <span class="key-cap key-space">␣ ESPACIO</span>
+              <span class="action-text">Confirmar alertas, avanzar turnos, frenar scroll y aceptar tweets</span>
+            </div>
+            <div class="kb-action-item">
+              <span class="key-cap">ESC</span>
+              <span class="action-text">Frenar scroll del timeline o cerrar cualquier modal</span>
+            </div>
+            <div class="kb-action-item">
+              <span class="key-cap">P</span>
+              <span class="action-text">Abrir / cerrar ficha de Perfil completo</span>
+            </div>
+            <div class="kb-action-item">
+              <span class="key-cap">?</span>
+              <span class="action-text">Abrir / cerrar este panel de atajos de teclado</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -405,6 +473,137 @@
     <div class="tutorial-skip-wrap">
       <button class="btn-tutorial-skip" id="btn-tutorial-skip-bottom">SALTAR TUTORIAL</button>
     </div>
+  </div>
+</div>
+
+<!-- ══ CANCELLATION EXPLANATION MODAL (3 STEPS) ═════════════ -->
+<div class="tutorial-modal-overlay" id="cancellation-modal-overlay">
+  <div class="tutorial-modal-box">
+    <div class="tutorial-modal-header">
+      <span class="spec-label">⚖️ SISTEMA DE CANCELACIÓN // 3 PASOS</span>
+      <button class="tutorial-modal-close" id="btn-close-canc-modal">✕</button>
+    </div>
+    <div class="tutorial-slides-container">
+      <div class="tutorial-slide active" id="canc-slide-1">
+        <h3>PASO 1: EL DISPARADOR DEL REPUDIO ⚠️</h3>
+        <p>Al jugar cartas polémicas de riesgo (<strong>Pelea, Política, Bait o Quote</strong>) y fracasar, o al tuitear con tu nivel de Odio elevado, la plataforma y la comunidad coordinan reportes masivos.</p>
+        <p>Esto acumula una infracción grave: un <strong>Strike de Moderación</strong>.</p>
+      </div>
+      <div class="tutorial-slide" id="canc-slide-2">
+        <h3>PASO 2: LA REGLA DE LOS 3 STRIKES ☠️</h3>
+        <p>Tu cuenta cuenta con una tolerancia estricta de 3 faltas:</p>
+        <div class="strike-meter-row">
+          <div class="strike-slot active-1">STRIKE 1: ADVERTENCIA</div>
+          <div class="strike-slot active-2">STRIKE 2: CRÍTICO</div>
+          <div class="strike-slot danger-target">STRIKE 3: EXPULSIÓN</div>
+        </div>
+        <p>Al llegar al <strong>tercer strike (3/3)</strong>, la plataforma suspende tu perfil de forma definitiva e inapelable (<strong>Game Over por Cancelación</strong>).</p>
+      </div>
+      <div class="tutorial-slide" id="canc-slide-3">
+        <h3>PASO 3: CÓMO PROTEGERTE Y SOBREVIVIR 🛡️</h3>
+        <p>• Priorizá cartas de <strong>Día de Desconexión</strong> para enfriar el timeline (-10% a -15% de Odio y recuperación de Salud Mental).</p>
+        <p>• Compartí <strong>Memes</strong> o <strong>Hilos constructivos</strong> para recuperar Amor y bajar la polarización.</p>
+        <p>• No juegues Pelea ni Baits cuando estés amonestado con 2 strikes.</p>
+      </div>
+    </div>
+    <div class="tutorial-modal-actions">
+      <button class="btn btn-secondary-back" id="btn-canc-prev" style="visibility:hidden">⬅ ATRÁS</button>
+      <div class="tutorial-dots" id="canc-dots">
+        <span class="dot active"></span><span class="dot"></span><span class="dot"></span>
+      </div>
+      <button class="btn btn-primary" id="btn-canc-next">ENTENDIDO ▶ <span class="key-hint-pill">␣ ESPACIO</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HATE & RED ZONE EXPLANATION MODAL (3 STEPS) ═══════════ -->
+<div class="tutorial-modal-overlay" id="hate-modal-overlay">
+  <div class="tutorial-modal-box">
+    <div class="tutorial-modal-header">
+      <span class="spec-label">🔥 ODIO Y ZONA ROJA // 3 PASOS</span>
+      <button class="tutorial-modal-close" id="btn-close-hate-modal">✕</button>
+    </div>
+    <div class="tutorial-slides-container">
+      <div class="tutorial-slide active" id="hate-slide-1">
+        <h3>PASO 1: LA ESCALADA DEL ODIO 📈</h3>
+        <p>Cada respuesta agresiva, fracaso de carta o choque dialéctico llena tu medidor de <strong>Odio</strong>. Al superar el <strong>65%</strong>, el timeline entra en estado de hostilidad abierta y las respuestas tóxicas se multiplican.</p>
+      </div>
+      <div class="tutorial-slide" id="hate-slide-2">
+        <h3>PASO 2: LA CUENTA REGRESIVA DE ZONA ROJA (≥80%) 🚨</h3>
+        <p>Si tu Odio alcanza o supera el <strong>80%</strong>, entrás en Zona Roja y se inicia una cuenta regresiva letal:</p>
+        <div class="strike-meter-row">
+          <div class="strike-slot active-1">TURNO 1: ALERTA ROJA</div>
+          <div class="strike-slot active-2">TURNO 2: ÚLTIMA GRACIA</div>
+          <div class="strike-slot danger-target">TURNO 3: CIERRE FORZADO</div>
+        </div>
+        <p>Permanecer <strong>3 turnos consecutivos</strong> con Odio ≥80% resulta en expulsión inmediata por toxicidad extrema.</p>
+      </div>
+      <div class="tutorial-slide" id="hate-slide-3">
+        <h3>PASO 3: APAGAR EL INCENDIO 🧘</h3>
+        <p>• La herramienta más potente es el <strong>Día de Desconexión</strong>: reduce bruscamente el odio acumulado.</p>
+        <p>• Publicar <strong>Memes</strong> amigables une al feed y reduce el Odio de forma orgánica.</p>
+        <p>• Monitoreá tu <strong>Salud Mental</strong> para no caer en burnout en medio de la crisis.</p>
+      </div>
+    </div>
+    <div class="tutorial-modal-actions">
+      <button class="btn btn-secondary-back" id="btn-hate-prev" style="visibility:hidden">⬅ ATRÁS</button>
+      <div class="tutorial-dots" id="hate-dots">
+        <span class="dot active"></span><span class="dot"></span><span class="dot"></span>
+      </div>
+      <button class="btn btn-primary" id="btn-hate-next">ENTENDIDO ▶ <span class="key-hint-pill">␣ ESPACIO</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ VIRAL STREAK EVENT MODAL (3 STEPS) ════════════════════ -->
+<div class="tutorial-modal-overlay" id="viral-modal-overlay">
+  <div class="tutorial-modal-box" style="border: 2px solid var(--amber); box-shadow: 0 0 40px rgba(245, 158, 11, 0.25);">
+    <div class="tutorial-modal-header" style="border-bottom-color: rgba(245, 158, 11, 0.3);">
+      <span class="spec-label" style="color:var(--amber);">⚡ EVENTO ESPECIAL: ¡TE VOLVISTE VIRAL!</span>
+      <button class="tutorial-modal-close" id="btn-close-viral-modal">✕</button>
+    </div>
+    <div class="tutorial-slides-container">
+      <div class="tutorial-slide active" id="viral-slide-1">
+        <h3>PASO 1: LA OPORTUNIDAD EN EL FEED 🚀</h3>
+        <p>¡El algoritmo acaba de poner todos los ojos sobre tu cuenta! Tenés frente a vos un <strong>evento opcional de alta tensión de 3 turnos seguidos</strong>.</p>
+        <p>Podés optar por <strong>aceptar el desafío viral</strong> o <strong>pasar de largo</strong> y continuar jugando de forma segura.</p>
+      </div>
+      <div class="tutorial-slide" id="viral-slide-2">
+        <h3>PASO 2: EL DESAFÍO Y LA RECOMPENSA 🎯</h3>
+        <p>Si aceptás, debés <strong>ganar 3 tweets consecutivos</strong> (acertar cartas exitosas durante los próximos 3 turnos).</p>
+        <p>Durante la racha se repartirán temas de tu nicho específico. Al completar los 3 aciertos, ganarás un premio masivo de entre <strong>+50% y +100% de tus seguidores actuales</strong> (según tu arquetipo) más impulso de viralidad.</p>
+      </div>
+      <div class="tutorial-slide" id="viral-slide-3">
+        <h3>PASO 3: EL ALTO RIESGO ☠️</h3>
+        <p>⚠️ <strong>Peligro Severo:</strong> Si fallás <strong>un solo tweet</strong> de los 3, la racha se quiebra de forma desastrosa:</p>
+        <div class="strike-info-card critical" style="margin: 10px 0;">
+          <strong style="color:var(--red);">💀 CONSECUENCIAS DEL FRACASO:</strong><br>
+          • Perdés entre <strong>30% y 40% de todo tu dinero</strong> acumulado.<br>
+          • Recibís <strong>2 STRIKES DIRECTOS</strong> de moderación, quedando a solo 1 strike de la cancelación definitiva.
+        </div>
+        <div style="display:flex; gap:10px; margin-top:16px;">
+          <button id="btn-viral-accept" class="btn btn-primary" style="flex:1.2; background:#10b981; border:none; font-size:1rem;">🔥 ACEPTAR DESAFÍO</button>
+          <button id="btn-viral-decline" class="btn btn-secondary-back" style="flex:1; font-size:0.9rem;">🛡️ PASAR (MODO NORMAL)</button>
+        </div>
+      </div>
+    </div>
+    <div class="tutorial-modal-actions" id="viral-modal-nav">
+      <button class="btn btn-secondary-back" id="btn-viral-prev" style="visibility:hidden">⬅ ATRÁS</button>
+      <div class="tutorial-dots" id="viral-dots">
+        <span class="dot active"></span><span class="dot"></span><span class="dot"></span>
+      </div>
+      <button class="btn btn-primary" id="btn-viral-next">SIGUIENTE ➡ <span class="key-hint-pill">␣ ESPACIO</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ROTATE DEVICE OVERLAY (MOBILE FORCED LANDSCAPE) ═══════ -->
+<div id="rotate-device-overlay" class="rotate-device-overlay">
+  <div class="rotate-device-box">
+    <div class="rotate-phone-anim">📱</div>
+    <h2 class="rotate-title">GIRÁ TU TELÉFONO</h2>
+    <p class="rotate-desc">Para ver todas las cartas, boosters y el timeline en su proporción óptima, por favor poné tu celular en modo horizontal.</p>
+    <div class="rotate-pill">🔄 ROTAR A HORIZONTAL</div>
   </div>
 </div>
 

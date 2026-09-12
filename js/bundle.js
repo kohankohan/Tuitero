@@ -287,6 +287,18 @@ const CARD_CONCEPT_DESCS = {
 
 const GENERO_LABELS = { hombre: "Él", mujer: "Ella", diverso: "Elle" };
 
+const ARCHETYPE_GENDER_RESTRICTIONS = {
+  hombre: ["opinologo", "futbolero", "militante", "humor", "periodista", "cryptobro", "gamer", "conspiranoico", "influencer", "techie", "podcaster"],
+  mujer: ["opinologo", "futbolero", "militante", "periodista", "gamer", "conspiranoico", "influencer", "onlyfans", "podcaster"],
+  diverso: ["opinologo", "militante", "periodista", "gamer", "influencer", "onlyfans", "techie", "podcaster"]
+};
+
+function isArchetypeAvailableForGender(archId, genero) {
+  const g = genero || "hombre";
+  const allowed = ARCHETYPE_GENDER_RESTRICTIONS[g];
+  return allowed ? allowed.includes(archId) : true;
+}
+
 function getGenderedArchetype(arch, genero) {
   if (!arch) return "";
   const g = genero || "hombre";
@@ -296,13 +308,13 @@ function getGenderedArchetype(arch, genero) {
     militante:     { hombre: "Militante Político",      mujer: "Militante Política",      diverso: "Militante Políticx" },
     humor:         { hombre: "Cuenta de Humor",         mujer: "Cuenta de Humor",         diverso: "Cuenta de Humor" },
     periodista:    { hombre: "Periodista Indie",        mujer: "Periodista Indie",        diverso: "Periodista Indie" },
-    cryptobro:     { hombre: "Crypto Bro",              mujer: "Crypto Girl",             diverso: "Crypto Bro" },
-    gamer:         { hombre: "Gamer / Streamer",        mujer: "Gamer / Streamer",        diverso: "Gamer / Streamer" },
+    cryptobro:     { hombre: "Crypto Bro",              mujer: "Crypto Girl",             diverso: "Crypto X" },
+    gamer:         { hombre: "Gamer / Streamer",        mujer: "Gamer / Streamer",        diverso: "Gamer / Streamer X" },
     conspiranoico: { hombre: "Conspiranoico",           mujer: "Conspiranoica",           diverso: "Conspiranoique" },
     influencer:    { hombre: "Influencer Lifestyle",    mujer: "Influencer Lifestyle",    diverso: "Influencer Lifestyle" },
     onlyfans:      { hombre: "Creador OnlyFans",        mujer: "Creadora OnlyFans",       diverso: "Creadorx OnlyFans" },
-    techie:        { hombre: "Techie / Startup Bro",    mujer: "Techie / Startup Girl",   diverso: "Techie / Startup Bro" },
-    podcaster:     { hombre: "Podcaster",               mujer: "Podcastera",              diverso: "Podcaster" }
+    techie:        { hombre: "Techie / Startup Bro",    mujer: "Techie / Startup Girl",   diverso: "Techie X" },
+    podcaster:     { hombre: "Podcaster",               mujer: "Podcastera",              diverso: "Podcasterx" }
   };
   return map[arch.id]?.[g] || arch.nombre;
 }
@@ -316,12 +328,12 @@ function getGenderedDefaultHandle(arch, genero) {
     militante:     { hombre: "@militante_nac", mujer: "@militante_nac", diverso: "@militante_nac" },
     humor:         { hombre: "@humor_argento", mujer: "@humor_argento", diverso: "@humor_argento" },
     periodista:    { hombre: "@periodista_indie", mujer: "@periodista_indie", diverso: "@periodista_indie" },
-    cryptobro:     { hombre: "@pibe_cripto",   mujer: "@piba_cripto",   diverso: "@pibe_cripto" },
+    cryptobro:     { hombre: "@pibe_cripto",   mujer: "@piba_cripto",   diverso: "@crypto_x" },
     gamer:         { hombre: "@gamer_stream",  mujer: "@gamer_stream",  diverso: "@gamer_stream" },
     conspiranoico: { hombre: "@verdad_oculta", mujer: "@verdad_oculta", diverso: "@verdad_oculta" },
     influencer:    { hombre: "@lifestyle_glow",mujer: "@lifestyle_glow",diverso: "@lifestyle_glow" },
     onlyfans:      { hombre: "@content_vip",   mujer: "@content_vip",   diverso: "@content_vip" },
-    techie:        { hombre: "@startup_bro",   mujer: "@startup_girl",  diverso: "@startup_dev" },
+    techie:        { hombre: "@startup_bro",   mujer: "@startup_girl",  diverso: "@startup_x" },
     podcaster:     { hombre: "@podcast_live",  mujer: "@podcast_live",  diverso: "@podcast_live" }
   };
   return handleMap[arch.id]?.[g] || arch.defaultHandle || "@twitero";
@@ -1252,12 +1264,12 @@ const temaPropioContent = {
     { titulo: "Documento filtrado", texto: "Me llegó este documento de adentro. No lo voy a publicar completo todavía, pero lo que dice sobre la política de hoy es gravísimo. Hilo con extractos.", engagement: 52, hate: 28 },
   ],
   humor: [
-    { titulo: "El meme de la semana", texto: "Pasé 20 minutos editando este meme para que dure 4 segundos en tu timeline antes de que sigas scrolleando. Valoralo un cachito.", engagement: 55, hate: 8 },
-    { titulo: "Situación de la semana", texto: "No hay palabras para esto. Solo esta imagen. Si la entendés sin que te explique nada, sos de los míos.", engagement: 50, hate: 6 },
-    { titulo: "Chiste de nicho", texto: "Este tweet es específicamente para el 3% de mi audiencia que va a entender la referencia sin que se la explique.", engagement: 48, hate: 5 },
-    { titulo: "El thread cómico", texto: "Hilo de situaciones del transporte público de Buenos Aires, capítulo 47: el que corta el colectivo para pedir un boleto con tarjeta de débito.", engagement: 60, hate: 4 },
-    { titulo: "Meme de madrugada", texto: "Son las 2am, tengo el deadline mañana y en vez de laburar estoy editando esto. La productividad es un mito burgués.", engagement: 58, hate: 3 },
-    { titulo: "La imitación del mes", texto: "Semana del 'qué haría [político/famoso] si tuviera que [situación random]'. Acá la mía, que salió mejor de lo esperado.", engagement: 62, hate: 6 },
+    { titulo: "Filosofía de sobremesa", texto: "No te podés levantar a las 6 am un domingo por voluntad propia culiau, salvo que seas panadero o te esté buscando la policía federal.", engagement: 55, hate: 8 },
+    { titulo: "El termómetro social", texto: "El argentino no va al psicólogo porque es caro: prefiere clavarse un fernet de 70/30 y discutir a muerte con un bot en Twitter hasta las cuatro de la mañana.", engagement: 50, hate: 6 },
+    { titulo: "Crónica de la siesta cordobesa", texto: "Acá en Córdoba entre las 14 y las 17 no te atienden ni en la guardia médica chabón. La siesta es un derecho constitucional sagrado.", engagement: 48, hate: 5 },
+    { titulo: "Transporte y desquicio", texto: "Subí al bondi y el chofer venía escuchando Rodrigo a todo volumen mientras esquivaba baches con una mano y cebaba mate con la otra. 10/10 la experiencia sensorial.", engagement: 60, hate: 4 },
+    { titulo: "Productividad en picada", texto: "Son las 3am, mañana tengo que laburar y acá estoy viendo un video de cómo hacerle un asador criollo a un muñeco de He-Man. Mi cerebro es una fotocopiadora de memes.", engagement: 58, hate: 3 },
+    { titulo: "El verdadero lujo argentino", texto: "Olvidate de las criptomonedas y los autos importados: el verdadero estatus en este país es prender el aire en 22° y que no te salte la térmica del departamento.", engagement: 62, hate: 6 },
   ],
   periodista: [
     { titulo: "Investigación exclusiva", texto: "Tres semanas cruzando facturas, contratos y testimonios. Lo que encontré sobre este expediente te va a cambiar la lectura de todo el caso. Hilo.", engagement: 62, hate: 12 },
@@ -1352,12 +1364,12 @@ const temaAjenoContent = {
     { titulo: "Opinando de cine sin haber visto", texto: "No necesité ver la película de ese director para saber su posición política. La filmografía previa dice todo lo que hay que saber.", engagement: 9, hate: 38 },
   ],
   humor:        [
-    { titulo: "Chiste sobre economía", texto: "No entiendo nada de economía, pero sí sé hacer un buen meme sobre la inflación. Son habilidades distintas, no me confundan.", engagement: 15, hate: 38 },
-    { titulo: "Chiste político arriesgado", texto: "Aviso: este chiste tiene fecha de vencimiento de 48 horas antes de que alguien lo saque de contexto y me quiera cancelar.", engagement: 18, hate: 42 },
-    { titulo: "Meme sobre un tema serio", texto: "Convertí una crisis bastante seria en un meme porque no sé procesar la información de otra manera. Perdón. En realidad no perdón.", engagement: 12, hate: 35 },
-    { titulo: "Take de relaciones inesperado", texto: "No soy psicólogo ni terapeuta de pareja, pero llevo 15 años observando a la humanidad desde Twitter y puedo decir con certeza: el problema son los mensajes de audio.", engagement: 20, hate: 30 },
-    { titulo: "Receta de cocina que sale mal", texto: "Intenté hacer la receta viral de tiktok con los ingredientes que había en casa. El resultado: algo entre cemento y un guiso de post-apocalipsis. Acá las fotos.", engagement: 22, hate: 28 },
-    { titulo: "Comentario de fútbol", texto: "No sé nada de fútbol pero el que festejó así el gol de su equipo y después salió llorando cuando se lo anularon me da para 4 memes distintos.", engagement: 25, hate: 32 },
+    { titulo: "Chiste sobre economía", texto: "No entiendo nada de macroeconomía culiau, pero sé que si el paquete de yerba sube de nuevo vamos a tener que empezar a fumar orégano en pipa.", engagement: 15, hate: 38 },
+    { titulo: "Chiste político picante", texto: "Aviso a la comunidad: este chiste político tiene una vida útil de 15 minutos antes de que me hagan 4 denuncias penales en Comodoro Py.", engagement: 18, hate: 42 },
+    { titulo: "Crisis y memética pura", texto: "El país se prende fuego y yo acá haciendo memes con la cara del ministro. Es mi mecanismo de defensa, déjenme en paz que no tengo obra social.", engagement: 12, hate: 35 },
+    { titulo: "Filosofía de pareja moderna", texto: "No soy terapeuta pero les tiro la posta: si tu pareja te manda audios de más de 4 minutos, no te ama, te está dictando una sentencia judicial.", engagement: 20, hate: 30 },
+    { titulo: "Masterclass de cocina trucha", texto: "Intenté cocinar la receta gourmet de Instagram y me quedó un adoquín con gusto a quemado. Al perro se lo di y me miró con desprecio.", engagement: 22, hate: 28 },
+    { titulo: "El folklore futbolero", texto: "No cazo un fulbo pero ver a 50 tipos llorando porque un árbitro de 25 años cobró un offside milimétrico con el VAR me da años de vida.", engagement: 25, hate: 32 },
   ],
   periodista:   [
     { titulo: "Opinión sin investigar", texto: "Sé que no es lo mío, pero a veces hay que sacar la opinión rápido para no perder la conversación del día. Después profundizo con una nota.", engagement: 10, hate: 32 },
@@ -1443,9 +1455,9 @@ const hiloContent = {
     { titulo: "Refutación a la prensa hegemónica", texto: "La nota de hoy tiene 7 errores factuales que cualquiera puede chequear. Los señalo uno por uno, con la fuente al lado.", engagement: 48, hate: 28 },
   ],
   humor:        [
-    { titulo: "La historia detrás del meme", texto: "Este meme tiene más capas que una cebolla en un velorio. Les explico el origen completo y por qué funciona tan bien.", engagement: 45, hate: 8 },
-    { titulo: "Hilo de memes históricos", texto: "Archivo de internet: los 10 memes que definieron una generación entera de esta cuenta. Con contexto y nostalgia.", engagement: 48, hate: 5 },
-    { titulo: "El análisis del chiste", texto: "Alguien me pidió en los comentarios que le explique el chiste. Mala decisión de esa persona. Pero bueno, acá va.", engagement: 42, hate: 6 },
+    { titulo: "La historia detrás del meme", texto: "Abro hilo explicativo: este meme tiene más capas que una cebolla de verdulería. Les cuento cómo nació en un asado en Villa Carlos Paz.", engagement: 45, hate: 8 },
+    { titulo: "Archivo de memes históricos", texto: "Museo del shitpost argento: los 10 memes que casi me mandan al calabozo pero me consiguieron canjes de fernet de por vida. Hilo con historia.", engagement: 48, hate: 5 },
+    { titulo: "El remate que no entendieron", texto: "Un porteño me puso en comentarios que no entendió el remate del chiste. Hilo de 12 tweets explicándole con dibujitos y tonada qué es la ironía.", engagement: 42, hate: 6 },
   ],
   periodista:   [
     { titulo: "Investigación exclusiva en hilo", texto: "Tres semanas de trabajo, seis fuentes distintas, documentación escaneada y verificada. Acá el hilo completo, actualizado a medida que confirmo más datos.", engagement: 65, hate: 12 },
@@ -1507,9 +1519,9 @@ const quoteTweetContent = {
     { titulo: "Quote a la cuenta K contraria", texto: "Cuando tu propio espacio te desmiente desde adentro, en el mismo día. Autogol.", engagement: 32, hate: 38 },
   ],
   humor:        [
-    { titulo: "Quote irónico al tweet serio", texto: "Este tweet merece todo mi respeto y absolutamente ninguno de mis chistes. Mentira, sí lo merece, ahí va.", engagement: 45, hate: 20 },
-    { titulo: "El quote perfecto", texto: "Escribió esto pensando que nadie iba a citarlo. Se equivocó feo, acá estoy yo.", engagement: 48, hate: 18 },
-    { titulo: "Quote con meme implícito", texto: "No hace falta que agregue texto. La imagen que voy a poner abajo lo dice absolutamente todo.", engagement: 50, hate: 15 },
+    { titulo: "Quote irónico al tweet solemne", texto: "Mirá el nivel de drama que maneja este chabón culiau... le falta poner de fondo la música de Gladiador y estamos listos para la batalla.", engagement: 45, hate: 20 },
+    { titulo: "El quote con remate seco", texto: "Tenés menos reflejos que una babosa con resaca hermano. Citado para que la posteridad recuerde este derrape histórico.", engagement: 48, hate: 18 },
+    { titulo: "Quote con meme de remate", texto: "No hace falta que agregue nada de texto. La cara del perro confundido que pongo acá abajo lo explica en alta definición.", engagement: 50, hate: 15 },
   ],
   periodista:   [
     { titulo: "Corrijo la nota pública", texto: "Esta nota que están compartiendo tiene tres errores factuales verificables. Los documento uno por uno, con la fuente correcta al lado.", engagement: 35, hate: 25 },
@@ -1571,9 +1583,9 @@ const liveTweetContent = {
     { titulo: "Live del discurso presidencial", texto: "Lo estoy desglosando en tiempo real, promesa por promesa, contra lo que después va a pasar en la práctica.", engagement: 48, hate: 35 },
   ],
   humor:        [
-    { titulo: "Live comentando la tele", texto: "Me quedé pegado a este programa sin querer y ya no puedo parar. Comentario en vivo hasta que termine.", engagement: 60, hate: 15 },
-    { titulo: "Live del evento más random", texto: "No tengo idea de cómo terminé viendo esto en vivo pero ya estoy demasiado comprometido para irme.", engagement: 55, hate: 10 },
-    { titulo: "Live con memes en tiempo real", texto: "Por cada cosa rara que va pasando acá, tengo el meme exacto guardado. Prueba de fuego en vivo.", engagement: 58, hate: 12 },
+    { titulo: "Live comentando la tele", texto: "Me puse a ver el programa de chimentos porteño y me clavé tres fernets seguidos para tolerar los gritos. Relato en vivo culiau.", engagement: 60, hate: 15 },
+    { titulo: "Live del evento más bizarro", texto: "Estoy viendo una entrega de premios donde el conductor está más duro que turrón de navidad. No puedo parar de twittear esto.", engagement: 55, hate: 10 },
+    { titulo: "Live con memes en tiempo real", texto: "Por cada gaffe que cometen en la transmisión oficial yo tengo un remate cordobés listo. Miren este zarpado hilo.", engagement: 58, hate: 12 },
   ],
   periodista:   [
     { titulo: "Live de la conferencia de prensa", texto: "Yo hago las preguntas incómodas que los demás evitan hacer. Actualizaciones cada 2 minutos desde acá adentro.", engagement: 55, hate: 15 },
@@ -1635,9 +1647,9 @@ const temaDelDiaContent = {
     { titulo: "Postura ante el tema de hoy", texto: "Algunos compañeros están mal parados en esto y se los digo de frente, con respeto pero sin vueltas.", engagement: 42, hate: 32 },
   ],
   humor:        [
-    { titulo: "Meme rápido del trending", texto: "Tardé 4 minutos en hacer este meme del tema del día. Si no te da risa en los primeros 2 segundos, no es para vos.", engagement: 55, hate: 10 },
-    { titulo: "El chiste del trending", texto: "El tema que está trending hoy, pero en la versión que te hace reír aunque estés en medio de una reunión de laburo.", engagement: 52, hate: 8 },
-    { titulo: "Reel del momento viral", texto: "Agarré el video que se hizo viral hoy y le metí subtítulos graciosos. Esto es trabajo serio, no se rían.", engagement: 58, hate: 6 },
+    { titulo: "Meme rápido del trending", texto: "Tardé 3 minutos en editar este meme del trending topic del día. Si no se mean de la risa con el remate, me retiro del humor y me pongo una rotisería en Alta Gracia.", engagement: 55, hate: 10 },
+    { titulo: "El chiste del trending", texto: "Todos indignados con la noticia número uno del país y yo encontrándole el lado absurdo con una analogía de choripán y cuarteto. Dios bendiga mi cerebro.", engagement: 52, hate: 8 },
+    { titulo: "Reel del momento viral", texto: "Agarré el video que se hizo viral hoy y le doblé la voz con tonada cordobesa enojada. Quedó tan perfecto que parece documental de Discovery Channel.", engagement: 58, hate: 6 },
   ],
   periodista:   [
     { titulo: "Contexto real del trending", texto: "El tema está trending desde temprano, pero nadie explica bien por qué importa realmente. Lo resumo en un hilo corto.", engagement: 48, hate: 15 },
@@ -2459,19 +2471,19 @@ const archetypeEvents = [
     opciones: [
       {
         texto: "No decir nada y seguir subiendo memes.",
-        tweet: "Meme del día 😂 (sí, ya sé lo que pasó, no voy a decir nada, sigamos)",
+        tweet: "Acá les dejo el meme del día culiau 😂 (sí, ya sé que el porteño con 2 palos me lo choreó, pero en Córdoba si te roban un chiste se comparte un fernet y se sigue remando)",
         resultado: "Evitás bardo innecesario y seguís enfocado.",
         efecto: { seguidores: 0.02, credibilidad: +5, amor: +5, saludMental: +8 }
       },
       {
         texto: "Tomártelo con humor y twittear: 'Me alegra escribirle el guion gratis'.",
-        tweet: "Me alegra saber que le escribo el guion gratis a alguien con 2 millones de seguidores. Community manager honorario, no aceptan donaciones 🙃",
+        tweet: "Che, me alegra saber que le escribo el guion gratis a una cuenta de 2 millones de seguidores. Por lo menos mandame una caja de Pritty y dos salames de Colonia Caroya, chabón 🙃",
         resultado: "La gente festeja tu altura y se ríen con vos del robo.",
         efecto: { seguidores: 0.08, credibilidad: +15, amor: +15, saludMental: +8 }
       },
       {
         texto: "Organizar a tus seguidores para que le llenen las menciones de hate.",
-        tweet: "Los que me conocen saben qué hacer. No voy a decir nada más 🫵",
+        tweet: "A ver la muchachada: al culiau que me choreó el meme váyanle a llenar las respuestas con fotos de La Mona Jiménez y chistes cordobeses hasta que pida disculpas públicas 🫵",
         resultado: "La horda acosa al comediante. Te tildan de tóxico y X te suspende temporalmente.",
         efecto: { seguidores: -0.05, credibilidad: -15, amor: -10, odio: +20, saludMental: -15 }
       }
@@ -2485,19 +2497,19 @@ const archetypeEvents = [
     opciones: [
       {
         texto: "Subir un meme viejo adaptado rápido.",
-        tweet: "Reciclando este meme de 2019 porque hoy encaja perfecto. Ustedes disculpen la vagancia.",
+        tweet: "Reciclando este meme de cuando el dólar estaba a 40 pesos porque hoy calza justo. Disculpen la fiaca pero hacen 38 grados a la sombra acá en Carlos Paz.",
         resultado: "Un par de likes fáciles y listo.",
         efecto: { seguidores: 0.02, credibilidad: 0, amor: +5, saludMental: +2 }
       },
       {
         texto: "Hacer un meme fino y absurdo, sin cruzar límites personales.",
-        tweet: "Increíble cómo no se hacen cargo de nada. Las pruebas son contundentes y no tienen cómo responder.",
+        tweet: "Miren lo que es esta tendencia culiau... tienen menos remate que el penal de De Paul. Menos mal que aparecí yo con esta joyita para salvarles el algoritmo.",
         resultado: "Es el viral del día. Cae simpático a todos sin ofender.",
         efecto: { seguidores: 0.12, credibilidad: +10, amor: +15, saludMental: +5 }
       },
       {
         texto: "Hacer un chiste hiriente sobre la salud de la celebridad.",
-        tweet: "Sorry but si estás internado con eso es porque algo hiciste mal 🤷 el karma existe y los chistes también.",
+        tweet: "Si te internaron por comerte 14 choripanes de dudosa procedencia en el baile no es mala suerte amigo, es selección natural a ritmo de cuarteto 🤷",
         resultado: "Te llueve repudio. Te tildan de mala persona. Pérdida de auspiciantes.",
         efecto: { seguidores: -0.05, credibilidad: -20, amor: -20, odio: +30, saludMental: -15, ingresos: -100 }
       }
@@ -2511,19 +2523,19 @@ const archetypeEvents = [
     opciones: [
       {
         texto: "El show es regular, algunos chistes salvan la noche.",
-        tweet: "Anoche en el festival. Hubo chistes que funcionaron y otros que... bueno. El público fue generoso. Gracias igual ❤️",
+        tweet: "Anoche en el festival de la comedia. Algunos chistes entraron como piña y otros rebotaron más que pelota de básquet. Igual zafamos con dos anécdotas de tacheros cordobeses ❤️",
         resultado: "Resultado tibio pero sin daño profundo.",
         efecto: { seguidores: 0.03, credibilidad: +5, amor: +5, saludMental: +5 }
       },
       {
         texto: "Si tu credibilidad es alta, el show es excelente.",
-        tweet: "LA ROMPIMOS ANOCHE 🎤🔥 15 minutos de puro fuego. Gracias a los que vinieron, a los que grabaron y a los que me mandaron mensajes después. Esto recién empieza.",
+        tweet: "¡QUÉ CULIAO, LA ROMPIMOS TODA! 🎤🔥 15 minutos de puro cuarteto verbal. Se me mearon de la risa hasta los mozos. ¡Aguante Córdoba carajo!",
         resultado: "La rompés. El video se comparte y te abre puertas a shows pagos.",
         efecto: { seguidores: 0.10, credibilidad: +15, amor: +15, saludMental: +10, ingresos: 100 }
       },
       {
         texto: "Los chistes fallan y el público te abuchea en vivo.",
-        tweet: "Anoche no fue la noche. Los chistes no salieron como ensayé. El humor en vivo es así. Mañana es otro día.",
+        tweet: "Mamita querida, anoche me abuchearon tanto que parecía que salí a cantar cumbia con la camiseta de Belgrano en la tribuna de Talleres. Mañana será otro día.",
         resultado: "El video de tu fracaso se vuelve meme nacional. Doloroso de ver.",
         efecto: { seguidores: -0.05, credibilidad: -15, amor: -10, odio: +15, saludMental: -20 }
       }
@@ -3304,19 +3316,19 @@ const archetypeEvents = [
     opciones: [
       {
         texto: "Aceptarlo, editarlo un poco y volver a subirlo sin el elemento problemático.",
-        tweet: "Reposteo el meme con un cambio chiquito porque la plataforma se puso sensible. El chiste sigue siendo el mismo, solo que ahora pasa el filtro.",
+        tweet: "Le tapé la parte 'ofensiva' con un sticker de alfajor cordobés porque el algoritmo de Twitter se puso sensible. El chiste sigue siendo el mismo, ahora disfrútenlo sin llorar.",
         resultado: "Mantenés el chiste con un ajuste menor. Nadie nota demasiado la diferencia.",
         efecto: { seguidores: 0.03, credibilidad: +5, amor: +5, saludMental: +5 }
       },
       {
         texto: "Armar un meme sobre la propia censura, riéndote de la situación en vez de quejarte en serio.",
-        tweet: "Me censuraron un meme por 'contenido sensible'. Así que ahora voy a hacer un meme SOBRE que me censuraron el meme. Que no bajen este también.",
+        tweet: "Me bajaron el meme por 'violencia gráfica' y era una foto de un sánguche de milanesa con mayonesa casera culiau. Así que les clavé un meme bardeando a los moderadores. ¡A ver si me bajan este!",
         resultado: "El meme sobre el meme censurado se viraliza el doble que el original.",
         efecto: { seguidores: 0.12, credibilidad: +10, amor: +15, saludMental: +8 }
       },
       {
         texto: "Escribir un hilo furioso acusando a la plataforma de 'censura ideológica' sin pruebas.",
-        tweet: "Hilo 🧵: me censuraron por decir la verdad, no por ninguna 'norma comunitaria'. Esto es censura ideológica pura y todos lo sabemos.",
+        tweet: "Hilo 🧵: me censuran porque le tienen pánico a la tonada cordobesa y a la verdad sin filtro. ¡Son una manga de aburridos resentidos que toman mate con edulcorante!",
         resultado: "Te sumás a una discusión más grande de la que podés controlar. Algunos te toman en serio por las razones equivocadas.",
         efecto: { seguidores: 0.06, credibilidad: -15, odio: +15, saludMental: -8 }
       }
@@ -3330,19 +3342,19 @@ const archetypeEvents = [
     opciones: [
       {
         texto: "Aceptar hacer un video conjunto con la otra cuenta de memes grande de tu nicho.",
-        tweet: "Nuevo video con la otra cuenta de memes esta semana. Sí, los dos más grandes del nicho juntos por primera vez. Se viene bueno.",
+        tweet: "Juntamos las dos cuentas más barderas para hacer un sketch. Es como mezclar fernet con vino tinto culiau: o sale una obra de arte o terminamos todos en el hospital.",
         resultado: "Las dos audiencias se cruzan de buena onda. Ganan seguidores los dos por igual.",
         efecto: { seguidores: 0.15, credibilidad: +5, amor: +20, saludMental: +8 }
       },
       {
         texto: "Rechazar porque 'no querés que asocien tu marca personal con la de otro'.",
-        tweet: "Me propusieron un sketch con otra cuenta grande de memes. Prefiero seguir construyendo lo mío por separado, sin ofender a nadie.",
+        tweet: "Me invitaron a colaborar con el influencer de moda pero yo soy como el perro de la gomería: no me gusta que me toquen las herramientas ni compartir el asado.",
         resultado: "Perdés la oportunidad, pero mantenés el control total de tu identidad.",
         efecto: { seguidores: 0.01, credibilidad: +5, amor: 0, saludMental: +2 }
       },
       {
         texto: "Aceptar y después robarle ideas y formato a esa cuenta sin dar crédito.",
-        tweet: "Nuevo formato de contenido que se me ocurrió (definitivamente no es el mismo formato que usa la cuenta con la que grabé la semana pasada, para nada)",
+        tweet: "Miren este formato 100% original que se me ocurrió anoche soñando... (si se parece al del porteño con el que grabé el martes es pura casualidad cósmica culiau 😂)",
         resultado: "La otra cuenta lo denuncia públicamente. Tu audiencia empieza a mirar con lupa tu 'originalidad'.",
         efecto: { seguidores: -0.05, credibilidad: -20, amor: -15, odio: +15, saludMental: -10 }
       }
@@ -5014,8 +5026,8 @@ function adaptTweetGender(texto, genero) {
          .replace(/\bfutbolero\b/gi, "futbolera");
   } else if (genero === "diverso") {
     t = t.replace(/\ba todas\b|\ba todos\b/gi, "a todes")
-         .replace(/\bcreadoras\b|\bcreadores\b/gi, "creadores")
-         .replace(/\buna creadora\b|\bun creador\b/gi, "une creadore")
+         .replace(/\bcreadoras\b|\bcreadores\b/gi, "creadorxs")
+         .replace(/\buna creadora\b|\bun creador\b/gi, "une creadorx")
          .replace(/\ba las que\b|\ba los que\b/gi, "a les que")
          .replace(/\bchicas,\b|\bchicos,\b/gi, "chiques,")
          .replace(/\bacompañada\b|\bacompañado\b/gi, "acompañade")
@@ -5027,7 +5039,7 @@ function adaptTweetGender(texto, genero) {
          .replace(/\bamiga\b|\bamigo\b/gi, "amigue")
          .replace(/\bamigas\b|\bamigos\b/gi, "amigues")
          .replace(/\bla única\b|\bel único\b/gi, "le únique")
-         .replace(/\bcomo creadora\b|\bcomo creador\b/gi, "como creadore")
+         .replace(/\bcomo creadora\b|\bcomo creador\b/gi, "como creadorx")
          .replace(/\bauténtica\b|\bauténtico\b/gi, "auténtique")
          .replace(/\btranquila\b|\btranquilo\b/gi, "tranquile")
          .replace(/\bsegura\b|\bseguro\b/gi, "segure")
@@ -5035,6 +5047,7 @@ function adaptTweetGender(texto, genero) {
          .replace(/\borgullosa\b|\borgulloso\b/gi, "orgullose")
          .replace(/\bagradecida\b|\bagradecido\b/gi, "agradecide")
          .replace(/\bpolitólogo\b|\bpolitóloga\b/gi, "politólogue")
+         .replace(/\bmilitante político\b|\bmilitante política\b/gi, "militante políticx")
          .replace(/\bciudadano\b|\bciudadana\b/gi, "ciudadane")
          .replace(/\bsocio\b|\bsocia\b/gi, "socie")
          .replace(/\bfanático\b|\bfanática\b/gi, "fanátique")
@@ -5051,7 +5064,14 @@ function adaptTweetGender(texto, genero) {
          .replace(/\bnacido\b|\bnacida\b/gi, "nacide")
          .replace(/\bconvencido\b|\bconvencida\b/gi, "convencide")
          .replace(/\bsorprendido\b|\bsorprendida\b/gi, "sorprendide")
-         .replace(/\bfutbolero\b|\bfutbolera\b/gi, "futbolere");
+         .replace(/\bfutbolero\b|\bfutbolera\b/gi, "futbolere")
+         .replace(/\bcrypto bro\b|\bcrypto girl\b/gi, "Crypto X")
+         .replace(/\bstartup bro\b|\bstartup girl\b/gi, "Techie X")
+         .replace(/\bcreador onlyfans\b|\bcreadora onlyfans\b/gi, "creadorx OnlyFans")
+         .replace(/\bél mismo\b|\bella misma\b/gi, "elle mismx")
+         .replace(/\bél\b|\bella\b/gi, "elle")
+         .replace(/\bun tuitero\b|\buna tuitera\b/gi, "une tuitere")
+         .replace(/\bel tuitero\b|\bla tuitera\b/gi, "le tuitere");
   }
   return t;
 }
@@ -5574,6 +5594,10 @@ class GameEngine {
     this.mediosTriggered = false;
     this.famosoTriggered = false;
     this.algorithmTriggered = false;
+    this.rachaViralTriggered = false;
+    this.rachaViralActive = false;
+    this.rachaViralCount = 0;
+    this.rachaViralDone = false;
   }
 
   init(genero, archId, persId, customHandle=null) {
@@ -5688,6 +5712,26 @@ class GameEngine {
     return null;
   }
 
+  checkRachaViral() {
+    if (this.rachaViralTriggered || this.rachaViralActive || this.rachaViralDone || this.gameOver) return null;
+    // Dispara una sola vez por partida entre turnos 7 y 15 (25% de probabilidad)
+    if (this.turno >= 7 && this.turno <= 15 && Math.random() < 0.25) {
+      this.rachaViralTriggered = true;
+      return {
+        tipo: "racha_viral",
+        titulo: "¡TE VOLVISTE VIRAL!",
+        desc: "El algoritmo colocó tu cuenta en el centro de la conversación masiva. Tenés la opción de entrar al desafío de 3 tweets consecutivos."
+      };
+    }
+    return null;
+  }
+
+  startRachaViral() {
+    this.rachaViralActive = true;
+    this.rachaViralCount = 0;
+    this.cachedCards = null;
+  }
+
   checkSpecialEvent() {
     if (this.activeEvent) return this.activeEvent;
     if (this.eventsTriggeredCount >= 3) return null;
@@ -5707,14 +5751,19 @@ class GameEngine {
         this.eventsTriggeredCount++;
         const hab = habs[rng(habs.length)];
         const segsGained = 20000;
+        const rawOpts = [
+          { texto:"Capitalizar el momento histórico", tweet:"Aprovechando este momento bisagra para marcar el rumbo de la comunidad. Gracias a todos por estar del otro lado.", resultado:"Aprovechás el pico de atención para consolidar autoridad y liderazgo en el nicho.", efectoDesc:`+${segsGained.toLocaleString()} segs  ·  +120 eng`, efectoObj:{ seguidores:segsGained, engagement:120, credibilidad:15 }, fx:(e)=>{ e.seguidores+=segsGained; e.engagement+=120; if(hab.efectos?.credibilidad)e.credibilidad=Math.min(100,e.credibilidad+15); } },
+          { texto:"Monetizar la exposición inmediatamente", tweet:"Cupos abiertos para alianzas comerciales y proyectos sponsoreados. Manden DM los interesados.", resultado:"Convertís la viralidad en contratos comerciales rápidos antes de que se enfríe.", efectoDesc:`+$3.000  ·  +12.000 segs`, efectoObj:{ ingresos:3000, seguidores:12000, engagement:60 }, fx:(e)=>{ e.dinero+=3000; e.seguidores+=12000; e.engagement+=60; } },
+          { texto:"Proteger reputación y ganar respeto", tweet:"Frente al ruido y la histeria, siempre elijo el camino de la templanza y el rigor. No todo es show.", resultado:"Priorizás el rigor y la templanza. Tu imagen sale intacta y reforzada.", efectoDesc:`+20 Cred  ·  +10 SM  ·  +10.000 segs`, efectoObj:{ credibilidad:20, saludMental:10, seguidores:10000 }, fx:(e)=>{ e.credibilidad=Math.min(100,e.credibilidad+20); e.saludMental=Math.min(100,e.saludMental+10); e.seguidores+=10000; } }
+        ];
+        for (let i = rawOpts.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [rawOpts[i], rawOpts[j]] = [rawOpts[j], rawOpts[i]];
+        }
         const ev = {
           id:"super_hab_"+this.turno, tag:"⚡ SUPER HABILIDAD DE ARQUETIPO", color:"purple",
           titulo: hab.titulo, desc: hab.texto,
-          opciones:[
-            { texto:"Capitalizar el momento histórico", tweet:"Aprovechando este momento bisagra para marcar el rumbo de la comunidad. Gracias a todos por estar del otro lado.", resultado:"Aprovechás el pico de atención para consolidar autoridad y liderazgo en el nicho.", efectoDesc:`+${segsGained.toLocaleString()} segs  ·  +120 eng`, efectoObj:{ seguidores:segsGained, engagement:120, credibilidad:15 }, fx:(e)=>{ e.seguidores+=segsGained; e.engagement+=120; if(hab.efectos?.credibilidad)e.credibilidad=Math.min(100,e.credibilidad+15); } },
-            { texto:"Monetizar la exposición inmediatamente", tweet:"Cupos abiertos para alianzas comerciales y proyectos sponsoreados. Manden DM los interesados.", resultado:"Convertís la viralidad en contratos comerciales rápidos antes de que se enfríe.", efectoDesc:`+$3.000  ·  +12.000 segs`, efectoObj:{ ingresos:3000, seguidores:12000, engagement:60 }, fx:(e)=>{ e.dinero+=3000; e.seguidores+=12000; e.engagement+=60; } },
-            { texto:"Proteger reputación y ganar respeto", tweet:"Frente al ruido y la histeria, siempre elijo el camino de la templanza y el rigor. No todo es show.", resultado:"Priorizás el rigor y la templanza. Tu imagen sale intacta y reforzada.", efectoDesc:`+20 Cred  ·  +10 SM  ·  +10.000 segs`, efectoObj:{ credibilidad:20, saludMental:10, seguidores:10000 }, fx:(e)=>{ e.credibilidad=Math.min(100,e.credibilidad+20); e.saludMental=Math.min(100,e.saludMental+10); e.seguidores+=10000; } }
-          ]
+          opciones: rawOpts
         };
         this.activeEvent = ev; return ev;
       }
@@ -5801,6 +5850,15 @@ class GameEngine {
       if(pers.reducida===c.id) w*=0.25;
       if(pers.afines.some(a=>a===c.id)) w*=1.8;
       if(c.id==="pelea"&&this.streakHilos>=2) w*=5;
+      if(this.rachaViralActive){
+        const isArchAfin = c.id === "tema" || (arch.afines && arch.afines.includes(c.id));
+        const isPersAfin = pers.afines && pers.afines.includes(c.id);
+        if(isArchAfin || isPersAfin) {
+          w *= 4.0;
+        } else {
+          w *= 0.15;
+        }
+      }
       return { ...c, weight:Math.max(w,0.05) };
     });
   }
@@ -6038,6 +6096,7 @@ class GameEngine {
     // ── Rich gameLog for decision tree ──
     const CARD_ICONS = { meme:"🎭", tema:"📝", pelea:"⚔️", hilo:"🧵", quote:"💬",
       live:"📡", temaDelDia:"🔥", politica:"🗳️", bait:"🎣", patrocinio:"💰", descanso:"😴" };
+    const chosenSlot = _handSnapshot.findIndex(c => c.titulo === card.titulo);
     const alternatives = _handSnapshot
       .filter(c => c.titulo !== card.titulo)
       .map(c => ({ id: c.id, title: c.titulo, icon: CARD_ICONS[c.id] || "🃏" }));
@@ -6048,6 +6107,7 @@ class GameEngine {
         id: card.id,
         title: card.titulo,
         icon: CARD_ICONS[card.id] || "🃏",
+        slot: chosenSlot >= 0 ? chosenSlot : 1,
         ok, roll, chance,
         booster: boosterUsed?.nombre || null,
         viral: !!(segsGain > this.seguidores * 0.15),
@@ -6066,8 +6126,68 @@ class GameEngine {
       }
     });
 
+    let rachaViralUpdate = null;
+    if (this.rachaViralActive) {
+      if (!ok) {
+        // Fracaso inmediato: se quiebra la racha viral
+        this.rachaViralActive = false;
+        this.rachaViralDone = true;
+        const lossPct = 0.30 + Math.random() * 0.10;
+        const moneyLost = Math.floor(Math.max(0, this.dinero) * lossPct);
+        this.dinero = Math.max(0, this.dinero - moneyLost);
+        this.strikesCancelacion = Math.min(3, this.strikesCancelacion + 2);
+        if (this.strikesCancelacion >= 3) {
+          this.gameOver = true;
+          this.final = getGenderedFinale(FINALE_CANCELACION_3STRIKES, this.genero);
+        }
+        rachaViralUpdate = {
+          complete: true,
+          success: false,
+          moneyLost,
+          strikes: this.strikesCancelacion,
+          gameOver: this.gameOver
+        };
+      } else {
+        this.rachaViralCount++;
+        if (this.rachaViralCount >= 3) {
+          // Racha viral completada con éxito
+          this.rachaViralActive = false;
+          this.rachaViralDone = true;
+          const prizeRanges = {
+            cryptobro: 0.90,
+            militante: 0.85,
+            onlyfans: 0.85,
+            influencer: 0.80,
+            humor: 0.80,
+            conspiranoico: 0.75,
+            gamer: 0.70,
+            futbolero: 0.65,
+            techie: 0.65,
+            periodista: 0.60,
+            opinologo: 0.60,
+            podcaster: 0.55
+          };
+          const pct = (prizeRanges[this.arquetipo?.id] || 0.65) + (Math.random() - 0.5) * 0.15;
+          const gained = Math.floor(Math.max(0, this.seguidores) * Math.max(0.3, pct));
+          this.seguidores += gained;
+          rachaViralUpdate = {
+            complete: true,
+            success: true,
+            gained,
+            pct: Math.round(pct * 100)
+          };
+        } else {
+          rachaViralUpdate = {
+            complete: false,
+            remaining: 3 - this.rachaViralCount,
+            wins: this.rachaViralCount
+          };
+        }
+      }
+    }
+
     const viral = this.checkViralización();
-    return { ok, roll, chance, engGain, hateGain, segsGain, dinGain, viral, boosterUsed, cancellationEvent };
+    return { ok, roll, chance, engGain, hateGain, segsGain, dinGain, viral, boosterUsed, cancellationEvent, rachaViralUpdate };
   }
 
   getAvailableBoosters() {
@@ -6205,7 +6325,11 @@ class UIEngine {
     this._splash(); this._gender(); this._archetype(); this._personality();
     this._setupLanguageDropdown(); this._setupGlobalTooltips();
     this._setupTutorial();
+    this._setupCancellationModal();
+    this._setupHateModal();
+    this._setupViralModal();
     this._setupProfileModal();
+    this._setupShortcutsModal();
     this._setupGlobalKeyboardShortcuts();
     if(window.twemoji) window.twemoji.parse(document.body);
   }
@@ -6224,7 +6348,6 @@ class UIEngine {
       if (alertOverlay && alertOverlay.classList.contains("active")) {
         if (isConfirm) {
           ev.preventDefault();
-          // Try both possible button IDs for safety
           const alertBtn = document.getElementById("alert-ok-btn") ||
                            document.getElementById("btn-alert-dismiss");
           alertBtn?.click();
@@ -6233,12 +6356,46 @@ class UIEngine {
       }
 
       // ── Tutorial: Siguiente con Espacio ───────────────────────────────
-      const tutorialModal = document.getElementById("tutorial-modal");
+      const tutorialModal = document.getElementById("tutorial-modal-overlay") ||
+                            document.getElementById("tutorial-modal");
       if (tutorialModal && tutorialModal.classList.contains("active")) {
         if (isConfirm) {
           ev.preventDefault();
           document.getElementById("btn-tutorial-next")?.click();
           return;
+        }
+      }
+
+      // ── Cancellation Modal: Siguiente con Espacio ──────────────────────
+      const cancModal = document.getElementById("cancellation-modal-overlay");
+      if (cancModal && cancModal.classList.contains("active")) {
+        if (isConfirm) {
+          ev.preventDefault();
+          document.getElementById("btn-canc-next")?.click();
+          return;
+        }
+      }
+
+      // ── Hate Modal: Siguiente con Espacio ──────────────────────────────
+      const hateModal = document.getElementById("hate-modal-overlay");
+      if (hateModal && hateModal.classList.contains("active")) {
+        if (isConfirm) {
+          ev.preventDefault();
+          document.getElementById("btn-hate-next")?.click();
+          return;
+        }
+      }
+
+      // ── Viral Modal: Siguiente con Espacio ─────────────────────────────
+      const viralModal = document.getElementById("viral-modal-overlay");
+      if (viralModal && viralModal.classList.contains("active")) {
+        if (isConfirm) {
+          ev.preventDefault();
+          const vNext = document.getElementById("btn-viral-next");
+          if (vNext && vNext.style.display !== "none") {
+            vNext.click();
+            return;
+          }
         }
       }
 
@@ -6258,20 +6415,80 @@ class UIEngine {
         }
       }
 
+      // ── Modal de atajos: toggle con '?' o 'K' ─────────────────────────
+      if (ev.key === "?" || ev.code === "KeyK") {
+        const sOverlay = document.getElementById("shortcuts-modal-overlay");
+        if (sOverlay) {
+          ev.preventDefault();
+          sOverlay.classList.toggle("active");
+          snd.click();
+          return;
+        }
+      }
+
+      // ── Modal de perfil: toggle con 'P' ───────────────────────────────
+      if (ev.code === "KeyP") {
+        const pOverlay = document.getElementById("perfil-modal-overlay");
+        if (pOverlay) {
+          ev.preventDefault();
+          if (pOverlay.classList.contains("active")) {
+            pOverlay.classList.remove("active");
+          } else {
+            snd.click();
+            this._updateProfileModalContent();
+            pOverlay.classList.add("active");
+          }
+          return;
+        }
+      }
+
+      // ── Cerrar modales con Escape ────────────────────────────────────
+      if (ev.key === "Escape") {
+        const sOverlay = document.getElementById("shortcuts-modal-overlay");
+        if (sOverlay && sOverlay.classList.contains("active")) {
+          ev.preventDefault();
+          sOverlay.classList.remove("active");
+          return;
+        }
+      }
+
       const screenGame = document.getElementById("screen-game");
       const isGameActive = screenGame && screenGame.classList.contains("active");
       if (!isGameActive || this.isResolvingAction) return;
 
+      // ── Atajos Q, W, E para Boosters ─────────────────────────────────
+      if (ev.code === "KeyQ" || ev.code === "KeyW" || ev.code === "KeyE") {
+        const bIdx = ev.code === "KeyQ" ? 0 : ev.code === "KeyW" ? 1 : 2;
+        const available = this.eng.getAvailableBoosters();
+        if (available && available[bIdx]) {
+          ev.preventDefault();
+          const bId = available[bIdx].id;
+          if (this.preparedBoosterId === bId) {
+            this.preparedBoosterId = null;
+            snd.click();
+          } else {
+            this.preparedBoosterId = bId;
+            snd.boost();
+          }
+          this._renderCards();
+          document.querySelectorAll(".booster-tile").forEach(t => {
+            t.classList.toggle("highlighted", t.dataset.id === this.preparedBoosterId);
+          });
+        }
+        return;
+      }
+
       // ── Atajos 1, 2, 3 para jugar cartas ─────────────────────────────
       if (ev.key === "1" || ev.key === "2" || ev.key === "3") {
         const idx = parseInt(ev.key) - 1;
-        // Si hay evento interactivo abierto, seleccionar postura
+        // Si hay evento interactivo abierto, seleccionar postura según tarjeta física
         const eventSec = document.getElementById("event-section");
         if (eventSec && eventSec.style.display !== "none") {
           const optBtns = eventSec.querySelectorAll(".event-truco-card");
           if (optBtns && optBtns[idx]) {
             ev.preventDefault();
-            this._chooseEventOption(idx);
+            const optIdx = parseInt(optBtns[idx].dataset.idx);
+            this._chooseEventOption(optIdx);
           }
           return;
         }
@@ -6283,6 +6500,27 @@ class UIEngine {
         }
       }
     });
+  }
+
+  _setupShortcutsModal() {
+    const overlay = document.getElementById("shortcuts-modal-overlay");
+    const openBtn = document.getElementById("btn-ver-shortcuts");
+    const closeBtn = document.getElementById("btn-close-shortcuts");
+    if (!overlay) return;
+
+    if (openBtn) openBtn.onclick = () => {
+      snd.click();
+      overlay.classList.add("active");
+    };
+    if (closeBtn) closeBtn.onclick = () => {
+      snd.click();
+      overlay.classList.remove("active");
+    };
+    overlay.onclick = (e) => {
+      if (e.target === overlay) {
+        overlay.classList.remove("active");
+      }
+    };
   }
 
   _setupProfileModal() {
@@ -6380,6 +6618,202 @@ class UIEngine {
     document.getElementById("btn-tutorial-prev").style.visibility = "hidden";
     document.getElementById("btn-tutorial-next").textContent = "SIGUIENTE ➡";
     document.getElementById("tutorial-modal-overlay").classList.add("active");
+  }
+
+  _setupCancellationModal() {
+    this.cancSlide = 1;
+    this.cancMax = 3;
+    const overlay = document.getElementById("cancellation-modal-overlay");
+    if (!overlay) return;
+
+    const updateCanc = () => {
+      overlay.querySelectorAll(".tutorial-slide").forEach((s, i) => s.classList.toggle("active", i + 1 === this.cancSlide));
+      overlay.querySelectorAll(".tutorial-dots .dot").forEach((d, i) => d.classList.toggle("active", i + 1 === this.cancSlide));
+      const prevBtn = document.getElementById("btn-canc-prev");
+      const nextBtn = document.getElementById("btn-canc-next");
+      if (prevBtn) prevBtn.style.visibility = this.cancSlide > 1 ? "visible" : "hidden";
+      if (nextBtn) nextBtn.textContent = this.cancSlide === this.cancMax ? "ENTENDIDO ✕" : "SIGUIENTE ➡";
+    };
+
+    const closeCanc = () => {
+      snd.click();
+      overlay.classList.remove("active");
+      if (this._onCancClose) {
+        const cb = this._onCancClose;
+        this._onCancClose = null;
+        cb();
+      }
+    };
+
+    document.getElementById("btn-close-canc-modal")?.addEventListener("click", closeCanc);
+    document.getElementById("btn-canc-next")?.addEventListener("click", () => {
+      snd.click();
+      if (this.cancSlide < this.cancMax) {
+        this.cancSlide++;
+        updateCanc();
+      } else {
+        closeCanc();
+      }
+    });
+    document.getElementById("btn-canc-prev")?.addEventListener("click", () => {
+      snd.click();
+      if (this.cancSlide > 1) {
+        this.cancSlide--;
+        updateCanc();
+      }
+    });
+  }
+
+  _showCancellationModal(onClose) {
+    this._onCancClose = onClose || null;
+    this.cancSlide = 1;
+    const overlay = document.getElementById("cancellation-modal-overlay");
+    if (!overlay) return;
+    overlay.querySelectorAll(".tutorial-slide").forEach((s, i) => s.classList.toggle("active", i === 0));
+    overlay.querySelectorAll(".tutorial-dots .dot").forEach((d, i) => d.classList.toggle("active", i === 0));
+    const prevBtn = document.getElementById("btn-canc-prev");
+    const nextBtn = document.getElementById("btn-canc-next");
+    if (prevBtn) prevBtn.style.visibility = "hidden";
+    if (nextBtn) nextBtn.textContent = "SIGUIENTE ➡";
+    snd.alert();
+    overlay.classList.add("active");
+  }
+
+  _setupHateModal() {
+    this.hateSlide = 1;
+    this.hateMax = 3;
+    const overlay = document.getElementById("hate-modal-overlay");
+    if (!overlay) return;
+
+    const updateHate = () => {
+      overlay.querySelectorAll(".tutorial-slide").forEach((s, i) => s.classList.toggle("active", i + 1 === this.hateSlide));
+      overlay.querySelectorAll(".tutorial-dots .dot").forEach((d, i) => d.classList.toggle("active", i + 1 === this.hateSlide));
+      const prevBtn = document.getElementById("btn-hate-prev");
+      const nextBtn = document.getElementById("btn-hate-next");
+      if (prevBtn) prevBtn.style.visibility = this.hateSlide > 1 ? "visible" : "hidden";
+      if (nextBtn) nextBtn.textContent = this.hateSlide === this.hateMax ? "ENTENDIDO ✕" : "SIGUIENTE ➡";
+    };
+
+    const closeHate = () => {
+      snd.click();
+      overlay.classList.remove("active");
+      if (this._onHateClose) {
+        const cb = this._onHateClose;
+        this._onHateClose = null;
+        cb();
+      }
+    };
+
+    document.getElementById("btn-close-hate-modal")?.addEventListener("click", closeHate);
+    document.getElementById("btn-hate-next")?.addEventListener("click", () => {
+      snd.click();
+      if (this.hateSlide < this.hateMax) {
+        this.hateSlide++;
+        updateHate();
+      } else {
+        closeHate();
+      }
+    });
+    document.getElementById("btn-hate-prev")?.addEventListener("click", () => {
+      snd.click();
+      if (this.hateSlide > 1) {
+        this.hateSlide--;
+        updateHate();
+      }
+    });
+  }
+
+  _showHateModal(onClose) {
+    this._onHateClose = onClose || null;
+    this.hateSlide = 1;
+    const overlay = document.getElementById("hate-modal-overlay");
+    if (!overlay) return;
+    overlay.querySelectorAll(".tutorial-slide").forEach((s, i) => s.classList.toggle("active", i === 0));
+    overlay.querySelectorAll(".tutorial-dots .dot").forEach((d, i) => d.classList.toggle("active", i === 0));
+    const prevBtn = document.getElementById("btn-hate-prev");
+    const nextBtn = document.getElementById("btn-hate-next");
+    if (prevBtn) prevBtn.style.visibility = "hidden";
+    if (nextBtn) nextBtn.textContent = "SIGUIENTE ➡";
+    snd.alert();
+    overlay.classList.add("active");
+  }
+
+  _setupViralModal() {
+    this.viralSlide = 1;
+    this.viralMax = 3;
+    const overlay = document.getElementById("viral-modal-overlay");
+    if (!overlay) return;
+
+    const updateViral = () => {
+      overlay.querySelectorAll(".tutorial-slide").forEach((s, i) => s.classList.toggle("active", i + 1 === this.viralSlide));
+      overlay.querySelectorAll(".tutorial-dots .dot").forEach((d, i) => d.classList.toggle("active", i + 1 === this.viralSlide));
+      const prevBtn = document.getElementById("btn-viral-prev");
+      const nextBtn = document.getElementById("btn-viral-next");
+      if (prevBtn) prevBtn.style.visibility = this.viralSlide > 1 ? "visible" : "hidden";
+      if (nextBtn) nextBtn.style.display = this.viralSlide === this.viralMax ? "none" : "block";
+    };
+
+    const closeViral = () => {
+      snd.click();
+      overlay.classList.remove("active");
+      if (this._onViralClose) {
+        const cb = this._onViralClose;
+        this._onViralClose = null;
+        cb();
+      }
+    };
+
+    document.getElementById("btn-close-viral-modal")?.addEventListener("click", () => {
+      this.eng.rachaViralDone = true;
+      closeViral();
+    });
+
+    document.getElementById("btn-viral-decline")?.addEventListener("click", () => {
+      snd.click();
+      this.eng.rachaViralDone = true;
+      this.eng.rachaViralActive = false;
+      closeViral();
+    });
+
+    document.getElementById("btn-viral-accept")?.addEventListener("click", () => {
+      snd.legendary();
+      this.eng.startRachaViral();
+      closeViral();
+    });
+
+    document.getElementById("btn-viral-next")?.addEventListener("click", () => {
+      snd.click();
+      if (this.viralSlide < this.viralMax) {
+        this.viralSlide++;
+        updateViral();
+      }
+    });
+
+    document.getElementById("btn-viral-prev")?.addEventListener("click", () => {
+      snd.click();
+      if (this.viralSlide > 1) {
+        this.viralSlide--;
+        updateViral();
+      }
+    });
+  }
+
+  _showViralModal(onClose) {
+    this._onViralClose = onClose || null;
+    this.viralSlide = 1;
+    const overlay = document.getElementById("viral-modal-overlay");
+    if (!overlay) return;
+    overlay.querySelectorAll(".tutorial-slide").forEach((s, i) => s.classList.toggle("active", i === 0));
+    overlay.querySelectorAll(".tutorial-dots .dot").forEach((d, i) => d.classList.toggle("active", i === 0));
+    const prevBtn = document.getElementById("btn-viral-prev");
+    const nextBtn = document.getElementById("btn-viral-next");
+    if (prevBtn) prevBtn.style.visibility = "hidden";
+    if (nextBtn) {
+      nextBtn.style.display = "block";
+      nextBtn.textContent = "SIGUIENTE ➡";
+    }
+    snd.alert();
+    overlay.classList.add("active");
   }
 
   _splash() {
@@ -6565,7 +6999,10 @@ class UIEngine {
 
   _archetype() {
     const grid=document.getElementById("archetype-grid"); if(!grid) return;
-    grid.innerHTML=ARCHETYPES.map(a=>{
+    const available = typeof isArchetypeAvailableForGender === "function" 
+      ? ARCHETYPES.filter(a => isArchetypeAvailableForGender(a.id, this.sel.genero))
+      : ARCHETYPES;
+    grid.innerHTML=available.map(a=>{
       const genderedName = getGenderedArchetype(a, this.sel.genero);
       const difClass = a.dificultad === "alta" ? "chip-dif-alta" : a.dificultad === "media" ? "chip-dif-media" : "chip-dif-baja";
       const difBadge = `<span class="chip-dif ${difClass}">DIFICULTAD ${a.difLabel || "MEDIA"}</span>`;
@@ -6716,6 +7153,28 @@ class UIEngine {
     }
     if(tbOdioVal) tbOdioVal.textContent=e.odio+"%";
 
+    const rvBanner = document.getElementById("racha-viral-banner");
+    if (rvBanner) {
+      if (e.rachaViralActive) {
+        rvBanner.style.display = "flex";
+        const wins = e.rachaViralCount || 0;
+        rvBanner.innerHTML = `
+          <div class="racha-viral-badge">🔥 MOMENTO VIRAL ACTIVO</div>
+          <div class="racha-viral-progress">
+            <span>OBJETIVO: 3 TWEETS EXITOSOS</span>
+            <div class="racha-viral-dots">
+              <div class="rv-step ${wins >= 1 ? 'done' : 'current'}">${wins >= 1 ? '✓' : '1'}</div>
+              <div class="rv-step ${wins >= 2 ? 'done' : (wins === 1 ? 'current' : '')}">${wins >= 2 ? '✓' : '2'}</div>
+              <div class="rv-step ${wins >= 3 ? 'done' : (wins === 2 ? 'current' : '')}">${wins >= 3 ? '✓' : '3'}</div>
+            </div>
+          </div>
+          <div class="racha-viral-warning">⚠️ Un fallo = -$ (35%) y +2 strikes</div>
+        `;
+      } else {
+        rvBanner.style.display = "none";
+      }
+    }
+
     this._renderBuildPanel();
     this._renderProgressBar();
     this._renderSparkline();
@@ -6794,6 +7253,21 @@ class UIEngine {
       );
     }
 
+    // ── CHECK EVENTO VIRAL (Racha Viral) ──
+    const rachaViral = this.eng.checkRachaViral ? this.eng.checkRachaViral() : null;
+    if (rachaViral) {
+      this._showViralModal(() => {
+        this._continueRenderTurn();
+      });
+      return;
+    }
+
+    this._continueRenderTurn();
+  }
+
+  _continueRenderTurn() {
+    this._updateStatsOnly();
+
     // ── CHECK EVENTOS INTERACTIVOS (Dilemas con Pop-up de anuncio previo) ──
     const ev = this.eng.checkSpecialEvent();
     if(ev){
@@ -6826,24 +7300,7 @@ class UIEngine {
     if (e.odio >= 80) {
       if (e.turnosEnZonaRoja === 1 && !e.cancelWarningShown['zr1']) {
         e.cancelWarningShown['zr1'] = true;
-        snd.alert();
-        this._showAlert(
-          "🔥 ZONA ROJA DE ODIO — TURNO 1/3",
-          `<div class="strike-meter-row">
-             <div class="strike-slot active-1">🔥 TURNO 1: ZONA ROJA</div>
-             <div class="strike-slot empty">⚪ TURNO 2: GRACIA</div>
-             <div class="strike-slot empty">☠️ TURNO 3: FINAL</div>
-           </div>
-           <div class="strike-info-card critical">
-             <strong>⚠️ HOSTILIDAD DEL FEED EN NIVEL CRÍTICO</strong><br>
-             Tu Odio superó el 80%. Si permanecés <strong>3 turnos consecutivos</strong> en esta zona roja, la toxicidad del timeline provocará el cierre forzado de tu cuenta (Game Over por Hostilidad Extrema).
-           </div>
-           <div class="strike-info-card survival">
-             <strong>🛡️ CÓMO REVERTIRLO:</strong><br>
-             Jugá cartas pacificadoras como <em>Día de Desconexión</em> o contenidos amigables para bajar tu nivel de Odio antes de que venza el plazo.
-           </div>`,
-          "ALERTA DE RETENCIÓN DE CUENTA"
-        );
+        this._showHateModal();
       } else if (e.turnosEnZonaRoja === 2 && !e.cancelWarningShown['zr2']) {
         e.cancelWarningShown['zr2'] = true;
         snd.alert();
@@ -6873,15 +7330,7 @@ class UIEngine {
 
     if (e.odio >= 65 && !e.cancelWarningShown[65]) {
       e.cancelWarningShown[65] = true;
-      snd.alert();
-      this._showAlert(
-        "⚠️ ALERTA DE POLARIZACIÓN (ODIO 65%)",
-        `<div class="strike-info-card">
-           Tu nivel de Odio llegó al 65%. La hostilidad de las respuestas aumentó y las cartas polémicas tienen mayor probabilidad de ratio y de gatillar un Strike de Cancelación.<br><br>
-           Monitoreá tu Salud Mental y evitá escalar polémicas innecesarias.
-         </div>`,
-        "ZONA DE RIESGO"
-      );
+      this._showHateModal();
     }
   }
 
@@ -6998,10 +7447,13 @@ class UIEngine {
     const grid=document.getElementById("boosters-grid"); if(!grid) return;
     const available=this.eng.getAvailableBoosters();
     if(available.length===0){ grid.innerHTML=`<div style="grid-column:span 3;padding:10px;font-family:var(--font-mono);font-size:0.7rem;color:var(--gray-1);text-align:center;">SIN BOOSTERS DISPONIBLES CON EL SALDO ACTUAL</div>`; return; }
-    grid.innerHTML=available.map(b=>{
+    const BOOSTER_KEYS = ['Q', 'W', 'E'];
+    grid.innerHTML=available.map((b, i)=>{
       const isHl=this.preparedBoosterId===b.id;
+      const keyHint = BOOSTER_KEYS[i] ? `<span class="booster-key-pill">${BOOSTER_KEYS[i]}</span>` : '';
       const tip=`<strong>${b.icono} ${b.nombre}</strong><br>${b.desc}<br><span style='color:#eab308;'>Cooldown: ${b.cooldown} turno${b.cooldown>1?'s':''}</span>`.replace(/"/g, '&quot;');
       return `<div class="booster-tile ${isHl?"highlighted":""}" data-id="${b.id}" data-tooltip="${tip}">
+        ${keyHint}
         <div class="b-icon">${b.icono}</div>
         <div class="b-name">${b.nombre}</div>
         <div class="b-cost">$${b.costo.toLocaleString()}</div>
@@ -7061,18 +7513,25 @@ class UIEngine {
 
     const container=document.getElementById("event-options-container");
     if(container){
+      // Randomize options order on each event appearance while tracking original index
+      const indexedOpts = ev.opciones.map((opt, origIdx) => ({ opt, origIdx }));
+      for (let i = indexedOpts.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [indexedOpts[i], indexedOpts[j]] = [indexedOpts[j], indexedOpts[i]];
+      }
+
       const optIcons = ['1️⃣', '2️⃣', '3️⃣'];
-      container.innerHTML=ev.opciones.map((opt,idx)=>{
-        const optIcon = optIcons[idx] || '⚡';
+      container.innerHTML = indexedOpts.map((item, displayIdx)=>{
+        const optIcon = optIcons[displayIdx] || '⚡';
         return `
-        <div class="truco-card event-truco-card" style="border-top-color:var(--purple); flex:1; min-width:220px; cursor:pointer;" data-idx="${idx}">
+        <div class="truco-card event-truco-card" style="border-top-color:var(--purple); flex:1; min-width:220px; cursor:pointer;" data-idx="${item.origIdx}">
           <div class="card-suit-tag" style="color:var(--purple);">
             <span class="card-suit-dot" style="background:var(--purple);"></span>
-            OPCIÓN ${idx+1}
+            OPCIÓN ${displayIdx+1}
           </div>
           <div class="card-palo">${optIcon}</div>
-          <div class="card-title">${opt.texto}</div>
-          <button class="card-play-btn btn-opt-choose" data-idx="${idx}" style="background:var(--purple); margin-top:auto;">ELEGIR POSTURA ▶</button>
+          <div class="card-title">${item.opt.texto}</div>
+          <button class="card-play-btn btn-opt-choose" data-idx="${item.origIdx}" style="background:var(--purple); margin-top:auto;">ELEGIR POSTURA ▶</button>
         </div>
         `;
       }).join("");
@@ -7175,15 +7634,22 @@ class UIEngine {
     const isVerified = e.history.some(h=>e.dinero >= 0) && (e.seguidores >= 25000);
 
     if(isSuccess){
-      likes = Math.floor(s * (0.07 + Math.random() * 0.08) + 280);
-      rts = Math.floor(likes * (0.22 + Math.random() * 0.12) + 45);
-      replies = Math.floor(likes * (0.05 + Math.random() * 0.04) + 18);
-      views = Math.floor(s * (2.2 + Math.random() * 2.5) + 1600);
+      const likeRate = 0.025 + Math.random() * 0.035; // 2.5% - 6% de seguidores
+      likes = Math.max(4, Math.floor(s * likeRate));
+      const rtRate = 0.12 + Math.random() * 0.10; // 12% - 22% de los likes
+      rts = Math.max(0, Math.floor(likes * rtRate));
+      const replyRate = 0.04 + Math.random() * 0.05; // 4% - 9% de los likes (ej: 3k -> ~5-15)
+      replies = Math.max(1, Math.floor(likes * replyRate));
+      views = Math.max(likes * 12, Math.floor(s * (0.9 + Math.random() * 1.6)));
     } else {
-      likes = Math.floor(18 + Math.random() * 42);
-      rts = Math.floor(3 + Math.random() * 9);
-      replies = Math.floor(s * (0.04 + Math.random() * 0.03) + 380);
-      views = Math.floor(s * (1.6 + Math.random() * 1.8) + 850);
+      // Fracaso o Ratio: muy pocos likes/RTs, pero comentarios de repudio realistas
+      const likeRate = 0.0015 + Math.random() * 0.0025; // 0.15% - 0.4% de seguidores
+      likes = Math.max(1, Math.floor(s * likeRate));
+      rts = Math.max(0, Math.floor(likes * (0.05 + Math.random() * 0.08)));
+      // Ratio: comentarios escalados a seguidores (0.5% a 0.9% de followers, ej: 3k -> 15 a 27)
+      const replyRate = 0.005 + Math.random() * 0.004;
+      replies = Math.max(2, Math.floor(s * replyRate));
+      views = Math.max(replies * 8, Math.floor(s * (0.4 + Math.random() * 0.6)));
     }
 
     const currentAvatar = e.getAvatar();
@@ -7384,34 +7850,56 @@ class UIEngine {
                 if (viralData) this._alertViral(viralData); else this._renderFullTurn();
               };
 
+          // ── CHECK RACHA VIRAL RESOLUTION ──
+          if (res.rachaViralUpdate && res.rachaViralUpdate.complete) {
+            const rvu = res.rachaViralUpdate;
+            if (rvu.success) {
+              snd.legendary();
+              this._showAlert(
+                "🔥 ¡RACHA VIRAL COMPLETADA!",
+                `<div class="strike-info-card survival" style="border-color:var(--green);">
+                   <strong>🌟 ¡3 DE 3 TWEETS EXITOSOS!</strong><br>
+                   Dominaste el algoritmo con maestría absoluta. La comunidad te convirtió en el fenómeno indiscutido de toda la red.<br><br>
+                   • <strong>SEGUIDORES EXTRA GANADOS:</strong> +${rvu.gained.toLocaleString()} (+${rvu.pct}% de tu audiencia)<br>
+                   • Tu cuenta alcanza un nuevo techo histórico de visibilidad e influencia.
+                 </div>`,
+                "MOMENTO VIRAL ÉPICO",
+                true,
+                afterTurnCallback,
+                "👑"
+              );
+              return;
+            } else {
+              snd.fail();
+              this._showAlert(
+                "💔 RACHA VIRAL QUEBRADA",
+                `<div class="strike-info-card critical">
+                   <strong>💥 FRACASO EN EL MOMENTO VIRAL</strong><br>
+                   Tu carta no superó la prueba del algoritmo bajo la mirada de toda la red. La ola de burlas y repudio te golpeó sin piedad.<br><br>
+                   • <strong>DINERO PERDIDO:</strong> -$${rvu.moneyLost.toLocaleString()} (marcas caídas y penalidades)<br>
+                   • <strong>PENALIZACIÓN:</strong> +2 STRIKES de moderación acumulados.<br>
+                   • <strong>ESTADO ACTUAL:</strong> ${rvu.strikes}/3 strikes. ${rvu.gameOver ? '¡Cuenta suspendida!' : '¡Estás a un solo strike de la cancelación total!'}
+                 </div>`,
+                "DESAFÍO VIRAL FALLIDO",
+                true,
+                () => {
+                  if (rvu.gameOver) {
+                    this._showEnd1();
+                  } else {
+                    afterTurnCallback();
+                  }
+                },
+                "💀"
+              );
+              return;
+            }
+          }
+
           if (res.cancellationEvent && !this.eng.gameOver) {
             const strikeNum = res.cancellationEvent.strike;
+            const canc = res.cancellationEvent;
             if (strikeNum === 1) {
-              snd.alert();
-              this._showAlert(
-                "⚠️ PRIMER STRIKE DE MODERACIÓN (1/3)",
-                `<div class="strike-meter-row">
-                   <div class="strike-slot active-1">⚠️ STRIKE 1: ACTIVO</div>
-                   <div class="strike-slot empty">⚪ STRIKE 2: LIBRE</div>
-                   <div class="strike-slot empty">⚪ STRIKE 3: LIBRE</div>
-                 </div>
-                 <div class="strike-info-card critical">
-                   <strong>🚨 INFRACCIÓN GRAVE DETECTADA</strong><br>
-                   Tu publicación provocó una ola de repudio masivo y reportes coordinados. Acumulaste tu <strong>primer strike oficial de moderación comunitaria</strong>.
-                 </div>
-                 <div class="strike-info-card">
-                   <strong>⚖️ MECÁNICA DE CANCELACIÓN:</strong><br>
-                   • Al acumular <strong>3 strikes</strong>, tu cuenta será suspendida definitivamente (Game Over).<br>
-                   • Cartas de confrontación o polarización jugadas con Odio elevado aumentan el riesgo de strike.
-                 </div>
-                 <div class="strike-info-card survival">
-                   <strong>🛡️ PROTOCOLO DE CONTENCIÓN:</strong><br>
-                   Enfriá el timeline jugando <em>Día de Desconexión</em> o contenido pacífico, y mantené tu Salud Mental por encima del 50%.
-                 </div>`,
-                "SISTEMA DE CANCELACIÓN",
-                false,
-                afterTurnCallback
-              );
+              this._showCancellationModal(afterTurnCallback);
               return;
             } else if (strikeNum === 2) {
               snd.alert();
@@ -7454,9 +7942,9 @@ class UIEngine {
                    Acumulaste <strong>3 infracciones graves</strong> en tu cuenta. La moderación y el repudio generalizado culminaron en la suspensión permanente e inapelable de tu perfil.
                  </div>
                  <div class="strike-info-card critical">
-                   <strong>🚨 MOTIVO DE LA CRISIS FINAL: ${canc.titulo}</strong><br>
-                   ${canc.motivo}<br><br>
-                   <em>"${canc.texto}"</em>
+                   <strong>🚨 MOTIVO DE LA CRISIS FINAL: ${canc.titulo || 'CANCELACIÓN'}</strong><br>
+                   ${canc.motivo || ''}<br><br>
+                   <em>"${canc.texto || ''}"</em>
                  </div>
                  <div class="strike-info-card survival">
                    <strong>📜 RESOLUCIÓN:</strong><br>
@@ -7738,14 +8226,22 @@ class UIEngine {
         <text x="${cX}" y="${rootY + 4}" text-anchor="middle" font-family="'Space Mono', monospace" font-size="10" font-weight="700" fill="${C.textWhite}">00</text>
       </g>`;
 
-    // Precalcular posiciones de los turnos
-    const positions = log.map((turn, i) => ({
-      x: cX,
-      y: PAD_TOP + i * TIER_H + 42,
-      tierY: PAD_TOP + i * TIER_H,
-      turn,
-      i
-    }));
+    // Precalcular posiciones de los turnos según el slot de carta elegido (0: Izq, 1: Centro, 2: Der)
+    const laneOffsets = [-175, 0, 175];
+    const positions = log.map((turn, i) => {
+      const chosenSlot = turn.chosen && turn.chosen.slot != null ? turn.chosen.slot : (i % 3);
+      return {
+        x: cX + laneOffsets[chosenSlot],
+        y: PAD_TOP + i * TIER_H + 42,
+        tierY: PAD_TOP + i * TIER_H,
+        slot: chosenSlot,
+        turn,
+        i
+      };
+    });
+
+    let prevX = cX;
+    let prevY = rootY;
 
     positions.forEach((pos, i) => {
       const turn = pos.turn;
@@ -7761,29 +8257,28 @@ class UIEngine {
       nodes += `<text x="36" y="${pos.tierY + 22}" font-family="'Space Mono', monospace"
         font-size="10" font-weight="700" fill="${C.textDim}" letter-spacing="1">TURNO ${String(turn.t).padStart(2,"0")}</text>`;
 
-      // ── Conector Tronco Principal (Curva S vertical desde nodo anterior) ──
-      const prevX = cX;
-      const prevY = i === 0 ? rootY : positions[i - 1].y;
+      // ── Conector Tronco Principal (Curva S vertical desde nodo elegido anterior) ──
       const midY = (prevY + pos.y) / 2;
       lines += `<path d="M${prevX},${prevY} C${prevX},${midY} ${pos.x},${midY} ${pos.x},${pos.y}"
         stroke="${C.trunk}" stroke-width="2.5" fill="none" stroke-linecap="round"/>`;
 
-      // ── Ramas descartadas (Curvas suaves a izquierda y derecha) ──
+      // ── Ramas descartadas (Bifurcaciones hacia los otros 2 slots) ──
+      const altSlots = [0, 1, 2].filter(s => s !== pos.slot);
       const alts = (turn.alternatives || []).slice(0, 2);
       alts.forEach((alt, ai) => {
-        const dir = ai === 0 ? -1 : 1;
-        const bx = pos.x + dir * 180;
-        const by = pos.y + 10;
-        const bmidY = (pos.y + by) / 2;
+        const altSlot = altSlots[ai] != null ? altSlots[ai] : (ai === 0 ? 0 : 2);
+        const altX = cX + laneOffsets[altSlot];
+        const altY = pos.y;
+        const altMidY = (prevY + altY) / 2;
 
-        lines += `<path d="M${pos.x},${pos.y} C${pos.x + dir * 70},${bmidY} ${bx},${bmidY} ${bx},${by}"
+        lines += `<path d="M${prevX},${prevY} C${prevX},${altMidY} ${altX},${altMidY} ${altX},${altY}"
           stroke="${C.branchAlt}" stroke-width="1.5" stroke-dasharray="3 3" fill="none"/>`;
 
         // Nodo descartado circular
         nodes += `<g class="tree-node alt" data-idx="${i}" data-alt="${ai}" style="cursor:help;">
-          <circle cx="${bx}" cy="${by}" r="14" fill="${C.altNodeBg}" stroke="${C.altNodeBdr}" stroke-width="1.5"/>
-          <text x="${bx}" y="${by + 4}" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="10" font-weight="700" fill="${C.textDim}">✕</text>
-          <text x="${bx}" y="${by + 26}" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="9" fill="${C.textDim}">${(alt.titulo || 'Descartada').slice(0, 16)}</text>
+          <circle cx="${altX}" cy="${altY}" r="14" fill="${C.altNodeBg}" stroke="${C.altNodeBdr}" stroke-width="1.5"/>
+          <text x="${altX}" y="${altY + 4}" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="10" font-weight="700" fill="${C.textDim}">✕</text>
+          <text x="${altX}" y="${altY + 26}" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="9" fill="${C.textDim}">${(alt.title || alt.titulo || 'Descartada').slice(0, 15)}</text>
         </g>`;
       });
 
@@ -7799,19 +8294,23 @@ class UIEngine {
         <!-- Pip sutil de resultado -->
         <circle cx="${pos.x + 13}" cy="${pos.y - 13}" r="4.5" fill="${pipFill}"/>
         <!-- Título de la carta elegida a la derecha -->
-        <text x="${pos.x + 28}" y="${pos.y + 4}" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" font-weight="700" fill="${titleColor}">${chosen.title.slice(0, 28)}</text>
+        <text x="${pos.x + 24}" y="${pos.y + 4}" font-family="'Plus Jakarta Sans', sans-serif" font-size="10" font-weight="700" fill="${titleColor}">${chosen.title.slice(0, 22)}</text>
       </g>`;
 
       tooltipData.push({ i, chosen, delta: turn.delta, snap: turn.snapshot, alts: turn.alternatives });
+
+      // Actualizar nodo anterior para la próxima iteración
+      prevX = pos.x;
+      prevY = pos.y;
     });
 
     // Remate final en el último nodo
     if (positions.length > 0) {
       const lastPos = positions[positions.length - 1];
       const endY = lastPos.y + 40;
-      lines += `<line x1="${cX}" y1="${lastPos.y}" x2="${cX}" y2="${endY}" stroke="${C.trunk}" stroke-width="2" stroke-dasharray="2 2"/>`;
+      lines += `<line x1="${lastPos.x}" y1="${lastPos.y}" x2="${lastPos.x}" y2="${endY}" stroke="${C.trunk}" stroke-width="2" stroke-dasharray="2 2"/>`;
       nodes += `<g>
-        <circle cx="${cX}" cy="${endY}" r="6" fill="${C.trunk}"/>
+        <circle cx="${lastPos.x}" cy="${endY}" r="6" fill="${C.trunk}"/>
       </g>`;
     }
 
