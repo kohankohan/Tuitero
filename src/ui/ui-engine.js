@@ -778,17 +778,24 @@ class UIEngine {
     }
 
     overlay.classList.add("active");
+    const closeAlert = () => {
+      overlay.classList.remove("active");
+      if(this._onAlertDismiss) {
+        const cb = this._onAlertDismiss;
+        this._onAlertDismiss = null;
+        cb();
+      }
+    };
+
     const okBtn=document.getElementById("alert-ok-btn");
-    if(okBtn) {
-      okBtn.onclick=()=>{
-        overlay.classList.remove("active");
-        if(this._onAlertDismiss) {
-          const cb = this._onAlertDismiss;
-          this._onAlertDismiss = null;
-          cb();
-        }
-      };
-    }
+    if(okBtn) okBtn.onclick = closeAlert;
+
+    const closeBtn=document.getElementById("btn-close-alert");
+    if(closeBtn) closeBtn.onclick = closeAlert;
+
+    overlay.onclick = (e) => {
+      if (e.target === overlay) closeAlert();
+    };
   }
 
   _gender() {
@@ -955,10 +962,18 @@ class UIEngine {
     if(tbOdioVal) tbOdioVal.textContent=e.odio+"%";
 
     const rvBanner = document.getElementById("racha-viral-banner");
-    if (rvBanner) {
-      if (e.rachaViralActive) {
+    const gameMainEl = document.getElementById("game-main-el");
+    const cardsSubtitleEl = document.getElementById("cards-subtitle");
+
+    if (e.rachaViralActive) {
+      if (gameMainEl) gameMainEl.classList.add("racha-viral-mode");
+      const wins = e.rachaViralCount || 0;
+      const currentStep = Math.min(3, wins + 1);
+      if (cardsSubtitleEl) {
+        cardsSubtitleEl.innerHTML = `<span style="color:var(--amber); font-weight:800;">⚡ MODO VIRAL ACTIVO: TWEET ${currentStep} DE 3 — ALTO RIESGO DE CANCELACIÓN</span>`;
+      }
+      if (rvBanner) {
         rvBanner.style.display = "flex";
-        const wins = e.rachaViralCount || 0;
         rvBanner.innerHTML = `
           <div class="racha-viral-badge">🔥 MOMENTO VIRAL ACTIVO</div>
           <div class="racha-viral-progress">
@@ -971,10 +986,15 @@ class UIEngine {
           </div>
           <div class="racha-viral-warning">⚠️ Un fallo = -$ (35%) y +2 strikes</div>
         `;
-      } else {
-        rvBanner.style.display = "none";
+      }
+    } else {
+      if (gameMainEl) gameMainEl.classList.remove("racha-viral-mode");
+      if (rvBanner) rvBanner.style.display = "none";
+      if (cardsSubtitleEl && cardsSubtitleEl.innerHTML.includes("MODO VIRAL ACTIVO")) {
+        cardsSubtitleEl.textContent = "SELECCIONÁ UNA CARTA PARA PUBLICAR ESTE TURNO";
       }
     }
+
 
     this._renderBuildPanel();
     this._renderProgressBar();
