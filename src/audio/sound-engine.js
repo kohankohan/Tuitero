@@ -116,6 +116,9 @@ class SoundEngine {
     [440, 554, 659, 880, 1108, 1318].forEach((f, i) => this._note(f, "triangle", 0.38, 0.20, i * 0.08));
   }
 
+  // Alias — keeps compatibility with older calls to snd.legendary()
+  legendary() { this.legend(); }
+
   // ── Feed scroll sound (Opción 2: Soft Air Whoosh) ──
   tick(speed = 1) {
     this._go();
