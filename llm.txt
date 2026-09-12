@@ -1,0 +1,14 @@
+# Twitero — Simulador de Redes Sociales y Juego de Estrategia Satírico
+
+> Twitero es un juego de cartas y estrategia por turnos ambientado en la cultura de Twitter/X y la era de la atención digital.
+
+## Resumen del Juego
+- **Objetivo**: Sobrevivir 20 turnos en el timeline acumulando seguidores (>80.000) o dinero (>$10.000) sin sufrir burnout (Salud Mental = 0) ni ser cancelado (3 strikes de moderación o 3 turnos seguidos con Odio >= 80%).
+- **Idioma**: Español rioplatense satírico.
+- **Arquetipos**: Opinólogo, Futbolero, Militante Político, Cuenta de Humor, Periodista Indie, Crypto Bro, Gamer / Streamer, Conspiranoico, Influencer Lifestyle, Creador OnlyFans, Techie / Startup Bro, Podcaster.
+- **Mecánicas clave**:
+  - Sistema de cartas: Memes, Peleas, Hilos, Baits, Patrocinios, Live-tweets, Temas del Día, Días de Desconexión.
+  - Boosters de tienda para amplificar alcance.
+  - Sistema de Cancelación por strikes de moderación.
+  - Zona Roja de odio con cuenta regresiva.
+  - Evento de Racha Viral ("¡Te Volviste Viral!").

@@ -91,8 +91,8 @@ function adaptTweetGender(texto, genero) {
          .replace(/\bfutbolero\b/gi, "futbolera");
   } else if (genero === "diverso") {
     t = t.replace(/\ba todas\b|\ba todos\b/gi, "a todes")
-         .replace(/\bcreadoras\b|\bcreadores\b/gi, "creadores")
-         .replace(/\buna creadora\b|\bun creador\b/gi, "une creadore")
+         .replace(/\bcreadoras\b|\bcreadores\b/gi, "creadorxs")
+         .replace(/\buna creadora\b|\bun creador\b/gi, "une creadorx")
          .replace(/\ba las que\b|\ba los que\b/gi, "a les que")
          .replace(/\bchicas,\b|\bchicos,\b/gi, "chiques,")
          .replace(/\bacompañada\b|\bacompañado\b/gi, "acompañade")
@@ -104,7 +104,7 @@ function adaptTweetGender(texto, genero) {
          .replace(/\bamiga\b|\bamigo\b/gi, "amigue")
          .replace(/\bamigas\b|\bamigos\b/gi, "amigues")
          .replace(/\bla única\b|\bel único\b/gi, "le únique")
-         .replace(/\bcomo creadora\b|\bcomo creador\b/gi, "como creadore")
+         .replace(/\bcomo creadora\b|\bcomo creador\b/gi, "como creadorx")
          .replace(/\bauténtica\b|\bauténtico\b/gi, "auténtique")
          .replace(/\btranquila\b|\btranquilo\b/gi, "tranquile")
          .replace(/\bsegura\b|\bseguro\b/gi, "segure")
@@ -112,6 +112,7 @@ function adaptTweetGender(texto, genero) {
          .replace(/\borgullosa\b|\borgulloso\b/gi, "orgullose")
          .replace(/\bagradecida\b|\bagradecido\b/gi, "agradecide")
          .replace(/\bpolitólogo\b|\bpolitóloga\b/gi, "politólogue")
+         .replace(/\bmilitante político\b|\bmilitante política\b/gi, "militante políticx")
          .replace(/\bciudadano\b|\bciudadana\b/gi, "ciudadane")
          .replace(/\bsocio\b|\bsocia\b/gi, "socie")
          .replace(/\bfanático\b|\bfanática\b/gi, "fanátique")
@@ -128,7 +129,14 @@ function adaptTweetGender(texto, genero) {
          .replace(/\bnacido\b|\bnacida\b/gi, "nacide")
          .replace(/\bconvencido\b|\bconvencida\b/gi, "convencide")
          .replace(/\bsorprendido\b|\bsorprendida\b/gi, "sorprendide")
-         .replace(/\bfutbolero\b|\bfutbolera\b/gi, "futbolere");
+         .replace(/\bfutbolero\b|\bfutbolera\b/gi, "futbolere")
+         .replace(/\bcrypto bro\b|\bcrypto girl\b/gi, "Crypto X")
+         .replace(/\bstartup bro\b|\bstartup girl\b/gi, "Techie X")
+         .replace(/\bcreador onlyfans\b|\bcreadora onlyfans\b/gi, "creadorx OnlyFans")
+         .replace(/\bél mismo\b|\bella misma\b/gi, "elle mismx")
+         .replace(/\bél\b|\bella\b/gi, "elle")
+         .replace(/\bun tuitero\b|\buna tuitera\b/gi, "une tuitere")
+         .replace(/\bel tuitero\b|\bla tuitera\b/gi, "le tuitere");
   }
   return t;
 }
@@ -651,6 +659,10 @@ class GameEngine {
     this.mediosTriggered = false;
     this.famosoTriggered = false;
     this.algorithmTriggered = false;
+    this.rachaViralTriggered = false;
+    this.rachaViralActive = false;
+    this.rachaViralCount = 0;
+    this.rachaViralDone = false;
   }
 
   init(genero, archId, persId, customHandle=null) {
@@ -765,6 +777,26 @@ class GameEngine {
     return null;
   }
 
+  checkRachaViral() {
+    if (this.rachaViralTriggered || this.rachaViralActive || this.rachaViralDone || this.gameOver) return null;
+    // Dispara una sola vez por partida entre turnos 7 y 15 (25% de probabilidad)
+    if (this.turno >= 7 && this.turno <= 15 && Math.random() < 0.25) {
+      this.rachaViralTriggered = true;
+      return {
+        tipo: "racha_viral",
+        titulo: "¡TE VOLVISTE VIRAL!",
+        desc: "El algoritmo colocó tu cuenta en el centro de la conversación masiva. Tenés la opción de entrar al desafío de 3 tweets consecutivos."
+      };
+    }
+    return null;
+  }
+
+  startRachaViral() {
+    this.rachaViralActive = true;
+    this.rachaViralCount = 0;
+    this.cachedCards = null;
+  }
+
   checkSpecialEvent() {
     if (this.activeEvent) return this.activeEvent;
     if (this.eventsTriggeredCount >= 3) return null;
@@ -784,14 +816,19 @@ class GameEngine {
         this.eventsTriggeredCount++;
         const hab = habs[rng(habs.length)];
         const segsGained = 20000;
+        const rawOpts = [
+          { texto:"Capitalizar el momento histórico", tweet:"Aprovechando este momento bisagra para marcar el rumbo de la comunidad. Gracias a todos por estar del otro lado.", resultado:"Aprovechás el pico de atención para consolidar autoridad y liderazgo en el nicho.", efectoDesc:`+${segsGained.toLocaleString()} segs  ·  +120 eng`, efectoObj:{ seguidores:segsGained, engagement:120, credibilidad:15 }, fx:(e)=>{ e.seguidores+=segsGained; e.engagement+=120; if(hab.efectos?.credibilidad)e.credibilidad=Math.min(100,e.credibilidad+15); } },
+          { texto:"Monetizar la exposición inmediatamente", tweet:"Cupos abiertos para alianzas comerciales y proyectos sponsoreados. Manden DM los interesados.", resultado:"Convertís la viralidad en contratos comerciales rápidos antes de que se enfríe.", efectoDesc:`+$3.000  ·  +12.000 segs`, efectoObj:{ ingresos:3000, seguidores:12000, engagement:60 }, fx:(e)=>{ e.dinero+=3000; e.seguidores+=12000; e.engagement+=60; } },
+          { texto:"Proteger reputación y ganar respeto", tweet:"Frente al ruido y la histeria, siempre elijo el camino de la templanza y el rigor. No todo es show.", resultado:"Priorizás el rigor y la templanza. Tu imagen sale intacta y reforzada.", efectoDesc:`+20 Cred  ·  +10 SM  ·  +10.000 segs`, efectoObj:{ credibilidad:20, saludMental:10, seguidores:10000 }, fx:(e)=>{ e.credibilidad=Math.min(100,e.credibilidad+20); e.saludMental=Math.min(100,e.saludMental+10); e.seguidores+=10000; } }
+        ];
+        for (let i = rawOpts.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [rawOpts[i], rawOpts[j]] = [rawOpts[j], rawOpts[i]];
+        }
         const ev = {
           id:"super_hab_"+this.turno, tag:"⚡ SUPER HABILIDAD DE ARQUETIPO", color:"purple",
           titulo: hab.titulo, desc: hab.texto,
-          opciones:[
-            { texto:"Capitalizar el momento histórico", tweet:"Aprovechando este momento bisagra para marcar el rumbo de la comunidad. Gracias a todos por estar del otro lado.", resultado:"Aprovechás el pico de atención para consolidar autoridad y liderazgo en el nicho.", efectoDesc:`+${segsGained.toLocaleString()} segs  ·  +120 eng`, efectoObj:{ seguidores:segsGained, engagement:120, credibilidad:15 }, fx:(e)=>{ e.seguidores+=segsGained; e.engagement+=120; if(hab.efectos?.credibilidad)e.credibilidad=Math.min(100,e.credibilidad+15); } },
-            { texto:"Monetizar la exposición inmediatamente", tweet:"Cupos abiertos para alianzas comerciales y proyectos sponsoreados. Manden DM los interesados.", resultado:"Convertís la viralidad en contratos comerciales rápidos antes de que se enfríe.", efectoDesc:`+$3.000  ·  +12.000 segs`, efectoObj:{ ingresos:3000, seguidores:12000, engagement:60 }, fx:(e)=>{ e.dinero+=3000; e.seguidores+=12000; e.engagement+=60; } },
-            { texto:"Proteger reputación y ganar respeto", tweet:"Frente al ruido y la histeria, siempre elijo el camino de la templanza y el rigor. No todo es show.", resultado:"Priorizás el rigor y la templanza. Tu imagen sale intacta y reforzada.", efectoDesc:`+20 Cred  ·  +10 SM  ·  +10.000 segs`, efectoObj:{ credibilidad:20, saludMental:10, seguidores:10000 }, fx:(e)=>{ e.credibilidad=Math.min(100,e.credibilidad+20); e.saludMental=Math.min(100,e.saludMental+10); e.seguidores+=10000; } }
-          ]
+          opciones: rawOpts
         };
         this.activeEvent = ev; return ev;
       }
@@ -878,6 +915,15 @@ class GameEngine {
       if(pers.reducida===c.id) w*=0.25;
       if(pers.afines.some(a=>a===c.id)) w*=1.8;
       if(c.id==="pelea"&&this.streakHilos>=2) w*=5;
+      if(this.rachaViralActive){
+        const isArchAfin = c.id === "tema" || (arch.afines && arch.afines.includes(c.id));
+        const isPersAfin = pers.afines && pers.afines.includes(c.id);
+        if(isArchAfin || isPersAfin) {
+          w *= 4.0;
+        } else {
+          w *= 0.15;
+        }
+      }
       return { ...c, weight:Math.max(w,0.05) };
     });
   }
@@ -1115,6 +1161,7 @@ class GameEngine {
     // ── Rich gameLog for decision tree ──
     const CARD_ICONS = { meme:"🎭", tema:"📝", pelea:"⚔️", hilo:"🧵", quote:"💬",
       live:"📡", temaDelDia:"🔥", politica:"🗳️", bait:"🎣", patrocinio:"💰", descanso:"😴" };
+    const chosenSlot = _handSnapshot.findIndex(c => c.titulo === card.titulo);
     const alternatives = _handSnapshot
       .filter(c => c.titulo !== card.titulo)
       .map(c => ({ id: c.id, title: c.titulo, icon: CARD_ICONS[c.id] || "🃏" }));
@@ -1125,6 +1172,7 @@ class GameEngine {
         id: card.id,
         title: card.titulo,
         icon: CARD_ICONS[card.id] || "🃏",
+        slot: chosenSlot >= 0 ? chosenSlot : 1,
         ok, roll, chance,
         booster: boosterUsed?.nombre || null,
         viral: !!(segsGain > this.seguidores * 0.15),
@@ -1143,8 +1191,68 @@ class GameEngine {
       }
     });
 
+    let rachaViralUpdate = null;
+    if (this.rachaViralActive) {
+      if (!ok) {
+        // Fracaso inmediato: se quiebra la racha viral
+        this.rachaViralActive = false;
+        this.rachaViralDone = true;
+        const lossPct = 0.30 + Math.random() * 0.10;
+        const moneyLost = Math.floor(Math.max(0, this.dinero) * lossPct);
+        this.dinero = Math.max(0, this.dinero - moneyLost);
+        this.strikesCancelacion = Math.min(3, this.strikesCancelacion + 2);
+        if (this.strikesCancelacion >= 3) {
+          this.gameOver = true;
+          this.final = getGenderedFinale(FINALE_CANCELACION_3STRIKES, this.genero);
+        }
+        rachaViralUpdate = {
+          complete: true,
+          success: false,
+          moneyLost,
+          strikes: this.strikesCancelacion,
+          gameOver: this.gameOver
+        };
+      } else {
+        this.rachaViralCount++;
+        if (this.rachaViralCount >= 3) {
+          // Racha viral completada con éxito
+          this.rachaViralActive = false;
+          this.rachaViralDone = true;
+          const prizeRanges = {
+            cryptobro: 0.90,
+            militante: 0.85,
+            onlyfans: 0.85,
+            influencer: 0.80,
+            humor: 0.80,
+            conspiranoico: 0.75,
+            gamer: 0.70,
+            futbolero: 0.65,
+            techie: 0.65,
+            periodista: 0.60,
+            opinologo: 0.60,
+            podcaster: 0.55
+          };
+          const pct = (prizeRanges[this.arquetipo?.id] || 0.65) + (Math.random() - 0.5) * 0.15;
+          const gained = Math.floor(Math.max(0, this.seguidores) * Math.max(0.3, pct));
+          this.seguidores += gained;
+          rachaViralUpdate = {
+            complete: true,
+            success: true,
+            gained,
+            pct: Math.round(pct * 100)
+          };
+        } else {
+          rachaViralUpdate = {
+            complete: false,
+            remaining: 3 - this.rachaViralCount,
+            wins: this.rachaViralCount
+          };
+        }
+      }
+    }
+
     const viral = this.checkViralización();
-    return { ok, roll, chance, engGain, hateGain, segsGain, dinGain, viral, boosterUsed, cancellationEvent };
+    return { ok, roll, chance, engGain, hateGain, segsGain, dinGain, viral, boosterUsed, cancellationEvent, rachaViralUpdate };
   }
 
   getAvailableBoosters() {

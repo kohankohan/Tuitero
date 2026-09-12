@@ -30,12 +30,12 @@ const temaPropioContent = {
     { titulo: "Documento filtrado", texto: "Me llegó este documento de adentro. No lo voy a publicar completo todavía, pero lo que dice sobre la política de hoy es gravísimo. Hilo con extractos.", engagement: 52, hate: 28 },
   ],
   humor: [
-    { titulo: "El meme de la semana", texto: "Pasé 20 minutos editando este meme para que dure 4 segundos en tu timeline antes de que sigas scrolleando. Valoralo un cachito.", engagement: 55, hate: 8 },
-    { titulo: "Situación de la semana", texto: "No hay palabras para esto. Solo esta imagen. Si la entendés sin que te explique nada, sos de los míos.", engagement: 50, hate: 6 },
-    { titulo: "Chiste de nicho", texto: "Este tweet es específicamente para el 3% de mi audiencia que va a entender la referencia sin que se la explique.", engagement: 48, hate: 5 },
-    { titulo: "El thread cómico", texto: "Hilo de situaciones del transporte público de Buenos Aires, capítulo 47: el que corta el colectivo para pedir un boleto con tarjeta de débito.", engagement: 60, hate: 4 },
-    { titulo: "Meme de madrugada", texto: "Son las 2am, tengo el deadline mañana y en vez de laburar estoy editando esto. La productividad es un mito burgués.", engagement: 58, hate: 3 },
-    { titulo: "La imitación del mes", texto: "Semana del 'qué haría [político/famoso] si tuviera que [situación random]'. Acá la mía, que salió mejor de lo esperado.", engagement: 62, hate: 6 },
+    { titulo: "Filosofía de sobremesa", texto: "No te podés levantar a las 6 am un domingo por voluntad propia culiau, salvo que seas panadero o te esté buscando la policía federal.", engagement: 55, hate: 8 },
+    { titulo: "El termómetro social", texto: "El argentino no va al psicólogo porque es caro: prefiere clavarse un fernet de 70/30 y discutir a muerte con un bot en Twitter hasta las cuatro de la mañana.", engagement: 50, hate: 6 },
+    { titulo: "Crónica de la siesta cordobesa", texto: "Acá en Córdoba entre las 14 y las 17 no te atienden ni en la guardia médica chabón. La siesta es un derecho constitucional sagrado.", engagement: 48, hate: 5 },
+    { titulo: "Transporte y desquicio", texto: "Subí al bondi y el chofer venía escuchando Rodrigo a todo volumen mientras esquivaba baches con una mano y cebaba mate con la otra. 10/10 la experiencia sensorial.", engagement: 60, hate: 4 },
+    { titulo: "Productividad en picada", texto: "Son las 3am, mañana tengo que laburar y acá estoy viendo un video de cómo hacerle un asador criollo a un muñeco de He-Man. Mi cerebro es una fotocopiadora de memes.", engagement: 58, hate: 3 },
+    { titulo: "El verdadero lujo argentino", texto: "Olvidate de las criptomonedas y los autos importados: el verdadero estatus en este país es prender el aire en 22° y que no te salte la térmica del departamento.", engagement: 62, hate: 6 },
   ],
   periodista: [
     { titulo: "Investigación exclusiva", texto: "Tres semanas cruzando facturas, contratos y testimonios. Lo que encontré sobre este expediente te va a cambiar la lectura de todo el caso. Hilo.", engagement: 62, hate: 12 },
@@ -130,12 +130,12 @@ const temaAjenoContent = {
     { titulo: "Opinando de cine sin haber visto", texto: "No necesité ver la película de ese director para saber su posición política. La filmografía previa dice todo lo que hay que saber.", engagement: 9, hate: 38 },
   ],
   humor:        [
-    { titulo: "Chiste sobre economía", texto: "No entiendo nada de economía, pero sí sé hacer un buen meme sobre la inflación. Son habilidades distintas, no me confundan.", engagement: 15, hate: 38 },
-    { titulo: "Chiste político arriesgado", texto: "Aviso: este chiste tiene fecha de vencimiento de 48 horas antes de que alguien lo saque de contexto y me quiera cancelar.", engagement: 18, hate: 42 },
-    { titulo: "Meme sobre un tema serio", texto: "Convertí una crisis bastante seria en un meme porque no sé procesar la información de otra manera. Perdón. En realidad no perdón.", engagement: 12, hate: 35 },
-    { titulo: "Take de relaciones inesperado", texto: "No soy psicólogo ni terapeuta de pareja, pero llevo 15 años observando a la humanidad desde Twitter y puedo decir con certeza: el problema son los mensajes de audio.", engagement: 20, hate: 30 },
-    { titulo: "Receta de cocina que sale mal", texto: "Intenté hacer la receta viral de tiktok con los ingredientes que había en casa. El resultado: algo entre cemento y un guiso de post-apocalipsis. Acá las fotos.", engagement: 22, hate: 28 },
-    { titulo: "Comentario de fútbol", texto: "No sé nada de fútbol pero el que festejó así el gol de su equipo y después salió llorando cuando se lo anularon me da para 4 memes distintos.", engagement: 25, hate: 32 },
+    { titulo: "Chiste sobre economía", texto: "No entiendo nada de macroeconomía culiau, pero sé que si el paquete de yerba sube de nuevo vamos a tener que empezar a fumar orégano en pipa.", engagement: 15, hate: 38 },
+    { titulo: "Chiste político picante", texto: "Aviso a la comunidad: este chiste político tiene una vida útil de 15 minutos antes de que me hagan 4 denuncias penales en Comodoro Py.", engagement: 18, hate: 42 },
+    { titulo: "Crisis y memética pura", texto: "El país se prende fuego y yo acá haciendo memes con la cara del ministro. Es mi mecanismo de defensa, déjenme en paz que no tengo obra social.", engagement: 12, hate: 35 },
+    { titulo: "Filosofía de pareja moderna", texto: "No soy terapeuta pero les tiro la posta: si tu pareja te manda audios de más de 4 minutos, no te ama, te está dictando una sentencia judicial.", engagement: 20, hate: 30 },
+    { titulo: "Masterclass de cocina trucha", texto: "Intenté cocinar la receta gourmet de Instagram y me quedó un adoquín con gusto a quemado. Al perro se lo di y me miró con desprecio.", engagement: 22, hate: 28 },
+    { titulo: "El folklore futbolero", texto: "No cazo un fulbo pero ver a 50 tipos llorando porque un árbitro de 25 años cobró un offside milimétrico con el VAR me da años de vida.", engagement: 25, hate: 32 },
   ],
   periodista:   [
     { titulo: "Opinión sin investigar", texto: "Sé que no es lo mío, pero a veces hay que sacar la opinión rápido para no perder la conversación del día. Después profundizo con una nota.", engagement: 10, hate: 32 },
@@ -221,9 +221,9 @@ const hiloContent = {
     { titulo: "Refutación a la prensa hegemónica", texto: "La nota de hoy tiene 7 errores factuales que cualquiera puede chequear. Los señalo uno por uno, con la fuente al lado.", engagement: 48, hate: 28 },
   ],
   humor:        [
-    { titulo: "La historia detrás del meme", texto: "Este meme tiene más capas que una cebolla en un velorio. Les explico el origen completo y por qué funciona tan bien.", engagement: 45, hate: 8 },
-    { titulo: "Hilo de memes históricos", texto: "Archivo de internet: los 10 memes que definieron una generación entera de esta cuenta. Con contexto y nostalgia.", engagement: 48, hate: 5 },
-    { titulo: "El análisis del chiste", texto: "Alguien me pidió en los comentarios que le explique el chiste. Mala decisión de esa persona. Pero bueno, acá va.", engagement: 42, hate: 6 },
+    { titulo: "La historia detrás del meme", texto: "Abro hilo explicativo: este meme tiene más capas que una cebolla de verdulería. Les cuento cómo nació en un asado en Villa Carlos Paz.", engagement: 45, hate: 8 },
+    { titulo: "Archivo de memes históricos", texto: "Museo del shitpost argento: los 10 memes que casi me mandan al calabozo pero me consiguieron canjes de fernet de por vida. Hilo con historia.", engagement: 48, hate: 5 },
+    { titulo: "El remate que no entendieron", texto: "Un porteño me puso en comentarios que no entendió el remate del chiste. Hilo de 12 tweets explicándole con dibujitos y tonada qué es la ironía.", engagement: 42, hate: 6 },
   ],
   periodista:   [
     { titulo: "Investigación exclusiva en hilo", texto: "Tres semanas de trabajo, seis fuentes distintas, documentación escaneada y verificada. Acá el hilo completo, actualizado a medida que confirmo más datos.", engagement: 65, hate: 12 },
@@ -285,9 +285,9 @@ const quoteTweetContent = {
     { titulo: "Quote a la cuenta K contraria", texto: "Cuando tu propio espacio te desmiente desde adentro, en el mismo día. Autogol.", engagement: 32, hate: 38 },
   ],
   humor:        [
-    { titulo: "Quote irónico al tweet serio", texto: "Este tweet merece todo mi respeto y absolutamente ninguno de mis chistes. Mentira, sí lo merece, ahí va.", engagement: 45, hate: 20 },
-    { titulo: "El quote perfecto", texto: "Escribió esto pensando que nadie iba a citarlo. Se equivocó feo, acá estoy yo.", engagement: 48, hate: 18 },
-    { titulo: "Quote con meme implícito", texto: "No hace falta que agregue texto. La imagen que voy a poner abajo lo dice absolutamente todo.", engagement: 50, hate: 15 },
+    { titulo: "Quote irónico al tweet solemne", texto: "Mirá el nivel de drama que maneja este chabón culiau... le falta poner de fondo la música de Gladiador y estamos listos para la batalla.", engagement: 45, hate: 20 },
+    { titulo: "El quote con remate seco", texto: "Tenés menos reflejos que una babosa con resaca hermano. Citado para que la posteridad recuerde este derrape histórico.", engagement: 48, hate: 18 },
+    { titulo: "Quote con meme de remate", texto: "No hace falta que agregue nada de texto. La cara del perro confundido que pongo acá abajo lo explica en alta definición.", engagement: 50, hate: 15 },
   ],
   periodista:   [
     { titulo: "Corrijo la nota pública", texto: "Esta nota que están compartiendo tiene tres errores factuales verificables. Los documento uno por uno, con la fuente correcta al lado.", engagement: 35, hate: 25 },
@@ -349,9 +349,9 @@ const liveTweetContent = {
     { titulo: "Live del discurso presidencial", texto: "Lo estoy desglosando en tiempo real, promesa por promesa, contra lo que después va a pasar en la práctica.", engagement: 48, hate: 35 },
   ],
   humor:        [
-    { titulo: "Live comentando la tele", texto: "Me quedé pegado a este programa sin querer y ya no puedo parar. Comentario en vivo hasta que termine.", engagement: 60, hate: 15 },
-    { titulo: "Live del evento más random", texto: "No tengo idea de cómo terminé viendo esto en vivo pero ya estoy demasiado comprometido para irme.", engagement: 55, hate: 10 },
-    { titulo: "Live con memes en tiempo real", texto: "Por cada cosa rara que va pasando acá, tengo el meme exacto guardado. Prueba de fuego en vivo.", engagement: 58, hate: 12 },
+    { titulo: "Live comentando la tele", texto: "Me puse a ver el programa de chimentos porteño y me clavé tres fernets seguidos para tolerar los gritos. Relato en vivo culiau.", engagement: 60, hate: 15 },
+    { titulo: "Live del evento más bizarro", texto: "Estoy viendo una entrega de premios donde el conductor está más duro que turrón de navidad. No puedo parar de twittear esto.", engagement: 55, hate: 10 },
+    { titulo: "Live con memes en tiempo real", texto: "Por cada gaffe que cometen en la transmisión oficial yo tengo un remate cordobés listo. Miren este zarpado hilo.", engagement: 58, hate: 12 },
   ],
   periodista:   [
     { titulo: "Live de la conferencia de prensa", texto: "Yo hago las preguntas incómodas que los demás evitan hacer. Actualizaciones cada 2 minutos desde acá adentro.", engagement: 55, hate: 15 },
@@ -413,9 +413,9 @@ const temaDelDiaContent = {
     { titulo: "Postura ante el tema de hoy", texto: "Algunos compañeros están mal parados en esto y se los digo de frente, con respeto pero sin vueltas.", engagement: 42, hate: 32 },
   ],
   humor:        [
-    { titulo: "Meme rápido del trending", texto: "Tardé 4 minutos en hacer este meme del tema del día. Si no te da risa en los primeros 2 segundos, no es para vos.", engagement: 55, hate: 10 },
-    { titulo: "El chiste del trending", texto: "El tema que está trending hoy, pero en la versión que te hace reír aunque estés en medio de una reunión de laburo.", engagement: 52, hate: 8 },
-    { titulo: "Reel del momento viral", texto: "Agarré el video que se hizo viral hoy y le metí subtítulos graciosos. Esto es trabajo serio, no se rían.", engagement: 58, hate: 6 },
+    { titulo: "Meme rápido del trending", texto: "Tardé 3 minutos en editar este meme del trending topic del día. Si no se mean de la risa con el remate, me retiro del humor y me pongo una rotisería en Alta Gracia.", engagement: 55, hate: 10 },
+    { titulo: "El chiste del trending", texto: "Todos indignados con la noticia número uno del país y yo encontrándole el lado absurdo con una analogía de choripán y cuarteto. Dios bendiga mi cerebro.", engagement: 52, hate: 8 },
+    { titulo: "Reel del momento viral", texto: "Agarré el video que se hizo viral hoy y le doblé la voz con tonada cordobesa enojada. Quedó tan perfecto que parece documental de Discovery Channel.", engagement: 58, hate: 6 },
   ],
   periodista:   [
     { titulo: "Contexto real del trending", texto: "El tema está trending desde temprano, pero nadie explica bien por qué importa realmente. Lo resumo en un hilo corto.", engagement: 48, hate: 15 },

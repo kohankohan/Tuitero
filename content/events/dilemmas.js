@@ -421,19 +421,19 @@ export const archetypeEvents = [
     opciones: [
       {
         texto: "No decir nada y seguir subiendo memes.",
-        tweet: "Meme del día 😂 (sí, ya sé lo que pasó, no voy a decir nada, sigamos)",
+        tweet: "Acá les dejo el meme del día culiau 😂 (sí, ya sé que el porteño con 2 palos me lo choreó, pero en Córdoba si te roban un chiste se comparte un fernet y se sigue remando)",
         resultado: "Evitás bardo innecesario y seguís enfocado.",
         efecto: { seguidores: 0.02, credibilidad: +5, amor: +5, saludMental: +8 }
       },
       {
         texto: "Tomártelo con humor y twittear: 'Me alegra escribirle el guion gratis'.",
-        tweet: "Me alegra saber que le escribo el guion gratis a alguien con 2 millones de seguidores. Community manager honorario, no aceptan donaciones 🙃",
+        tweet: "Che, me alegra saber que le escribo el guion gratis a una cuenta de 2 millones de seguidores. Por lo menos mandame una caja de Pritty y dos salames de Colonia Caroya, chabón 🙃",
         resultado: "La gente festeja tu altura y se ríen con vos del robo.",
         efecto: { seguidores: 0.08, credibilidad: +15, amor: +15, saludMental: +8 }
       },
       {
         texto: "Organizar a tus seguidores para que le llenen las menciones de hate.",
-        tweet: "Los que me conocen saben qué hacer. No voy a decir nada más 🫵",
+        tweet: "A ver la muchachada: al culiau que me choreó el meme váyanle a llenar las respuestas con fotos de La Mona Jiménez y chistes cordobeses hasta que pida disculpas públicas 🫵",
         resultado: "La horda acosa al comediante. Te tildan de tóxico y X te suspende temporalmente.",
         efecto: { seguidores: -0.05, credibilidad: -15, amor: -10, odio: +20, saludMental: -15 }
       }
@@ -447,19 +447,19 @@ export const archetypeEvents = [
     opciones: [
       {
         texto: "Subir un meme viejo adaptado rápido.",
-        tweet: "Reciclando este meme de 2019 porque hoy encaja perfecto. Ustedes disculpen la vagancia.",
+        tweet: "Reciclando este meme de cuando el dólar estaba a 40 pesos porque hoy calza justo. Disculpen la fiaca pero hacen 38 grados a la sombra acá en Carlos Paz.",
         resultado: "Un par de likes fáciles y listo.",
         efecto: { seguidores: 0.02, credibilidad: 0, amor: +5, saludMental: +2 }
       },
       {
         texto: "Hacer un meme fino y absurdo, sin cruzar límites personales.",
-        tweet: "Increíble cómo no se hacen cargo de nada. Las pruebas son contundentes y no tienen cómo responder.",
+        tweet: "Miren lo que es esta tendencia culiau... tienen menos remate que el penal de De Paul. Menos mal que aparecí yo con esta joyita para salvarles el algoritmo.",
         resultado: "Es el viral del día. Cae simpático a todos sin ofender.",
         efecto: { seguidores: 0.12, credibilidad: +10, amor: +15, saludMental: +5 }
       },
       {
         texto: "Hacer un chiste hiriente sobre la salud de la celebridad.",
-        tweet: "Sorry but si estás internado con eso es porque algo hiciste mal 🤷 el karma existe y los chistes también.",
+        tweet: "Si te internaron por comerte 14 choripanes de dudosa procedencia en el baile no es mala suerte amigo, es selección natural a ritmo de cuarteto 🤷",
         resultado: "Te llueve repudio. Te tildan de mala persona. Pérdida de auspiciantes.",
         efecto: { seguidores: -0.05, credibilidad: -20, amor: -20, odio: +30, saludMental: -15, ingresos: -100 }
       }
@@ -473,19 +473,19 @@ export const archetypeEvents = [
     opciones: [
       {
         texto: "El show es regular, algunos chistes salvan la noche.",
-        tweet: "Anoche en el festival. Hubo chistes que funcionaron y otros que... bueno. El público fue generoso. Gracias igual ❤️",
+        tweet: "Anoche en el festival de la comedia. Algunos chistes entraron como piña y otros rebotaron más que pelota de básquet. Igual zafamos con dos anécdotas de tacheros cordobeses ❤️",
         resultado: "Resultado tibio pero sin daño profundo.",
         efecto: { seguidores: 0.03, credibilidad: +5, amor: +5, saludMental: +5 }
       },
       {
         texto: "Si tu credibilidad es alta, el show es excelente.",
-        tweet: "LA ROMPIMOS ANOCHE 🎤🔥 15 minutos de puro fuego. Gracias a los que vinieron, a los que grabaron y a los que me mandaron mensajes después. Esto recién empieza.",
+        tweet: "¡QUÉ CULIAO, LA ROMPIMOS TODA! 🎤🔥 15 minutos de puro cuarteto verbal. Se me mearon de la risa hasta los mozos. ¡Aguante Córdoba carajo!",
         resultado: "La rompés. El video se comparte y te abre puertas a shows pagos.",
         efecto: { seguidores: 0.10, credibilidad: +15, amor: +15, saludMental: +10, ingresos: 100 }
       },
       {
         texto: "Los chistes fallan y el público te abuchea en vivo.",
-        tweet: "Anoche no fue la noche. Los chistes no salieron como ensayé. El humor en vivo es así. Mañana es otro día.",
+        tweet: "Mamita querida, anoche me abuchearon tanto que parecía que salí a cantar cumbia con la camiseta de Belgrano en la tribuna de Talleres. Mañana será otro día.",
         resultado: "El video de tu fracaso se vuelve meme nacional. Doloroso de ver.",
         efecto: { seguidores: -0.05, credibilidad: -15, amor: -10, odio: +15, saludMental: -20 }
       }
@@ -1266,19 +1266,19 @@ export const archetypeEvents = [
     opciones: [
       {
         texto: "Aceptarlo, editarlo un poco y volver a subirlo sin el elemento problemático.",
-        tweet: "Reposteo el meme con un cambio chiquito porque la plataforma se puso sensible. El chiste sigue siendo el mismo, solo que ahora pasa el filtro.",
+        tweet: "Le tapé la parte 'ofensiva' con un sticker de alfajor cordobés porque el algoritmo de Twitter se puso sensible. El chiste sigue siendo el mismo, ahora disfrútenlo sin llorar.",
         resultado: "Mantenés el chiste con un ajuste menor. Nadie nota demasiado la diferencia.",
         efecto: { seguidores: 0.03, credibilidad: +5, amor: +5, saludMental: +5 }
       },
       {
         texto: "Armar un meme sobre la propia censura, riéndote de la situación en vez de quejarte en serio.",
-        tweet: "Me censuraron un meme por 'contenido sensible'. Así que ahora voy a hacer un meme SOBRE que me censuraron el meme. Que no bajen este también.",
+        tweet: "Me bajaron el meme por 'violencia gráfica' y era una foto de un sánguche de milanesa con mayonesa casera culiau. Así que les clavé un meme bardeando a los moderadores. ¡A ver si me bajan este!",
         resultado: "El meme sobre el meme censurado se viraliza el doble que el original.",
         efecto: { seguidores: 0.12, credibilidad: +10, amor: +15, saludMental: +8 }
       },
       {
         texto: "Escribir un hilo furioso acusando a la plataforma de 'censura ideológica' sin pruebas.",
-        tweet: "Hilo 🧵: me censuraron por decir la verdad, no por ninguna 'norma comunitaria'. Esto es censura ideológica pura y todos lo sabemos.",
+        tweet: "Hilo 🧵: me censuran porque le tienen pánico a la tonada cordobesa y a la verdad sin filtro. ¡Son una manga de aburridos resentidos que toman mate con edulcorante!",
         resultado: "Te sumás a una discusión más grande de la que podés controlar. Algunos te toman en serio por las razones equivocadas.",
         efecto: { seguidores: 0.06, credibilidad: -15, odio: +15, saludMental: -8 }
       }
@@ -1292,19 +1292,19 @@ export const archetypeEvents = [
     opciones: [
       {
         texto: "Aceptar hacer un video conjunto con la otra cuenta de memes grande de tu nicho.",
-        tweet: "Nuevo video con la otra cuenta de memes esta semana. Sí, los dos más grandes del nicho juntos por primera vez. Se viene bueno.",
+        tweet: "Juntamos las dos cuentas más barderas para hacer un sketch. Es como mezclar fernet con vino tinto culiau: o sale una obra de arte o terminamos todos en el hospital.",
         resultado: "Las dos audiencias se cruzan de buena onda. Ganan seguidores los dos por igual.",
         efecto: { seguidores: 0.15, credibilidad: +5, amor: +20, saludMental: +8 }
       },
       {
         texto: "Rechazar porque 'no querés que asocien tu marca personal con la de otro'.",
-        tweet: "Me propusieron un sketch con otra cuenta grande de memes. Prefiero seguir construyendo lo mío por separado, sin ofender a nadie.",
+        tweet: "Me invitaron a colaborar con el influencer de moda pero yo soy como el perro de la gomería: no me gusta que me toquen las herramientas ni compartir el asado.",
         resultado: "Perdés la oportunidad, pero mantenés el control total de tu identidad.",
         efecto: { seguidores: 0.01, credibilidad: +5, amor: 0, saludMental: +2 }
       },
       {
         texto: "Aceptar y después robarle ideas y formato a esa cuenta sin dar crédito.",
-        tweet: "Nuevo formato de contenido que se me ocurrió (definitivamente no es el mismo formato que usa la cuenta con la que grabé la semana pasada, para nada)",
+        tweet: "Miren este formato 100% original que se me ocurrió anoche soñando... (si se parece al del porteño con el que grabé el martes es pura casualidad cósmica culiau 😂)",
         resultado: "La otra cuenta lo denuncia públicamente. Tu audiencia empieza a mirar con lupa tu 'originalidad'.",
         efecto: { seguidores: -0.05, credibilidad: -20, amor: -15, odio: +15, saludMental: -10 }
       }

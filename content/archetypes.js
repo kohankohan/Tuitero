@@ -279,6 +279,18 @@ const CARD_CONCEPT_DESCS = {
 
 const GENERO_LABELS = { hombre: "Él", mujer: "Ella", diverso: "Elle" };
 
+const ARCHETYPE_GENDER_RESTRICTIONS = {
+  hombre: ["opinologo", "futbolero", "militante", "humor", "periodista", "cryptobro", "gamer", "conspiranoico", "influencer", "techie", "podcaster"],
+  mujer: ["opinologo", "futbolero", "militante", "periodista", "gamer", "conspiranoico", "influencer", "onlyfans", "podcaster"],
+  diverso: ["opinologo", "militante", "periodista", "gamer", "influencer", "onlyfans", "techie", "podcaster"]
+};
+
+function isArchetypeAvailableForGender(archId, genero) {
+  const g = genero || "hombre";
+  const allowed = ARCHETYPE_GENDER_RESTRICTIONS[g];
+  return allowed ? allowed.includes(archId) : true;
+}
+
 function getGenderedArchetype(arch, genero) {
   if (!arch) return "";
   const g = genero || "hombre";
@@ -288,13 +300,13 @@ function getGenderedArchetype(arch, genero) {
     militante:     { hombre: "Militante Político",      mujer: "Militante Política",      diverso: "Militante Políticx" },
     humor:         { hombre: "Cuenta de Humor",         mujer: "Cuenta de Humor",         diverso: "Cuenta de Humor" },
     periodista:    { hombre: "Periodista Indie",        mujer: "Periodista Indie",        diverso: "Periodista Indie" },
-    cryptobro:     { hombre: "Crypto Bro",              mujer: "Crypto Girl",             diverso: "Crypto Bro" },
-    gamer:         { hombre: "Gamer / Streamer",        mujer: "Gamer / Streamer",        diverso: "Gamer / Streamer" },
+    cryptobro:     { hombre: "Crypto Bro",              mujer: "Crypto Girl",             diverso: "Crypto X" },
+    gamer:         { hombre: "Gamer / Streamer",        mujer: "Gamer / Streamer",        diverso: "Gamer / Streamer X" },
     conspiranoico: { hombre: "Conspiranoico",           mujer: "Conspiranoica",           diverso: "Conspiranoique" },
     influencer:    { hombre: "Influencer Lifestyle",    mujer: "Influencer Lifestyle",    diverso: "Influencer Lifestyle" },
     onlyfans:      { hombre: "Creador OnlyFans",        mujer: "Creadora OnlyFans",       diverso: "Creadorx OnlyFans" },
-    techie:        { hombre: "Techie / Startup Bro",    mujer: "Techie / Startup Girl",   diverso: "Techie / Startup Bro" },
-    podcaster:     { hombre: "Podcaster",               mujer: "Podcastera",              diverso: "Podcaster" }
+    techie:        { hombre: "Techie / Startup Bro",    mujer: "Techie / Startup Girl",   diverso: "Techie X" },
+    podcaster:     { hombre: "Podcaster",               mujer: "Podcastera",              diverso: "Podcasterx" }
   };
   return map[arch.id]?.[g] || arch.nombre;
 }
@@ -308,12 +320,12 @@ function getGenderedDefaultHandle(arch, genero) {
     militante:     { hombre: "@militante_nac", mujer: "@militante_nac", diverso: "@militante_nac" },
     humor:         { hombre: "@humor_argento", mujer: "@humor_argento", diverso: "@humor_argento" },
     periodista:    { hombre: "@periodista_indie", mujer: "@periodista_indie", diverso: "@periodista_indie" },
-    cryptobro:     { hombre: "@pibe_cripto",   mujer: "@piba_cripto",   diverso: "@pibe_cripto" },
+    cryptobro:     { hombre: "@pibe_cripto",   mujer: "@piba_cripto",   diverso: "@crypto_x" },
     gamer:         { hombre: "@gamer_stream",  mujer: "@gamer_stream",  diverso: "@gamer_stream" },
     conspiranoico: { hombre: "@verdad_oculta", mujer: "@verdad_oculta", diverso: "@verdad_oculta" },
     influencer:    { hombre: "@lifestyle_glow",mujer: "@lifestyle_glow",diverso: "@lifestyle_glow" },
     onlyfans:      { hombre: "@content_vip",   mujer: "@content_vip",   diverso: "@content_vip" },
-    techie:        { hombre: "@startup_bro",   mujer: "@startup_girl",  diverso: "@startup_dev" },
+    techie:        { hombre: "@startup_bro",   mujer: "@startup_girl",  diverso: "@startup_x" },
     podcaster:     { hombre: "@podcast_live",  mujer: "@podcast_live",  diverso: "@podcast_live" }
   };
   return handleMap[arch.id]?.[g] || arch.defaultHandle || "@twitero";

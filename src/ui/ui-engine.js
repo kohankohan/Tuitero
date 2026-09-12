@@ -19,7 +19,11 @@ class UIEngine {
     this._splash(); this._gender(); this._archetype(); this._personality();
     this._setupLanguageDropdown(); this._setupGlobalTooltips();
     this._setupTutorial();
+    this._setupCancellationModal();
+    this._setupHateModal();
+    this._setupViralModal();
     this._setupProfileModal();
+    this._setupShortcutsModal();
     this._setupGlobalKeyboardShortcuts();
     if(window.twemoji) window.twemoji.parse(document.body);
   }
@@ -38,7 +42,6 @@ class UIEngine {
       if (alertOverlay && alertOverlay.classList.contains("active")) {
         if (isConfirm) {
           ev.preventDefault();
-          // Try both possible button IDs for safety
           const alertBtn = document.getElementById("alert-ok-btn") ||
                            document.getElementById("btn-alert-dismiss");
           alertBtn?.click();
@@ -47,12 +50,46 @@ class UIEngine {
       }
 
       // ── Tutorial: Siguiente con Espacio ───────────────────────────────
-      const tutorialModal = document.getElementById("tutorial-modal");
+      const tutorialModal = document.getElementById("tutorial-modal-overlay") ||
+                            document.getElementById("tutorial-modal");
       if (tutorialModal && tutorialModal.classList.contains("active")) {
         if (isConfirm) {
           ev.preventDefault();
           document.getElementById("btn-tutorial-next")?.click();
           return;
+        }
+      }
+
+      // ── Cancellation Modal: Siguiente con Espacio ──────────────────────
+      const cancModal = document.getElementById("cancellation-modal-overlay");
+      if (cancModal && cancModal.classList.contains("active")) {
+        if (isConfirm) {
+          ev.preventDefault();
+          document.getElementById("btn-canc-next")?.click();
+          return;
+        }
+      }
+
+      // ── Hate Modal: Siguiente con Espacio ──────────────────────────────
+      const hateModal = document.getElementById("hate-modal-overlay");
+      if (hateModal && hateModal.classList.contains("active")) {
+        if (isConfirm) {
+          ev.preventDefault();
+          document.getElementById("btn-hate-next")?.click();
+          return;
+        }
+      }
+
+      // ── Viral Modal: Siguiente con Espacio ─────────────────────────────
+      const viralModal = document.getElementById("viral-modal-overlay");
+      if (viralModal && viralModal.classList.contains("active")) {
+        if (isConfirm) {
+          ev.preventDefault();
+          const vNext = document.getElementById("btn-viral-next");
+          if (vNext && vNext.style.display !== "none") {
+            vNext.click();
+            return;
+          }
         }
       }
 
@@ -72,20 +109,80 @@ class UIEngine {
         }
       }
 
+      // ── Modal de atajos: toggle con '?' o 'K' ─────────────────────────
+      if (ev.key === "?" || ev.code === "KeyK") {
+        const sOverlay = document.getElementById("shortcuts-modal-overlay");
+        if (sOverlay) {
+          ev.preventDefault();
+          sOverlay.classList.toggle("active");
+          snd.click();
+          return;
+        }
+      }
+
+      // ── Modal de perfil: toggle con 'P' ───────────────────────────────
+      if (ev.code === "KeyP") {
+        const pOverlay = document.getElementById("perfil-modal-overlay");
+        if (pOverlay) {
+          ev.preventDefault();
+          if (pOverlay.classList.contains("active")) {
+            pOverlay.classList.remove("active");
+          } else {
+            snd.click();
+            this._updateProfileModalContent();
+            pOverlay.classList.add("active");
+          }
+          return;
+        }
+      }
+
+      // ── Cerrar modales con Escape ────────────────────────────────────
+      if (ev.key === "Escape") {
+        const sOverlay = document.getElementById("shortcuts-modal-overlay");
+        if (sOverlay && sOverlay.classList.contains("active")) {
+          ev.preventDefault();
+          sOverlay.classList.remove("active");
+          return;
+        }
+      }
+
       const screenGame = document.getElementById("screen-game");
       const isGameActive = screenGame && screenGame.classList.contains("active");
       if (!isGameActive || this.isResolvingAction) return;
 
+      // ── Atajos Q, W, E para Boosters ─────────────────────────────────
+      if (ev.code === "KeyQ" || ev.code === "KeyW" || ev.code === "KeyE") {
+        const bIdx = ev.code === "KeyQ" ? 0 : ev.code === "KeyW" ? 1 : 2;
+        const available = this.eng.getAvailableBoosters();
+        if (available && available[bIdx]) {
+          ev.preventDefault();
+          const bId = available[bIdx].id;
+          if (this.preparedBoosterId === bId) {
+            this.preparedBoosterId = null;
+            snd.click();
+          } else {
+            this.preparedBoosterId = bId;
+            snd.boost();
+          }
+          this._renderCards();
+          document.querySelectorAll(".booster-tile").forEach(t => {
+            t.classList.toggle("highlighted", t.dataset.id === this.preparedBoosterId);
+          });
+        }
+        return;
+      }
+
       // ── Atajos 1, 2, 3 para jugar cartas ─────────────────────────────
       if (ev.key === "1" || ev.key === "2" || ev.key === "3") {
         const idx = parseInt(ev.key) - 1;
-        // Si hay evento interactivo abierto, seleccionar postura
+        // Si hay evento interactivo abierto, seleccionar postura según tarjeta física
         const eventSec = document.getElementById("event-section");
         if (eventSec && eventSec.style.display !== "none") {
           const optBtns = eventSec.querySelectorAll(".event-truco-card");
           if (optBtns && optBtns[idx]) {
             ev.preventDefault();
-            this._chooseEventOption(idx);
+            const optIdx = parseInt(optBtns[idx].dataset.idx);
+            this._chooseEventOption(optIdx);
           }
           return;
         }
@@ -97,6 +194,27 @@ class UIEngine {
         }
       }
     });
+  }
+
+  _setupShortcutsModal() {
+    const overlay = document.getElementById("shortcuts-modal-overlay");
+    const openBtn = document.getElementById("btn-ver-shortcuts");
+    const closeBtn = document.getElementById("btn-close-shortcuts");
+    if (!overlay) return;
+
+    if (openBtn) openBtn.onclick = () => {
+      snd.click();
+      overlay.classList.add("active");
+    };
+    if (closeBtn) closeBtn.onclick = () => {
+      snd.click();
+      overlay.classList.remove("active");
+    };
+    overlay.onclick = (e) => {
+      if (e.target === overlay) {
+        overlay.classList.remove("active");
+      }
+    };
   }
 
   _setupProfileModal() {
@@ -194,6 +312,202 @@ class UIEngine {
     document.getElementById("btn-tutorial-prev").style.visibility = "hidden";
     document.getElementById("btn-tutorial-next").textContent = "SIGUIENTE ➡";
     document.getElementById("tutorial-modal-overlay").classList.add("active");
+  }
+
+  _setupCancellationModal() {
+    this.cancSlide = 1;
+    this.cancMax = 3;
+    const overlay = document.getElementById("cancellation-modal-overlay");
+    if (!overlay) return;
+
+    const updateCanc = () => {
+      overlay.querySelectorAll(".tutorial-slide").forEach((s, i) => s.classList.toggle("active", i + 1 === this.cancSlide));
+      overlay.querySelectorAll(".tutorial-dots .dot").forEach((d, i) => d.classList.toggle("active", i + 1 === this.cancSlide));
+      const prevBtn = document.getElementById("btn-canc-prev");
+      const nextBtn = document.getElementById("btn-canc-next");
+      if (prevBtn) prevBtn.style.visibility = this.cancSlide > 1 ? "visible" : "hidden";
+      if (nextBtn) nextBtn.textContent = this.cancSlide === this.cancMax ? "ENTENDIDO ✕" : "SIGUIENTE ➡";
+    };
+
+    const closeCanc = () => {
+      snd.click();
+      overlay.classList.remove("active");
+      if (this._onCancClose) {
+        const cb = this._onCancClose;
+        this._onCancClose = null;
+        cb();
+      }
+    };
+
+    document.getElementById("btn-close-canc-modal")?.addEventListener("click", closeCanc);
+    document.getElementById("btn-canc-next")?.addEventListener("click", () => {
+      snd.click();
+      if (this.cancSlide < this.cancMax) {
+        this.cancSlide++;
+        updateCanc();
+      } else {
+        closeCanc();
+      }
+    });
+    document.getElementById("btn-canc-prev")?.addEventListener("click", () => {
+      snd.click();
+      if (this.cancSlide > 1) {
+        this.cancSlide--;
+        updateCanc();
+      }
+    });
+  }
+
+  _showCancellationModal(onClose) {
+    this._onCancClose = onClose || null;
+    this.cancSlide = 1;
+    const overlay = document.getElementById("cancellation-modal-overlay");
+    if (!overlay) return;
+    overlay.querySelectorAll(".tutorial-slide").forEach((s, i) => s.classList.toggle("active", i === 0));
+    overlay.querySelectorAll(".tutorial-dots .dot").forEach((d, i) => d.classList.toggle("active", i === 0));
+    const prevBtn = document.getElementById("btn-canc-prev");
+    const nextBtn = document.getElementById("btn-canc-next");
+    if (prevBtn) prevBtn.style.visibility = "hidden";
+    if (nextBtn) nextBtn.textContent = "SIGUIENTE ➡";
+    snd.alert();
+    overlay.classList.add("active");
+  }
+
+  _setupHateModal() {
+    this.hateSlide = 1;
+    this.hateMax = 3;
+    const overlay = document.getElementById("hate-modal-overlay");
+    if (!overlay) return;
+
+    const updateHate = () => {
+      overlay.querySelectorAll(".tutorial-slide").forEach((s, i) => s.classList.toggle("active", i + 1 === this.hateSlide));
+      overlay.querySelectorAll(".tutorial-dots .dot").forEach((d, i) => d.classList.toggle("active", i + 1 === this.hateSlide));
+      const prevBtn = document.getElementById("btn-hate-prev");
+      const nextBtn = document.getElementById("btn-hate-next");
+      if (prevBtn) prevBtn.style.visibility = this.hateSlide > 1 ? "visible" : "hidden";
+      if (nextBtn) nextBtn.textContent = this.hateSlide === this.hateMax ? "ENTENDIDO ✕" : "SIGUIENTE ➡";
+    };
+
+    const closeHate = () => {
+      snd.click();
+      overlay.classList.remove("active");
+      if (this._onHateClose) {
+        const cb = this._onHateClose;
+        this._onHateClose = null;
+        cb();
+      }
+    };
+
+    document.getElementById("btn-close-hate-modal")?.addEventListener("click", closeHate);
+    document.getElementById("btn-hate-next")?.addEventListener("click", () => {
+      snd.click();
+      if (this.hateSlide < this.hateMax) {
+        this.hateSlide++;
+        updateHate();
+      } else {
+        closeHate();
+      }
+    });
+    document.getElementById("btn-hate-prev")?.addEventListener("click", () => {
+      snd.click();
+      if (this.hateSlide > 1) {
+        this.hateSlide--;
+        updateHate();
+      }
+    });
+  }
+
+  _showHateModal(onClose) {
+    this._onHateClose = onClose || null;
+    this.hateSlide = 1;
+    const overlay = document.getElementById("hate-modal-overlay");
+    if (!overlay) return;
+    overlay.querySelectorAll(".tutorial-slide").forEach((s, i) => s.classList.toggle("active", i === 0));
+    overlay.querySelectorAll(".tutorial-dots .dot").forEach((d, i) => d.classList.toggle("active", i === 0));
+    const prevBtn = document.getElementById("btn-hate-prev");
+    const nextBtn = document.getElementById("btn-hate-next");
+    if (prevBtn) prevBtn.style.visibility = "hidden";
+    if (nextBtn) nextBtn.textContent = "SIGUIENTE ➡";
+    snd.alert();
+    overlay.classList.add("active");
+  }
+
+  _setupViralModal() {
+    this.viralSlide = 1;
+    this.viralMax = 3;
+    const overlay = document.getElementById("viral-modal-overlay");
+    if (!overlay) return;
+
+    const updateViral = () => {
+      overlay.querySelectorAll(".tutorial-slide").forEach((s, i) => s.classList.toggle("active", i + 1 === this.viralSlide));
+      overlay.querySelectorAll(".tutorial-dots .dot").forEach((d, i) => d.classList.toggle("active", i + 1 === this.viralSlide));
+      const prevBtn = document.getElementById("btn-viral-prev");
+      const nextBtn = document.getElementById("btn-viral-next");
+      if (prevBtn) prevBtn.style.visibility = this.viralSlide > 1 ? "visible" : "hidden";
+      if (nextBtn) nextBtn.style.display = this.viralSlide === this.viralMax ? "none" : "block";
+    };
+
+    const closeViral = () => {
+      snd.click();
+      overlay.classList.remove("active");
+      if (this._onViralClose) {
+        const cb = this._onViralClose;
+        this._onViralClose = null;
+        cb();
+      }
+    };
+
+    document.getElementById("btn-close-viral-modal")?.addEventListener("click", () => {
+      this.eng.rachaViralDone = true;
+      closeViral();
+    });
+
+    document.getElementById("btn-viral-decline")?.addEventListener("click", () => {
+      snd.click();
+      this.eng.rachaViralDone = true;
+      this.eng.rachaViralActive = false;
+      closeViral();
+    });
+
+    document.getElementById("btn-viral-accept")?.addEventListener("click", () => {
+      snd.legendary();
+      this.eng.startRachaViral();
+      closeViral();
+    });
+
+    document.getElementById("btn-viral-next")?.addEventListener("click", () => {
+      snd.click();
+      if (this.viralSlide < this.viralMax) {
+        this.viralSlide++;
+        updateViral();
+      }
+    });
+
+    document.getElementById("btn-viral-prev")?.addEventListener("click", () => {
+      snd.click();
+      if (this.viralSlide > 1) {
+        this.viralSlide--;
+        updateViral();
+      }
+    });
+  }
+
+  _showViralModal(onClose) {
+    this._onViralClose = onClose || null;
+    this.viralSlide = 1;
+    const overlay = document.getElementById("viral-modal-overlay");
+    if (!overlay) return;
+    overlay.querySelectorAll(".tutorial-slide").forEach((s, i) => s.classList.toggle("active", i === 0));
+    overlay.querySelectorAll(".tutorial-dots .dot").forEach((d, i) => d.classList.toggle("active", i === 0));
+    const prevBtn = document.getElementById("btn-viral-prev");
+    const nextBtn = document.getElementById("btn-viral-next");
+    if (prevBtn) prevBtn.style.visibility = "hidden";
+    if (nextBtn) {
+      nextBtn.style.display = "block";
+      nextBtn.textContent = "SIGUIENTE ➡";
+    }
+    snd.alert();
+    overlay.classList.add("active");
   }
 
   _splash() {
@@ -379,7 +693,10 @@ class UIEngine {
 
   _archetype() {
     const grid=document.getElementById("archetype-grid"); if(!grid) return;
-    grid.innerHTML=ARCHETYPES.map(a=>{
+    const available = typeof isArchetypeAvailableForGender === "function" 
+      ? ARCHETYPES.filter(a => isArchetypeAvailableForGender(a.id, this.sel.genero))
+      : ARCHETYPES;
+    grid.innerHTML=available.map(a=>{
       const genderedName = getGenderedArchetype(a, this.sel.genero);
       const difClass = a.dificultad === "alta" ? "chip-dif-alta" : a.dificultad === "media" ? "chip-dif-media" : "chip-dif-baja";
       const difBadge = `<span class="chip-dif ${difClass}">DIFICULTAD ${a.difLabel || "MEDIA"}</span>`;
@@ -530,6 +847,28 @@ class UIEngine {
     }
     if(tbOdioVal) tbOdioVal.textContent=e.odio+"%";
 
+    const rvBanner = document.getElementById("racha-viral-banner");
+    if (rvBanner) {
+      if (e.rachaViralActive) {
+        rvBanner.style.display = "flex";
+        const wins = e.rachaViralCount || 0;
+        rvBanner.innerHTML = `
+          <div class="racha-viral-badge">🔥 MOMENTO VIRAL ACTIVO</div>
+          <div class="racha-viral-progress">
+            <span>OBJETIVO: 3 TWEETS EXITOSOS</span>
+            <div class="racha-viral-dots">
+              <div class="rv-step ${wins >= 1 ? 'done' : 'current'}">${wins >= 1 ? '✓' : '1'}</div>
+              <div class="rv-step ${wins >= 2 ? 'done' : (wins === 1 ? 'current' : '')}">${wins >= 2 ? '✓' : '2'}</div>
+              <div class="rv-step ${wins >= 3 ? 'done' : (wins === 2 ? 'current' : '')}">${wins >= 3 ? '✓' : '3'}</div>
+            </div>
+          </div>
+          <div class="racha-viral-warning">⚠️ Un fallo = -$ (35%) y +2 strikes</div>
+        `;
+      } else {
+        rvBanner.style.display = "none";
+      }
+    }
+
     this._renderBuildPanel();
     this._renderProgressBar();
     this._renderSparkline();
@@ -608,6 +947,21 @@ class UIEngine {
       );
     }
 
+    // ── CHECK EVENTO VIRAL (Racha Viral) ──
+    const rachaViral = this.eng.checkRachaViral ? this.eng.checkRachaViral() : null;
+    if (rachaViral) {
+      this._showViralModal(() => {
+        this._continueRenderTurn();
+      });
+      return;
+    }
+
+    this._continueRenderTurn();
+  }
+
+  _continueRenderTurn() {
+    this._updateStatsOnly();
+
     // ── CHECK EVENTOS INTERACTIVOS (Dilemas con Pop-up de anuncio previo) ──
     const ev = this.eng.checkSpecialEvent();
     if(ev){
@@ -640,24 +994,7 @@ class UIEngine {
     if (e.odio >= 80) {
       if (e.turnosEnZonaRoja === 1 && !e.cancelWarningShown['zr1']) {
         e.cancelWarningShown['zr1'] = true;
-        snd.alert();
-        this._showAlert(
-          "🔥 ZONA ROJA DE ODIO — TURNO 1/3",
-          `<div class="strike-meter-row">
-             <div class="strike-slot active-1">🔥 TURNO 1: ZONA ROJA</div>
-             <div class="strike-slot empty">⚪ TURNO 2: GRACIA</div>
-             <div class="strike-slot empty">☠️ TURNO 3: FINAL</div>
-           </div>
-           <div class="strike-info-card critical">
-             <strong>⚠️ HOSTILIDAD DEL FEED EN NIVEL CRÍTICO</strong><br>
-             Tu Odio superó el 80%. Si permanecés <strong>3 turnos consecutivos</strong> en esta zona roja, la toxicidad del timeline provocará el cierre forzado de tu cuenta (Game Over por Hostilidad Extrema).
-           </div>
-           <div class="strike-info-card survival">
-             <strong>🛡️ CÓMO REVERTIRLO:</strong><br>
-             Jugá cartas pacificadoras como <em>Día de Desconexión</em> o contenidos amigables para bajar tu nivel de Odio antes de que venza el plazo.
-           </div>`,
-          "ALERTA DE RETENCIÓN DE CUENTA"
-        );
+        this._showHateModal();
       } else if (e.turnosEnZonaRoja === 2 && !e.cancelWarningShown['zr2']) {
         e.cancelWarningShown['zr2'] = true;
         snd.alert();
@@ -687,15 +1024,7 @@ class UIEngine {
 
     if (e.odio >= 65 && !e.cancelWarningShown[65]) {
       e.cancelWarningShown[65] = true;
-      snd.alert();
-      this._showAlert(
-        "⚠️ ALERTA DE POLARIZACIÓN (ODIO 65%)",
-        `<div class="strike-info-card">
-           Tu nivel de Odio llegó al 65%. La hostilidad de las respuestas aumentó y las cartas polémicas tienen mayor probabilidad de ratio y de gatillar un Strike de Cancelación.<br><br>
-           Monitoreá tu Salud Mental y evitá escalar polémicas innecesarias.
-         </div>`,
-        "ZONA DE RIESGO"
-      );
+      this._showHateModal();
     }
   }
 
@@ -812,10 +1141,13 @@ class UIEngine {
     const grid=document.getElementById("boosters-grid"); if(!grid) return;
     const available=this.eng.getAvailableBoosters();
     if(available.length===0){ grid.innerHTML=`<div style="grid-column:span 3;padding:10px;font-family:var(--font-mono);font-size:0.7rem;color:var(--gray-1);text-align:center;">SIN BOOSTERS DISPONIBLES CON EL SALDO ACTUAL</div>`; return; }
-    grid.innerHTML=available.map(b=>{
+    const BOOSTER_KEYS = ['Q', 'W', 'E'];
+    grid.innerHTML=available.map((b, i)=>{
       const isHl=this.preparedBoosterId===b.id;
+      const keyHint = BOOSTER_KEYS[i] ? `<span class="booster-key-pill">${BOOSTER_KEYS[i]}</span>` : '';
       const tip=`<strong>${b.icono} ${b.nombre}</strong><br>${b.desc}<br><span style='color:#eab308;'>Cooldown: ${b.cooldown} turno${b.cooldown>1?'s':''}</span>`.replace(/"/g, '&quot;');
       return `<div class="booster-tile ${isHl?"highlighted":""}" data-id="${b.id}" data-tooltip="${tip}">
+        ${keyHint}
         <div class="b-icon">${b.icono}</div>
         <div class="b-name">${b.nombre}</div>
         <div class="b-cost">$${b.costo.toLocaleString()}</div>
@@ -875,18 +1207,25 @@ class UIEngine {
 
     const container=document.getElementById("event-options-container");
     if(container){
+      // Randomize options order on each event appearance while tracking original index
+      const indexedOpts = ev.opciones.map((opt, origIdx) => ({ opt, origIdx }));
+      for (let i = indexedOpts.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [indexedOpts[i], indexedOpts[j]] = [indexedOpts[j], indexedOpts[i]];
+      }
+
       const optIcons = ['1️⃣', '2️⃣', '3️⃣'];
-      container.innerHTML=ev.opciones.map((opt,idx)=>{
-        const optIcon = optIcons[idx] || '⚡';
+      container.innerHTML = indexedOpts.map((item, displayIdx)=>{
+        const optIcon = optIcons[displayIdx] || '⚡';
         return `
-        <div class="truco-card event-truco-card" style="border-top-color:var(--purple); flex:1; min-width:220px; cursor:pointer;" data-idx="${idx}">
+        <div class="truco-card event-truco-card" style="border-top-color:var(--purple); flex:1; min-width:220px; cursor:pointer;" data-idx="${item.origIdx}">
           <div class="card-suit-tag" style="color:var(--purple);">
             <span class="card-suit-dot" style="background:var(--purple);"></span>
-            OPCIÓN ${idx+1}
+            OPCIÓN ${displayIdx+1}
           </div>
           <div class="card-palo">${optIcon}</div>
-          <div class="card-title">${opt.texto}</div>
-          <button class="card-play-btn btn-opt-choose" data-idx="${idx}" style="background:var(--purple); margin-top:auto;">ELEGIR POSTURA ▶</button>
+          <div class="card-title">${item.opt.texto}</div>
+          <button class="card-play-btn btn-opt-choose" data-idx="${item.origIdx}" style="background:var(--purple); margin-top:auto;">ELEGIR POSTURA ▶</button>
         </div>
         `;
       }).join("");
@@ -989,15 +1328,22 @@ class UIEngine {
     const isVerified = e.history.some(h=>e.dinero >= 0) && (e.seguidores >= 25000);
 
     if(isSuccess){
-      likes = Math.floor(s * (0.07 + Math.random() * 0.08) + 280);
-      rts = Math.floor(likes * (0.22 + Math.random() * 0.12) + 45);
-      replies = Math.floor(likes * (0.05 + Math.random() * 0.04) + 18);
-      views = Math.floor(s * (2.2 + Math.random() * 2.5) + 1600);
+      const likeRate = 0.025 + Math.random() * 0.035; // 2.5% - 6% de seguidores
+      likes = Math.max(4, Math.floor(s * likeRate));
+      const rtRate = 0.12 + Math.random() * 0.10; // 12% - 22% de los likes
+      rts = Math.max(0, Math.floor(likes * rtRate));
+      const replyRate = 0.04 + Math.random() * 0.05; // 4% - 9% de los likes (ej: 3k -> ~5-15)
+      replies = Math.max(1, Math.floor(likes * replyRate));
+      views = Math.max(likes * 12, Math.floor(s * (0.9 + Math.random() * 1.6)));
     } else {
-      likes = Math.floor(18 + Math.random() * 42);
-      rts = Math.floor(3 + Math.random() * 9);
-      replies = Math.floor(s * (0.04 + Math.random() * 0.03) + 380);
-      views = Math.floor(s * (1.6 + Math.random() * 1.8) + 850);
+      // Fracaso o Ratio: muy pocos likes/RTs, pero comentarios de repudio realistas
+      const likeRate = 0.0015 + Math.random() * 0.0025; // 0.15% - 0.4% de seguidores
+      likes = Math.max(1, Math.floor(s * likeRate));
+      rts = Math.max(0, Math.floor(likes * (0.05 + Math.random() * 0.08)));
+      // Ratio: comentarios escalados a seguidores (0.5% a 0.9% de followers, ej: 3k -> 15 a 27)
+      const replyRate = 0.005 + Math.random() * 0.004;
+      replies = Math.max(2, Math.floor(s * replyRate));
+      views = Math.max(replies * 8, Math.floor(s * (0.4 + Math.random() * 0.6)));
     }
 
     const currentAvatar = e.getAvatar();
@@ -1198,34 +1544,56 @@ class UIEngine {
                 if (viralData) this._alertViral(viralData); else this._renderFullTurn();
               };
 
+          // ── CHECK RACHA VIRAL RESOLUTION ──
+          if (res.rachaViralUpdate && res.rachaViralUpdate.complete) {
+            const rvu = res.rachaViralUpdate;
+            if (rvu.success) {
+              snd.legendary();
+              this._showAlert(
+                "🔥 ¡RACHA VIRAL COMPLETADA!",
+                `<div class="strike-info-card survival" style="border-color:var(--green);">
+                   <strong>🌟 ¡3 DE 3 TWEETS EXITOSOS!</strong><br>
+                   Dominaste el algoritmo con maestría absoluta. La comunidad te convirtió en el fenómeno indiscutido de toda la red.<br><br>
+                   • <strong>SEGUIDORES EXTRA GANADOS:</strong> +${rvu.gained.toLocaleString()} (+${rvu.pct}% de tu audiencia)<br>
+                   • Tu cuenta alcanza un nuevo techo histórico de visibilidad e influencia.
+                 </div>`,
+                "MOMENTO VIRAL ÉPICO",
+                true,
+                afterTurnCallback,
+                "👑"
+              );
+              return;
+            } else {
+              snd.fail();
+              this._showAlert(
+                "💔 RACHA VIRAL QUEBRADA",
+                `<div class="strike-info-card critical">
+                   <strong>💥 FRACASO EN EL MOMENTO VIRAL</strong><br>
+                   Tu carta no superó la prueba del algoritmo bajo la mirada de toda la red. La ola de burlas y repudio te golpeó sin piedad.<br><br>
+                   • <strong>DINERO PERDIDO:</strong> -$${rvu.moneyLost.toLocaleString()} (marcas caídas y penalidades)<br>
+                   • <strong>PENALIZACIÓN:</strong> +2 STRIKES de moderación acumulados.<br>
+                   • <strong>ESTADO ACTUAL:</strong> ${rvu.strikes}/3 strikes. ${rvu.gameOver ? '¡Cuenta suspendida!' : '¡Estás a un solo strike de la cancelación total!'}
+                 </div>`,
+                "DESAFÍO VIRAL FALLIDO",
+                true,
+                () => {
+                  if (rvu.gameOver) {
+                    this._showEnd1();
+                  } else {
+                    afterTurnCallback();
+                  }
+                },
+                "💀"
+              );
+              return;
+            }
+          }
+
           if (res.cancellationEvent && !this.eng.gameOver) {
             const strikeNum = res.cancellationEvent.strike;
+            const canc = res.cancellationEvent;
             if (strikeNum === 1) {
-              snd.alert();
-              this._showAlert(
-                "⚠️ PRIMER STRIKE DE MODERACIÓN (1/3)",
-                `<div class="strike-meter-row">
-                   <div class="strike-slot active-1">⚠️ STRIKE 1: ACTIVO</div>
-                   <div class="strike-slot empty">⚪ STRIKE 2: LIBRE</div>
-                   <div class="strike-slot empty">⚪ STRIKE 3: LIBRE</div>
-                 </div>
-                 <div class="strike-info-card critical">
-                   <strong>🚨 INFRACCIÓN GRAVE DETECTADA</strong><br>
-                   Tu publicación provocó una ola de repudio masivo y reportes coordinados. Acumulaste tu <strong>primer strike oficial de moderación comunitaria</strong>.
-                 </div>
-                 <div class="strike-info-card">
-                   <strong>⚖️ MECÁNICA DE CANCELACIÓN:</strong><br>
-                   • Al acumular <strong>3 strikes</strong>, tu cuenta será suspendida definitivamente (Game Over).<br>
-                   • Cartas de confrontación o polarización jugadas con Odio elevado aumentan el riesgo de strike.
-                 </div>
-                 <div class="strike-info-card survival">
-                   <strong>🛡️ PROTOCOLO DE CONTENCIÓN:</strong><br>
-                   Enfriá el timeline jugando <em>Día de Desconexión</em> o contenido pacífico, y mantené tu Salud Mental por encima del 50%.
-                 </div>`,
-                "SISTEMA DE CANCELACIÓN",
-                false,
-                afterTurnCallback
-              );
+              this._showCancellationModal(afterTurnCallback);
               return;
             } else if (strikeNum === 2) {
               snd.alert();
@@ -1268,9 +1636,9 @@ class UIEngine {
                    Acumulaste <strong>3 infracciones graves</strong> en tu cuenta. La moderación y el repudio generalizado culminaron en la suspensión permanente e inapelable de tu perfil.
                  </div>
                  <div class="strike-info-card critical">
-                   <strong>🚨 MOTIVO DE LA CRISIS FINAL: ${canc.titulo}</strong><br>
-                   ${canc.motivo}<br><br>
-                   <em>"${canc.texto}"</em>
+                   <strong>🚨 MOTIVO DE LA CRISIS FINAL: ${canc.titulo || 'CANCELACIÓN'}</strong><br>
+                   ${canc.motivo || ''}<br><br>
+                   <em>"${canc.texto || ''}"</em>
                  </div>
                  <div class="strike-info-card survival">
                    <strong>📜 RESOLUCIÓN:</strong><br>
@@ -1552,14 +1920,22 @@ class UIEngine {
         <text x="${cX}" y="${rootY + 4}" text-anchor="middle" font-family="'Space Mono', monospace" font-size="10" font-weight="700" fill="${C.textWhite}">00</text>
       </g>`;
 
-    // Precalcular posiciones de los turnos
-    const positions = log.map((turn, i) => ({
-      x: cX,
-      y: PAD_TOP + i * TIER_H + 42,
-      tierY: PAD_TOP + i * TIER_H,
-      turn,
-      i
-    }));
+    // Precalcular posiciones de los turnos según el slot de carta elegido (0: Izq, 1: Centro, 2: Der)
+    const laneOffsets = [-175, 0, 175];
+    const positions = log.map((turn, i) => {
+      const chosenSlot = turn.chosen && turn.chosen.slot != null ? turn.chosen.slot : (i % 3);
+      return {
+        x: cX + laneOffsets[chosenSlot],
+        y: PAD_TOP + i * TIER_H + 42,
+        tierY: PAD_TOP + i * TIER_H,
+        slot: chosenSlot,
+        turn,
+        i
+      };
+    });
+
+    let prevX = cX;
+    let prevY = rootY;
 
     positions.forEach((pos, i) => {
       const turn = pos.turn;
@@ -1575,29 +1951,28 @@ class UIEngine {
       nodes += `<text x="36" y="${pos.tierY + 22}" font-family="'Space Mono', monospace"
         font-size="10" font-weight="700" fill="${C.textDim}" letter-spacing="1">TURNO ${String(turn.t).padStart(2,"0")}</text>`;
 
-      // ── Conector Tronco Principal (Curva S vertical desde nodo anterior) ──
-      const prevX = cX;
-      const prevY = i === 0 ? rootY : positions[i - 1].y;
+      // ── Conector Tronco Principal (Curva S vertical desde nodo elegido anterior) ──
       const midY = (prevY + pos.y) / 2;
       lines += `<path d="M${prevX},${prevY} C${prevX},${midY} ${pos.x},${midY} ${pos.x},${pos.y}"
         stroke="${C.trunk}" stroke-width="2.5" fill="none" stroke-linecap="round"/>`;
 
-      // ── Ramas descartadas (Curvas suaves a izquierda y derecha) ──
+      // ── Ramas descartadas (Bifurcaciones hacia los otros 2 slots) ──
+      const altSlots = [0, 1, 2].filter(s => s !== pos.slot);
       const alts = (turn.alternatives || []).slice(0, 2);
       alts.forEach((alt, ai) => {
-        const dir = ai === 0 ? -1 : 1;
-        const bx = pos.x + dir * 180;
-        const by = pos.y + 10;
-        const bmidY = (pos.y + by) / 2;
+        const altSlot = altSlots[ai] != null ? altSlots[ai] : (ai === 0 ? 0 : 2);
+        const altX = cX + laneOffsets[altSlot];
+        const altY = pos.y;
+        const altMidY = (prevY + altY) / 2;
 
-        lines += `<path d="M${pos.x},${pos.y} C${pos.x + dir * 70},${bmidY} ${bx},${bmidY} ${bx},${by}"
+        lines += `<path d="M${prevX},${prevY} C${prevX},${altMidY} ${altX},${altMidY} ${altX},${altY}"
           stroke="${C.branchAlt}" stroke-width="1.5" stroke-dasharray="3 3" fill="none"/>`;
 
         // Nodo descartado circular
         nodes += `<g class="tree-node alt" data-idx="${i}" data-alt="${ai}" style="cursor:help;">
-          <circle cx="${bx}" cy="${by}" r="14" fill="${C.altNodeBg}" stroke="${C.altNodeBdr}" stroke-width="1.5"/>
-          <text x="${bx}" y="${by + 4}" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="10" font-weight="700" fill="${C.textDim}">✕</text>
-          <text x="${bx}" y="${by + 26}" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="9" fill="${C.textDim}">${(alt.titulo || 'Descartada').slice(0, 16)}</text>
+          <circle cx="${altX}" cy="${altY}" r="14" fill="${C.altNodeBg}" stroke="${C.altNodeBdr}" stroke-width="1.5"/>
+          <text x="${altX}" y="${altY + 4}" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="10" font-weight="700" fill="${C.textDim}">✕</text>
+          <text x="${altX}" y="${altY + 26}" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="9" fill="${C.textDim}">${(alt.title || alt.titulo || 'Descartada').slice(0, 15)}</text>
         </g>`;
       });
 
@@ -1613,19 +1988,23 @@ class UIEngine {
         <!-- Pip sutil de resultado -->
         <circle cx="${pos.x + 13}" cy="${pos.y - 13}" r="4.5" fill="${pipFill}"/>
         <!-- Título de la carta elegida a la derecha -->
-        <text x="${pos.x + 28}" y="${pos.y + 4}" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" font-weight="700" fill="${titleColor}">${chosen.title.slice(0, 28)}</text>
+        <text x="${pos.x + 24}" y="${pos.y + 4}" font-family="'Plus Jakarta Sans', sans-serif" font-size="10" font-weight="700" fill="${titleColor}">${chosen.title.slice(0, 22)}</text>
       </g>`;
 
       tooltipData.push({ i, chosen, delta: turn.delta, snap: turn.snapshot, alts: turn.alternatives });
+
+      // Actualizar nodo anterior para la próxima iteración
+      prevX = pos.x;
+      prevY = pos.y;
     });
 
     // Remate final en el último nodo
     if (positions.length > 0) {
       const lastPos = positions[positions.length - 1];
       const endY = lastPos.y + 40;
-      lines += `<line x1="${cX}" y1="${lastPos.y}" x2="${cX}" y2="${endY}" stroke="${C.trunk}" stroke-width="2" stroke-dasharray="2 2"/>`;
+      lines += `<line x1="${lastPos.x}" y1="${lastPos.y}" x2="${lastPos.x}" y2="${endY}" stroke="${C.trunk}" stroke-width="2" stroke-dasharray="2 2"/>`;
       nodes += `<g>
-        <circle cx="${cX}" cy="${endY}" r="6" fill="${C.trunk}"/>
+        <circle cx="${lastPos.x}" cy="${endY}" r="6" fill="${C.trunk}"/>
       </g>`;
     }
 
