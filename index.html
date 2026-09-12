@@ -587,7 +587,7 @@
       <div class="tutorial-dots" id="s2-dots">
         <span class="dot active"></span><span class="dot"></span><span class="dot"></span>
       </div>
-      <button class="btn btn-primary" id="btn-s2-next" style="background:var(--red); color:#fff;">SIGUIENTE ➡ <span class="key-hint-pill">␣ ESPACIO</span></button>
+      <button class="btn btn-danger" id="btn-s2-next">SIGUIENTE ➡ <span class="key-hint-pill">␣ ESPACIO</span></button>
     </div>
   </div>
 </div>
@@ -604,7 +604,7 @@
       <div id="cgo-reason" style="font-family:var(--font-body); font-size:0.9rem; color:var(--off-white); line-height:1.55; max-width:380px;"></div>
       <div id="cgo-tweet" style="font-family:var(--font-mono); font-size:0.82rem; color:var(--gray-1); border-left:3px solid var(--red); padding:8px 12px; text-align:left; margin-top:4px; max-width:380px;"></div>
     </div>
-    <button class="btn btn-primary" id="btn-cgo-ok" style="width:100%; background:var(--red); border:none; font-size:1rem; margin-top:4px;">VER ESTADÍSTICAS FINALES ☠️</button>
+    <button class="btn btn-danger" id="btn-cgo-ok" style="width:100%; margin-top:4px;">VER ESTADÍSTICAS FINALES ☠️</button>
   </div>
 </div>
 
@@ -636,8 +636,8 @@
           • Recibís <strong>2 STRIKES DIRECTOS</strong> de moderación, quedando a solo 1 strike de la cancelación definitiva.
         </div>
         <div style="display:flex; gap:10px; margin-top:16px;">
-          <button id="btn-viral-accept" class="btn btn-primary" style="flex:1.2; background:#10b981; border:none; font-size:1rem;">🔥 ACEPTAR DESAFÍO</button>
-          <button id="btn-viral-decline" class="btn btn-secondary-back" style="flex:1; font-size:0.9rem;">🛡️ PASAR (MODO NORMAL)</button>
+          <button id="btn-viral-accept" class="btn btn-success" style="flex:1.2;">🔥 ACEPTAR DESAFÍO</button>
+          <button id="btn-viral-decline" class="btn btn-secondary-back" style="flex:1;">🛡️ PASAR (MODO NORMAL)</button>
         </div>
       </div>
     </div>
@@ -655,8 +655,9 @@
 <div id="rotate-device-overlay" class="rotate-device-overlay">
   <div class="rotate-device-box">
     <div class="rotate-phone-anim">📱</div>
+    <div class="rotate-pc-hint">🖥️ RECOMENDADO EN PC / MAC</div>
     <h2 class="rotate-title">GIRÁ TU TELÉFONO</h2>
-    <p class="rotate-desc">Para ver todas las cartas, boosters y el timeline en su proporción óptima, por favor poné tu celular en modo horizontal.</p>
+    <p class="rotate-desc">Para la mejor experiencia recomendamos jugarlo en una <strong>PC o Mac</strong>, pero podés jugar en tu celular rotándolo a modo horizontal para ver todas las cartas, boosters y el timeline en su proporción óptima.</p>
     <div class="rotate-pill">🔄 ROTAR A HORIZONTAL</div>
   </div>
 </div>
@@ -748,6 +749,7 @@
 <!-- ══ ALERT OVERLAY ══════════════════════════════════════ -->
 <div class="alert-overlay" id="alert-overlay">
   <div class="alert-box" id="alert-box">
+    <button class="alert-close-btn" id="btn-close-alert" title="Cerrar">✕</button>
     <div class="alert-meta"  id="alert-meta" style="display:none;"></div>
     <div class="alert-icon" id="alert-icon">⚡</div>
     <div class="alert-title" id="alert-title">ATENCIÓN</div>

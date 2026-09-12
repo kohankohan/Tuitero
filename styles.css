@@ -251,20 +251,96 @@ img.emoji {
   background: var(--amber); color: var(--ink); box-shadow: 0 0 16px rgba(234,179,8,0.4); transform: translateY(-1px);
 }
 
-/* ─── BUTTONS ────────────────────────────────────────────── */
+/* ─── UNIFIED BUTTON MATRIX & DESIGN SYSTEM (v17) ────────── */
 .btn {
-  border: none; cursor: pointer; font-family: var(--font-body);
-  font-weight: 700; transition: opacity 0.15s, transform 0.1s;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.9rem;
   border-radius: var(--radius-sm);
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  min-height: 38px;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
-.btn:active { transform: scale(0.97); }
+.btn:hover {
+  transform: translateY(-1px);
+}
+.btn:active {
+  transform: translateY(1px) scale(0.98);
+}
+.btn:focus-visible {
+  outline: 2px solid var(--blue-bright);
+  outline-offset: 2px;
+}
 
+/* TIER 1: PRIMARY ACTION (Azul Twitero con corte neo-industrial opcional) */
 .btn-primary {
-  background: var(--blue); color: var(--ink);
-  padding: 10px 24px; font-size: 0.9rem; font-weight: 800;
-  font-family: var(--font-display); letter-spacing: 1px; text-transform: uppercase;
+  background: var(--blue);
+  color: var(--ink);
+  padding: 10px 24px;
+  font-size: 0.95rem;
+  font-weight: 900;
+  box-shadow: 0 0 16px var(--blue-glow);
 }
-.btn-primary:hover { background: var(--blue-bright); }
+.btn-primary:hover {
+  background: var(--blue-bright);
+  color: var(--ink);
+  box-shadow: 0 0 24px rgba(96, 196, 255, 0.45);
+}
+
+/* TIER 2: SECONDARY / VOLVER / ATRÁS */
+.btn-secondary, .btn-secondary-back {
+  background: #0d1222;
+  border: 1px solid var(--border);
+  color: var(--gray-1);
+  padding: 10px 20px;
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+.btn-secondary:hover, .btn-secondary-back:hover {
+  border-color: var(--blue);
+  color: var(--white);
+  background: var(--ink-3);
+  box-shadow: 0 0 12px rgba(29, 155, 240, 0.15);
+}
+
+/* TIER 3: DANGER / CRITICAL WARNINGS (Strike 2, Expulsión) */
+.btn-danger {
+  background: var(--red);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 10px 22px;
+  font-size: 0.92rem;
+  font-weight: 900;
+  box-shadow: 0 0 18px rgba(239, 68, 68, 0.35);
+}
+.btn-danger:hover {
+  background: #dc2626;
+  box-shadow: 0 0 26px rgba(239, 68, 68, 0.55);
+}
+
+/* TIER 4: SUCCESS / HERO VIRAL */
+.btn-success {
+  background: #10b981;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 10px 22px;
+  font-size: 0.95rem;
+  font-weight: 900;
+  box-shadow: 0 0 18px rgba(16, 185, 129, 0.35);
+}
+.btn-success:hover {
+  background: #059669;
+  box-shadow: 0 0 26px rgba(16, 185, 129, 0.55);
+}
 
 /* ─── SELECTION SCREENS ──────────────────────────────────── */
 #screen-gender, #screen-archetype, #screen-personality {
@@ -1217,6 +1293,25 @@ img.emoji {
   display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center;
   box-shadow: 0 0 80px rgba(29,155,240,0.25);
   position: relative;
+}
+
+.alert-close-btn {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  color: var(--gray-1);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s ease, background 0.15s ease;
+  line-height: 1;
+}
+.alert-close-btn:hover {
+  color: var(--white);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .alert-box.legendary {
@@ -2388,7 +2483,20 @@ img.emoji {
   letter-spacing: 1px;
 }
 
-/* ─── RACHA VIRAL HUD BANNER ─────────────────────────────── */
+.rotate-pc-hint {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--amber);
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* ─── RACHA VIRAL HUD BANNER & AMBIENT MODE ───────────────── */
 .racha-viral-banner {
   background: linear-gradient(135deg, rgba(245, 158, 11, 0.16), rgba(239, 68, 68, 0.12));
   border: 1px solid rgba(245, 158, 11, 0.6);
@@ -2407,6 +2515,19 @@ img.emoji {
   0% { box-shadow: 0 0 8px rgba(245, 158, 11, 0.08); }
   100% { box-shadow: 0 0 22px rgba(245, 158, 11, 0.22); }
 }
+
+/* Tablero completo durante Racha Viral: Ambient Lighting */
+.game-main.racha-viral-mode {
+  box-shadow: inset 0 0 45px rgba(245, 158, 11, 0.12);
+  border-top: 2px solid var(--amber);
+}
+.game-main.racha-viral-mode #cards-section {
+  position: relative;
+}
+.game-main.racha-viral-mode .card-suit-tag {
+  color: var(--amber) !important;
+}
+
 .racha-viral-badge {
   font-family: var(--font-display);
   font-size: 0.95rem;
@@ -2605,21 +2726,66 @@ img.emoji {
     margin: 4px 0;
   }
 
-  /* Alert Overlay */
+  /* Alert Overlay & Booster Showcase Compact in Landscape */
   .alert-box {
-    padding: 16px;
-    gap: 8px;
-    max-width: 440px;
+    padding: 14px 18px;
+    gap: 6px;
+    max-width: 480px;
+    max-height: calc(100vh - 16px);
+    max-height: calc(100dvh - 16px);
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
   }
   .alert-icon {
-    font-size: 2rem;
+    font-size: 1.8rem;
+    display: none !important; /* Ahorra altura crítica en landscape */
   }
   .alert-title {
     font-size: 1.1rem;
+    letter-spacing: 0.5px;
+  }
+  .alert-meta {
+    font-size: 0.58rem;
+    padding: 2px 8px;
+    margin-bottom: 0;
   }
   .alert-text {
-    font-size: 0.78rem;
-    line-height: 1.35;
+    font-size: 0.76rem;
+    line-height: 1.3;
+    max-width: 100%;
+  }
+
+  /* Compact booster unlock showcase in landscape: horizontal row */
+  .booster-unlock-showcase {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    padding: 6px 10px !important;
+    gap: 8px !important;
+    margin: 4px 0 !important;
+  }
+  .booster-badge-icon {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 1.3rem !important;
+    flex-shrink: 0;
+  }
+  .booster-showcase-title {
+    font-size: 0.95rem !important;
+    flex: 1;
+    text-align: left;
+    margin: 0;
+  }
+  .booster-price-pill {
+    font-size: 0.7rem !important;
+    padding: 2px 6px !important;
+    margin-left: auto;
+  }
+  #alert-ok-btn {
+    min-height: 34px !important;
+    padding: 6px 14px !important;
+    font-size: 0.85rem !important;
+    margin-top: 4px !important;
   }
 }
 
