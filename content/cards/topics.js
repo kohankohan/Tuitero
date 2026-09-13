@@ -763,6 +763,100 @@ const trendingTopicsActuales = {
   }
 };
 
+// ── DESCANSO / DESCONEXIÓN (Pool amplio de variantes para evitar repeticiones) ──
+const descansoContent = [
+  {
+    titulo: "Día de Desconexión",
+    texto: "Gente, me voy a tomar el día offline. Mucha toxicidad hoy. Nos leemos mañana, pórtense bien.",
+    narrativaExito: "Te desconectaste a tiempo. El timeline pasó a otro tema y recuperaste la paz mental.",
+    narrativaFallo: "La tentación de mirar las menciones te ganó y volviste a entrar antes de tiempo."
+  },
+  {
+    titulo: "Modo Avión y Pasto",
+    texto: "Cierro la app por 24hs. Si no respondo DMs es porque salí a pisar pasto y recordar que existe el mundo real.",
+    narrativaExito: "Respiraste aire fresco sin pantallas. Tu mente agradeció el respiro.",
+    narrativaFallo: "A los diez minutos abriste el navegador en modo incógnito para ver qué decían de vos."
+  },
+  {
+    titulo: "Silencio de Radio",
+    texto: "Desinstalé la app del celu por un rato. Me satura el algoritmo, las peleas inventadas y los hilos eternos. Paz.",
+    narrativaExito: "El silencio digital te devolvió la concentración y la salud mental subió notablemente.",
+    narrativaFallo: "La abstinencia de notificaciones te puso ansioso y volviste a instalarla."
+  },
+  {
+    titulo: "Detox de Notificaciones",
+    texto: "Apagué absolutamente todas las notificaciones. No me busquen, no me etiqueten. Día dedicado a no opinar de nada.",
+    narrativaExito: "Ignorar el bardo fue la mejor decisión estratégica del día.",
+    narrativaFallo: "Te quedaste pensando en si te habían citado en algún quote fulminante."
+  },
+  {
+    titulo: "Sobremesa y Mate Lejos de la Red",
+    texto: "Tarde de mates, música tranquila y cero feeds. Cuidar la cabeza antes de que el timeline te devore.",
+    narrativaExito: "Una tarde serena que limpió la mala onda del feed acumulada en la semana.",
+    narrativaFallo: "Tus amigos sacaron el tema de Twitter en la charla y no pudiste evitar chequear."
+  },
+  {
+    titulo: "Cierre Preventivo de Pestañas",
+    texto: "Demasiado bardo por milímetro cuadrado hoy. Me retiro dignamente antes de engancharme en una discusión estúpida.",
+    narrativaExito: "Esquivaste una cancelación cantada retirándote en el minuto justo.",
+    narrativaFallo: "Leíste un tweet provocador justo antes de cerrar y te fuiste con bronca."
+  },
+  {
+    titulo: "Domingo de Terapia y Desconexión",
+    texto: "Domingo sin pantallas. El mundo sigue girando aunque uno no tuitee cada 15 minutos, increíble descubrimiento.",
+    narrativaExito: "Comprobaste que la vida offline existe y es bastante más sana.",
+    narrativaFallo: "Te picaron los dedos por tirar un chiste sobre el partido de la fecha."
+  },
+  {
+    titulo: "Pausa por Sobrecarga de Dopamina",
+    texto: "Alerta de saturación mental. Silencio menciones, apago datos y me pongo a leer un libro que no sea un hilo de X.",
+    narrativaExito: "Bajó el ritmo cardíaco y la ansiedad del scroll infinito.",
+    narrativaFallo: "El libro te aburrió a la quinta página y entraste a mirar memes."
+  },
+  {
+    titulo: "Desconexión Zen",
+    texto: "Hoy elijo mi paz mental antes que tener razón en una pelea de desconocidos. Besos a todos, vuelvo cuando baje la marea.",
+    narrativaExito: "Tu comunidad valoró tu madurez y el hate residual se disipó solo.",
+    narrativaFallo: "Tus haters dijeron que te escapaste con la cola entre las patas."
+  },
+  {
+    titulo: "Caminata sin Celular",
+    texto: "Dejo el teléfono cargando en otra habitación y salgo a caminar sin rumbo. Ni una sola notificación por hoy.",
+    narrativaExito: "Volviste renovado, con ideas frescas y la cabeza despejada.",
+    narrativaFallo: "Creíste escuchar el sonido de notificación en tu bolsillo vacío durante media hora."
+  },
+  {
+    titulo: "Basta de Timeline por Hoy",
+    texto: "Ya leí suficientes barbaridades por las próximas dos semanas. Corto acá. Nos vemos del otro lado del eclipse.",
+    narrativaExito: "Te ahorraste leer la peor polémica de la semana.",
+    narrativaFallo: "Te perdiste el chisme del día y tus amigos te cargaron en WhatsApp."
+  },
+  {
+    titulo: "Aislado por Salud Mental",
+    texto: "Priorizando la salud mental. Las redes queman si no sabés cuándo frenar. Me guardo hasta nuevo aviso 🧘",
+    narrativaExito: "Una recarga de energía necesaria que estabilizó tus números.",
+    narrativaFallo: "Te costó desconectar de verdad y te quedaste mirando la pantalla en negro."
+  },
+  {
+    titulo: "Veda Tuitera Autoimpuesta",
+    texto: "Declaro veda tuitera en mi cuenta por las próximas 24 horas. Cero polémica, cero replies, 100% descanso.",
+    narrativaExito: "La veda enfrió todos los frentes de conflicto abiertos.",
+    narrativaFallo: "Rompiste la veda a las 2 horas con un 'bueno una sola cosa más y me voy'."
+  },
+  {
+    titulo: "Apagón Digital",
+    texto: "Pantallas en escala de grises y teléfono en un cajón. Hay que desintoxicar el cerebro de vez en cuando.",
+    narrativaExito: "Dormiste una siesta gloriosa sin sobresaltos de trending topics.",
+    narrativaFallo: "Te despertaste sobresaltado creyendo que te habían hackeado la cuenta."
+  },
+  {
+    titulo: "Cierre de Sesión Terapéutico",
+    texto: "Log out general. Cuando el timeline parece un loquero a cielo abierto, el único ganador es el que apaga la pantalla.",
+    narrativaExito: "Ganaste vos. Cero estrés, mente limpia y energía renovada.",
+    narrativaFallo: "Tus conocidos te escribieron pensando que te había pasado algo grave."
+  }
+];
+
 // 🔄 MERGE AUTOMÁTICO DE POOLS (Ampliación de 3 a 4-5 opciones por categoría) 🔄
 (function mergePools() {
   const categories = [

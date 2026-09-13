@@ -281,8 +281,8 @@ const GENERO_LABELS = { hombre: "Él", mujer: "Ella", diverso: "Elle" };
 
 const ARCHETYPE_GENDER_RESTRICTIONS = {
   hombre: ["opinologo", "futbolero", "militante", "humor", "periodista", "cryptobro", "gamer", "conspiranoico", "influencer", "techie", "podcaster"],
-  mujer: ["opinologo", "futbolero", "militante", "periodista", "gamer", "conspiranoico", "influencer", "onlyfans", "podcaster"],
-  diverso: ["opinologo", "militante", "periodista", "gamer", "influencer", "onlyfans", "techie", "podcaster"]
+  mujer: ["opinologo", "futbolero", "militante", "periodista", "gamer", "influencer", "onlyfans", "podcaster"],
+  diverso: ["militante", "periodista", "gamer", "influencer", "onlyfans", "techie", "podcaster"]
 };
 
 function isArchetypeAvailableForGender(archId, genero) {

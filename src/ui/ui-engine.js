@@ -28,6 +28,7 @@ class UIEngine {
     this._setupProfileModal();
     this._setupShortcutsModal();
     this._setupGlobalKeyboardShortcuts();
+    this._setupFullscreenControls();
     if(window.twemoji) window.twemoji.parse(document.body);
   }
 
@@ -488,10 +489,12 @@ class UIEngine {
     // Populate slide 1 dynamically with the specific incident
     const slide1 = document.getElementById("s2-slide-1");
     if (slide1) {
+      const displayTweet = canc.tweetReal || canc.texto;
+      const tweetLabel = canc.tweetReal ? `<div style="font-size:0.7rem;color:var(--gray-1);margin-bottom:3px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.5px;">El tweet que lo desató:</div>` : "";
       slide1.innerHTML = `
         <h3>EL ESCÁNDALO: ${canc.titulo || "SEGUNDO STRIKE"} 🚨</h3>
         <p>${canc.motivo || "Un nuevo incidente sacudió tu timeline y acumuló reportes masivos contra tu cuenta."}</p>
-        ${canc.texto ? `<div style="font-family:var(--font-mono); font-size:0.82rem; color:var(--gray-1); border-left:3px solid var(--red); padding:8px 12px; margin-top:4px;">"${canc.texto}"</div>` : ""}
+        ${displayTweet ? `<div style="font-family:var(--font-mono); font-size:0.82rem; color:var(--gray-1); border-left:3px solid var(--red); padding:8px 12px; margin-top:4px;">${tweetLabel}"${displayTweet}"</div>` : ""}
       `;
     }
 
@@ -534,10 +537,21 @@ class UIEngine {
     const tweetEl  = document.getElementById("cgo-tweet");
     if (titleEl)  titleEl.textContent  = canc?.titulo  || "CUENTA SUSPENDIDA DEFINITIVAMENTE";
     if (reasonEl) reasonEl.textContent = canc?.motivo  || "";
-    if (tweetEl)  { tweetEl.textContent = canc?.texto ? `"${canc.texto}"` : ""; tweetEl.style.display = canc?.texto ? "block" : "none"; }
+    const displayTweet = canc?.tweetReal || canc?.texto;
+    if (tweetEl) {
+      if (displayTweet) {
+        const label = canc?.tweetReal ? "El tweet que lo desató:\n" : "";
+        tweetEl.textContent = label + `"${displayTweet}"`;
+        tweetEl.style.display = "block";
+      } else {
+        tweetEl.textContent = "";
+        tweetEl.style.display = "none";
+      }
+    }
     overlay.classList.add("active");
     overlay.focus();
   }
+
 
   _setupViralModal() {
 
@@ -616,6 +630,44 @@ class UIEngine {
     }
     snd.alert();
     overlay.classList.add("active");
+  }
+
+  _setupFullscreenControls() {
+    const toggleFullscreen = () => {
+      snd.click();
+      const doc = document;
+      const docEl = document.documentElement;
+      const isFullscreen = doc.fullscreenElement || doc.webkitFullscreenElement || doc.mozFullScreenElement || doc.msFullscreenElement;
+
+      if (!isFullscreen) {
+        const req = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.mozRequestFullScreen || docEl.msRequestFullscreen;
+        if (req) {
+          req.call(docEl).catch(err => {
+            console.warn("Fullscreen request error:", err);
+          });
+        } else {
+          // Fallback iOS Safari: mostrar sugerencia amigable
+          this.showAlert(
+            "PANTALLA COMPLETA EN iOS",
+            "Apple bloquea la pantalla completa directa en navegadores móviles. Para jugarlo en pantalla completa en iPhone o iPad, tocá el botón Compartir de Safari y elegí 'Agregar al inicio'.",
+            false,
+            null,
+            "📱"
+          );
+        }
+      } else {
+        const exit = doc.exitFullscreen || doc.webkitExitFullscreen || doc.mozCancelFullScreen || doc.msExitFullscreen;
+        if (exit) {
+          exit.call(doc).catch(err => console.warn(err));
+        }
+      }
+    };
+
+    const btnSplash = document.getElementById("btn-fullscreen-splash");
+    if (btnSplash) btnSplash.onclick = toggleFullscreen;
+
+    const btnGame = document.getElementById("btn-fullscreen-game");
+    if (btnGame) btnGame.onclick = toggleFullscreen;
   }
 
   _splash() {
@@ -800,6 +852,13 @@ class UIEngine {
   }
 
   _gender() {
+    const backBtn = document.getElementById("btn-back-gender");
+    if (backBtn) {
+      backBtn.onclick = () => {
+        snd.click();
+        this.showScreen("screen-splash");
+      };
+    }
     const grid=document.getElementById("gender-grid"); if(!grid) return;
     const opts=[{id:"hombre",icon:"👨",name:"Hombre",desc:"Pronombres masculinos.",meta:"PRON: ÉL"},{id:"mujer",icon:"👩",name:"Mujer",desc:"Pronombres femeninos.",meta:"PRON: ELLA"},{id:"diverso",icon:"🧑",name:"Diverso",desc:"Lenguaje neutro.",meta:"PRON: ELLE"}];
     grid.innerHTML=opts.map(o=>`<div class="sel-card" data-id="${o.id}"><div class="sc-icon-wrap">${o.icon}</div><div class="sc-name">${o.name}</div><div class="sc-desc">${o.desc}</div><div class="sc-meta">${o.meta}</div></div>`).join("");
@@ -807,11 +866,18 @@ class UIEngine {
   }
 
   _archetype() {
+    const backBtn = document.getElementById("btn-back-archetype");
+    if (backBtn) {
+      backBtn.onclick = () => {
+        snd.click();
+        this.showScreen("screen-gender");
+      };
+    }
     const grid=document.getElementById("archetype-grid"); if(!grid) return;
-    const available = typeof isArchetypeAvailableForGender === "function" 
-      ? ARCHETYPES.filter(a => isArchetypeAvailableForGender(a.id, this.sel.genero))
-      : ARCHETYPES;
-    grid.innerHTML=available.map(a=>{
+    grid.innerHTML=ARCHETYPES.map(a=>{
+      const isAvailable = typeof isArchetypeAvailableForGender === "function"
+        ? isArchetypeAvailableForGender(a.id, this.sel.genero)
+        : true;
       const genderedName = getGenderedArchetype(a, this.sel.genero);
       const difClass = a.dificultad === "alta" ? "chip-dif-alta" : a.dificultad === "media" ? "chip-dif-media" : "chip-dif-baja";
       const difBadge = `<span class="chip-dif ${difClass}">DIFICULTAD ${a.difLabel || "MEDIA"}</span>`;
@@ -820,15 +886,28 @@ class UIEngine {
       const passiveText = a.difDesc || (a.bajomon?"Bajo Monetize · ":"") + (a.odioRed?"Odio Reducido":"");
       const archDesc = typeof getGenderedArchetypeDesc === "function" ? getGenderedArchetypeDesc(a, this.sel.genero) : a.desc;
 
-      const tip = `<strong>${a.icono} ${genderedName.toUpperCase()}</strong><br><div style='margin:6px 0;'>${difBadge}</div>${archDesc}<br><div style='margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;'>${afinesHtml}${debilesHtml}</div>${passiveText ? `<div style='margin-top:6px;color:var(--blue);font-size:0.75rem;'>${passiveText}</div>` : ''}`.replace(/"/g, '&quot;');
+      // Tooltip: if locked, show which gender unlocks it
+      let lockHint = "";
+      if (!isAvailable) {
+        const unlockGenders = ["hombre","mujer","diverso"].filter(g => {
+          const allowed = (typeof ARCHETYPE_GENDER_RESTRICTIONS !== "undefined") ? ARCHETYPE_GENDER_RESTRICTIONS[g] : [];
+          return allowed && allowed.includes(a.id);
+        }).map(g => g === "hombre" ? "Él" : g === "mujer" ? "Ella" : "Elle");
+        lockHint = `<div style='margin-top:6px;color:var(--red);font-size:0.75rem;font-weight:700;'>🔒 Solo disponible para: ${unlockGenders.join(", ")}</div>`;
+      }
+      const tip = `<strong>${a.icono} ${genderedName.toUpperCase()}</strong><br><div style='margin:6px 0;'>${difBadge}</div>${archDesc}<br><div style='margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;'>${afinesHtml}${debilesHtml}</div>${passiveText ? `<div style='margin-top:6px;color:var(--blue);font-size:0.75rem;'>${passiveText}</div>` : ''}${lockHint}`.replace(/"/g, '&quot;');
 
-      return `<div class="sel-card sel-card-clean" data-id="${a.id}" data-tooltip="${tip}">
+      const lockedClass = isAvailable ? "" : " sel-card-locked";
+      const lockedBadge = isAvailable ? "" : `<div class="locked-badge-x">❌</div>`;
+
+      return `<div class="sel-card sel-card-clean${lockedClass}" data-id="${a.id}" data-tooltip="${tip}" data-locked="${isAvailable ? "0" : "1"}">
+        ${lockedBadge}
         <div class="sc-icon-wrap">${a.icono}</div>
         <div class="sc-name">${genderedName}</div>
         <div class="sc-desc">${archDesc}</div>
       </div>`;
     }).join("");
-    grid.querySelectorAll(".sel-card").forEach(c=>{
+    grid.querySelectorAll(".sel-card:not(.sel-card-locked)").forEach(c=>{
       c.onclick=()=>{
         snd.click();
         this.sel.arch=c.dataset.id;
@@ -843,7 +922,16 @@ class UIEngine {
     });
   }
 
+
   _personality() {
+    const backBtn = document.getElementById("btn-back-personality");
+    if (backBtn) {
+      backBtn.onclick = () => {
+        snd.click();
+        this.showScreen("screen-archetype");
+        this._archetype();
+      };
+    }
     const grid=document.getElementById("personality-grid"); if(!grid) return;
     grid.innerHTML=PERSONALITIES.map(p=>{
       const persDesc = typeof getGenderedPersonalityDesc === "function" ? getGenderedPersonalityDesc(p, this.sel.genero) : p.desc;
@@ -1220,11 +1308,10 @@ class UIEngine {
           </div>
           <div class="card-face card-front">
             <div class="truco-card" style="border-top-color:${palo.color}; cursor:pointer;" data-idx="${idx}">
-              ${badgeHtml}
               <div class="card-suit-tag" style="color:${palo.color};">
                 <span class="card-suit-dot" style="background:${palo.color};"></span>
                 ${palo.nombre.toUpperCase()}
-                <span class="card-key-badge">[${idx + 1}]</span>
+                ${isNew ? `<span class="card-new-badge">✨ NUEVA</span>` : `<span class="card-key-badge">[${idx + 1}]</span>`}
               </div>
               <div class="card-palo">${palo.icono}</div>
               <div class="card-title">${c.titulo}</div>
@@ -1616,34 +1703,40 @@ class UIEngine {
         </div>
       </div>
 
-      <!-- PLAYER'S PUBLISHED TWEET (Revealed on stop with pure white, large text) -->
-      <div class="simulated-tweet-box" id="simulated-tweet-box" style="display:none;">
-        <div class="tweet-left-avatar">${currentAvatar}</div>
-        <div class="tweet-right-content">
-          <div class="tweet-author-line">
-            <span class="tweet-author-name">${genderedArch}</span>
-            ${verifiedBadgeHtml}
-            <span class="tweet-handle">${e.handle}</span>
-            <span class="tweet-dot">·</span>
-            <span class="tweet-time">Turno ${String(e.turno).padStart(2,"0")}</span>
-          </div>
-          <div class="tweet-body-text" id="target-tweet-body">${tweetContent}</div>
-          <div class="tweet-metrics-bar ${!isSuccess?'is-ratio':''}" id="tweet-metrics-bar" style="display:none;">
-            <div class="t-metric metric-reply metric-hidden" id="metric-reply"><span class="m-icon">💬</span> <span class="m-val">${formatMetric(replies)}</span></div>
-            <div class="t-metric metric-rt metric-hidden" id="metric-rt"><span class="m-icon">🔁</span> <span class="m-val">${formatMetric(rts)}</span></div>
-            <div class="t-metric metric-like metric-hidden" id="metric-like"><span class="m-icon">❤️</span> <span class="m-val">${formatMetric(likes)}</span></div>
-            <div class="t-metric metric-view metric-hidden" id="metric-view"><span class="m-icon">👁️</span> <span class="m-val">${formatMetric(views)}</span></div>
+      <!-- MAIN RESULT SPLIT ROW (Side by side in landscape, stacked in desktop/portrait) -->
+      <div class="narrative-split-row" id="narrative-split-row">
+        <!-- LEFT: PLAYER'S PUBLISHED TWEET -->
+        <div class="simulated-tweet-box" id="simulated-tweet-box" style="display:none;">
+          <div class="tweet-left-avatar">${currentAvatar}</div>
+          <div class="tweet-right-content">
+            <div class="tweet-author-line">
+              <span class="tweet-author-name">${genderedArch}</span>
+              ${verifiedBadgeHtml}
+              <span class="tweet-handle">${e.handle}</span>
+              <span class="tweet-dot">·</span>
+              <span class="tweet-time">Turno ${String(e.turno).padStart(2,"0")}</span>
+            </div>
+            <div class="tweet-body-text" id="target-tweet-body">${tweetContent}</div>
+            <div class="tweet-metrics-bar ${!isSuccess?'is-ratio':''}" id="tweet-metrics-bar" style="display:none;">
+              <div class="t-metric metric-reply metric-hidden" id="metric-reply"><span class="m-icon">💬</span> <span class="m-val">${formatMetric(replies)}</span></div>
+              <div class="t-metric metric-rt metric-hidden" id="metric-rt"><span class="m-icon">🔁</span> <span class="m-val">${formatMetric(rts)}</span></div>
+              <div class="t-metric metric-like metric-hidden" id="metric-like"><span class="m-icon">❤️</span> <span class="m-val">${formatMetric(likes)}</span></div>
+              <div class="t-metric metric-view metric-hidden" id="metric-view"><span class="m-icon">👁️</span> <span class="m-val">${formatMetric(views)}</span></div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="narrative-consequence-box ${isSuccess?'pos':'neg'}" id="narrative-consequence" style="display:none;">
-        <div class="consequence-head">${outcomeTitle}</div>
-        ${consequenceText ? `<div class="consequence-desc">${consequenceText}</div>` : ''}
-      </div>
+        <!-- RIGHT: OUTCOME, LOGS & STATS -->
+        <div class="narrative-side-stats" id="narrative-side-stats">
+          <div class="narrative-consequence-box ${isSuccess?'pos':'neg'}" id="narrative-consequence" style="display:none;">
+            <div class="consequence-head">${outcomeTitle}</div>
+            ${consequenceText ? `<div class="consequence-desc">${consequenceText}</div>` : ''}
+          </div>
 
-      <div class="narrative-body" id="narrative-body" style="display:none;">
-        <div class="narrative-log" id="narrative-log"></div>
+          <div class="narrative-body" id="narrative-body" style="display:none;">
+            <div class="narrative-log" id="narrative-log"></div>
+          </div>
+        </div>
       </div>
 
       <div class="narrative-actions">
@@ -2063,6 +2156,13 @@ class UIEngine {
     const log = e.gameLog;
     if (!log || log.length === 0) return;
 
+    // ── MOBILE: TIMELINE FEED DE TWEETS (en vez de árbol SVG) ──
+    const isMobile = window.innerWidth <= 768 || (window.matchMedia && window.matchMedia("(max-width: 900px) and (orientation: landscape)").matches);
+    if (isMobile) {
+      this._showMobileTimelineFeed();
+      return;
+    }
+
     // ── MINIMALIST INFOGRAPHIC DENDROGRAM (v17) ────────────────────────
     // Inspirado en árbol de decisiones limpio con niveles horizontales sutiles,
     // curvas Bézier fluidas y paleta unificada al 100% con la UI de Twitero.
@@ -2312,11 +2412,13 @@ class UIEngine {
       node.addEventListener("mouseenter", ev => {
         const snap = td.snap || {};
         const isViral = td.chosen.viral;
+        const tweetText = td.chosen.text || td.chosen.title || "";
         tooltip.innerHTML = `
           <div style="color:${C.trunk};font-weight:800;font-size:12px;margin-bottom:4px;">
             ${td.chosen.icon || "💬"} ${td.chosen.title || "Carta"} &nbsp;
             <span style="color:#64748B;font-size:10px;">(Turno ${log[idx].t})</span>
           </div>
+          ${tweetText ? `<div style="font-family:'Plus Jakarta Sans', sans-serif;font-size:11px;color:#e2e8f0;background:rgba(255,255,255,0.06);border-left:2px solid ${C.trunk};padding:6px 8px;margin:6px 0;border-radius:3px;line-height:1.35;">"${tweetText}"</div>` : ""}
           <div style="color:${td.chosen.ok ? (isViral ? C.pipViral : C.pipOk) : C.pipFail};font-weight:700;">
             ${td.chosen.ok ? (isViral ? "✨ IMPACTO VIRAL" : "✅ TWEET EXITOSO") : "❌ RATIO EN EL TIMELINE"}
             &nbsp;<span style="color:#8b98a9;font-size:10px;font-family:'Space Mono', monospace;">[D${td.chosen.roll}/≤${td.chosen.chance}%]</span>
@@ -2447,5 +2549,89 @@ class UIEngine {
     ctx.closePath();
     if (fill)   { ctx.fillStyle = fill; ctx.fill(); }
     if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = strokeW || 1; ctx.stroke(); }
+  }
+
+  // ── MOBILE: TIMELINE FEED DE TWEETS (Reemplazo del árbol en pantallas chicas) ──
+  _showMobileTimelineFeed() {
+    const e = this.eng;
+    const log = e.gameLog;
+    if (!log || log.length === 0) return;
+
+    let overlay = document.getElementById("mobile-timeline-overlay");
+    if (!overlay) {
+      overlay = document.createElement("div");
+      overlay.id = "mobile-timeline-overlay";
+      overlay.className = "mobile-timeline-overlay";
+      document.body.appendChild(overlay);
+    }
+
+    const currentAvatar = e.getAvatar();
+    const genderedArch = typeof getGenderedArchetype === "function" ? getGenderedArchetype(e.arquetipo, e.genero) : e.arquetipo.nombre;
+
+    const cardsHtml = log.map(entry => {
+      const ch = entry.chosen;
+      const isSuccess = ch.ok;
+      const isViral = ch.viral;
+      const resultBadge = isViral
+        ? `<span class="mt-badge viral">✨ VIRAL</span>`
+        : isSuccess
+        ? `<span class="mt-badge ok">✅ ÉXITO</span>`
+        : `<span class="mt-badge fail">❌ RATIO</span>`;
+
+      const tweetText = ch.text || ch.title || "";
+      const segsDelta = entry.delta?.segs || 0;
+      const segsClass = segsDelta >= 0 ? "pos" : "neg";
+      const segsStr = (segsDelta >= 0 ? "+" : "") + segsDelta.toLocaleString();
+
+      return `
+      <div class="mobile-feed-card ${!isSuccess ? 'is-fail' : ''}">
+        <div class="mobile-feed-top">
+          <div class="mobile-feed-avatar">${currentAvatar}</div>
+          <div class="mobile-feed-meta">
+            <span class="mobile-feed-name">${genderedArch}</span>
+            <span class="mobile-feed-handle">${e.handle}</span>
+            <span class="mobile-feed-turn">· T${entry.t}</span>
+          </div>
+          <div class="mobile-feed-status">${resultBadge}</div>
+        </div>
+        <div class="mobile-feed-title">${ch.icon || "💬"} ${ch.title}</div>
+        ${tweetText ? `<div class="mobile-feed-text">"${tweetText}"</div>` : ''}
+        <div class="mobile-feed-stats">
+          <span class="mt-stat ${segsClass}">👥 ${segsStr}</span>
+          <span class="mt-stat">⚡ +${entry.delta?.eng || 0} eng</span>
+          ${entry.delta?.hate ? `<span class="mt-stat neg">💀 +${entry.delta.hate} odio</span>` : ''}
+          ${ch.booster ? `<span class="mt-stat booster">🚀 ${ch.booster}</span>` : ''}
+        </div>
+      </div>
+      `;
+    }).join("");
+
+    overlay.innerHTML = `
+      <div class="mobile-timeline-box">
+        <div class="mobile-timeline-header">
+          <div>
+            <div class="mobile-timeline-title">📱 TIMELINE DE LA PARTIDA</div>
+            <div class="mobile-timeline-sub">${e.handle} · ${log.length} TWEETS PUBLICADOS</div>
+          </div>
+          <button class="mobile-timeline-close" id="btn-close-mobile-timeline">✕</button>
+        </div>
+        <div class="mobile-timeline-scroll">
+          ${cardsHtml}
+        </div>
+        <div class="mobile-timeline-footer">
+          <button class="btn btn-primary" id="btn-ok-mobile-timeline" style="width:100%;">CERRAR TIMELINE ✕</button>
+        </div>
+      </div>
+    `;
+
+    overlay.classList.add("active");
+
+    const closeFeed = () => {
+      snd.click();
+      overlay.classList.remove("active");
+    };
+
+    document.getElementById("btn-close-mobile-timeline")?.addEventListener("click", closeFeed);
+    document.getElementById("btn-ok-mobile-timeline")?.addEventListener("click", closeFeed);
   }
 }

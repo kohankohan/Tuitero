@@ -289,8 +289,8 @@ const GENERO_LABELS = { hombre: "Él", mujer: "Ella", diverso: "Elle" };
 
 const ARCHETYPE_GENDER_RESTRICTIONS = {
   hombre: ["opinologo", "futbolero", "militante", "humor", "periodista", "cryptobro", "gamer", "conspiranoico", "influencer", "techie", "podcaster"],
-  mujer: ["opinologo", "futbolero", "militante", "periodista", "gamer", "conspiranoico", "influencer", "onlyfans", "podcaster"],
-  diverso: ["opinologo", "militante", "periodista", "gamer", "influencer", "onlyfans", "techie", "podcaster"]
+  mujer: ["opinologo", "futbolero", "militante", "periodista", "gamer", "influencer", "onlyfans", "podcaster"],
+  diverso: ["militante", "periodista", "gamer", "influencer", "onlyfans", "techie", "podcaster"]
 };
 
 function isArchetypeAvailableForGender(archId, genero) {
@@ -1997,6 +1997,100 @@ const trendingTopicsActuales = {
   }
 };
 
+// ── DESCANSO / DESCONEXIÓN (Pool amplio de variantes para evitar repeticiones) ──
+const descansoContent = [
+  {
+    titulo: "Día de Desconexión",
+    texto: "Gente, me voy a tomar el día offline. Mucha toxicidad hoy. Nos leemos mañana, pórtense bien.",
+    narrativaExito: "Te desconectaste a tiempo. El timeline pasó a otro tema y recuperaste la paz mental.",
+    narrativaFallo: "La tentación de mirar las menciones te ganó y volviste a entrar antes de tiempo."
+  },
+  {
+    titulo: "Modo Avión y Pasto",
+    texto: "Cierro la app por 24hs. Si no respondo DMs es porque salí a pisar pasto y recordar que existe el mundo real.",
+    narrativaExito: "Respiraste aire fresco sin pantallas. Tu mente agradeció el respiro.",
+    narrativaFallo: "A los diez minutos abriste el navegador en modo incógnito para ver qué decían de vos."
+  },
+  {
+    titulo: "Silencio de Radio",
+    texto: "Desinstalé la app del celu por un rato. Me satura el algoritmo, las peleas inventadas y los hilos eternos. Paz.",
+    narrativaExito: "El silencio digital te devolvió la concentración y la salud mental subió notablemente.",
+    narrativaFallo: "La abstinencia de notificaciones te puso ansioso y volviste a instalarla."
+  },
+  {
+    titulo: "Detox de Notificaciones",
+    texto: "Apagué absolutamente todas las notificaciones. No me busquen, no me etiqueten. Día dedicado a no opinar de nada.",
+    narrativaExito: "Ignorar el bardo fue la mejor decisión estratégica del día.",
+    narrativaFallo: "Te quedaste pensando en si te habían citado en algún quote fulminante."
+  },
+  {
+    titulo: "Sobremesa y Mate Lejos de la Red",
+    texto: "Tarde de mates, música tranquila y cero feeds. Cuidar la cabeza antes de que el timeline te devore.",
+    narrativaExito: "Una tarde serena que limpió la mala onda del feed acumulada en la semana.",
+    narrativaFallo: "Tus amigos sacaron el tema de Twitter en la charla y no pudiste evitar chequear."
+  },
+  {
+    titulo: "Cierre Preventivo de Pestañas",
+    texto: "Demasiado bardo por milímetro cuadrado hoy. Me retiro dignamente antes de engancharme en una discusión estúpida.",
+    narrativaExito: "Esquivaste una cancelación cantada retirándote en el minuto justo.",
+    narrativaFallo: "Leíste un tweet provocador justo antes de cerrar y te fuiste con bronca."
+  },
+  {
+    titulo: "Domingo de Terapia y Desconexión",
+    texto: "Domingo sin pantallas. El mundo sigue girando aunque uno no tuitee cada 15 minutos, increíble descubrimiento.",
+    narrativaExito: "Comprobaste que la vida offline existe y es bastante más sana.",
+    narrativaFallo: "Te picaron los dedos por tirar un chiste sobre el partido de la fecha."
+  },
+  {
+    titulo: "Pausa por Sobrecarga de Dopamina",
+    texto: "Alerta de saturación mental. Silencio menciones, apago datos y me pongo a leer un libro que no sea un hilo de X.",
+    narrativaExito: "Bajó el ritmo cardíaco y la ansiedad del scroll infinito.",
+    narrativaFallo: "El libro te aburrió a la quinta página y entraste a mirar memes."
+  },
+  {
+    titulo: "Desconexión Zen",
+    texto: "Hoy elijo mi paz mental antes que tener razón en una pelea de desconocidos. Besos a todos, vuelvo cuando baje la marea.",
+    narrativaExito: "Tu comunidad valoró tu madurez y el hate residual se disipó solo.",
+    narrativaFallo: "Tus haters dijeron que te escapaste con la cola entre las patas."
+  },
+  {
+    titulo: "Caminata sin Celular",
+    texto: "Dejo el teléfono cargando en otra habitación y salgo a caminar sin rumbo. Ni una sola notificación por hoy.",
+    narrativaExito: "Volviste renovado, con ideas frescas y la cabeza despejada.",
+    narrativaFallo: "Creíste escuchar el sonido de notificación en tu bolsillo vacío durante media hora."
+  },
+  {
+    titulo: "Basta de Timeline por Hoy",
+    texto: "Ya leí suficientes barbaridades por las próximas dos semanas. Corto acá. Nos vemos del otro lado del eclipse.",
+    narrativaExito: "Te ahorraste leer la peor polémica de la semana.",
+    narrativaFallo: "Te perdiste el chisme del día y tus amigos te cargaron en WhatsApp."
+  },
+  {
+    titulo: "Aislado por Salud Mental",
+    texto: "Priorizando la salud mental. Las redes queman si no sabés cuándo frenar. Me guardo hasta nuevo aviso 🧘",
+    narrativaExito: "Una recarga de energía necesaria que estabilizó tus números.",
+    narrativaFallo: "Te costó desconectar de verdad y te quedaste mirando la pantalla en negro."
+  },
+  {
+    titulo: "Veda Tuitera Autoimpuesta",
+    texto: "Declaro veda tuitera en mi cuenta por las próximas 24 horas. Cero polémica, cero replies, 100% descanso.",
+    narrativaExito: "La veda enfrió todos los frentes de conflicto abiertos.",
+    narrativaFallo: "Rompiste la veda a las 2 horas con un 'bueno una sola cosa más y me voy'."
+  },
+  {
+    titulo: "Apagón Digital",
+    texto: "Pantallas en escala de grises y teléfono en un cajón. Hay que desintoxicar el cerebro de vez en cuando.",
+    narrativaExito: "Dormiste una siesta gloriosa sin sobresaltos de trending topics.",
+    narrativaFallo: "Te despertaste sobresaltado creyendo que te habían hackeado la cuenta."
+  },
+  {
+    titulo: "Cierre de Sesión Terapéutico",
+    texto: "Log out general. Cuando el timeline parece un loquero a cielo abierto, el único ganador es el que apaga la pantalla.",
+    narrativaExito: "Ganaste vos. Cero estrés, mente limpia y energía renovada.",
+    narrativaFallo: "Tus conocidos te escribieron pensando que te había pasado algo grave."
+  }
+];
+
 // 🔄 MERGE AUTOMÁTICO DE POOLS (Ampliación de 3 a 4-5 opciones por categoría) 🔄
 (function mergePools() {
   const categories = [
@@ -2143,7 +2237,7 @@ const archetypeEvents = [
     opciones: [
       {
         texto: "Hacer fotos casuales y rápidas en el espejo.",
-        tweet: "collab con @{collab} salió 🔥 unas fotos rápidas pero con toda la vibra. ya en el perfil 🖤",
+        tweet: "collab con @cherry_vip salió 🔥 unas fotos rápidas pero con toda la vibra. ya en el perfil 🖤",
         resultado: "Crecimiento estándar sin mucho esfuerzo de producción.",
         efecto: { seguidores: 0.10, credibilidad: 0, amor: +5, saludMental: +5, ingresos: 100 }
       },
@@ -3624,7 +3718,7 @@ const archetypeEvents = [
       },
       {
         texto: "Iniciar una campaña de acoso organizado contra la cuenta del que te copió.",
-        tweet: "Vayan todos a las menciones de @{competencia} a recordarles de dónde sacaron cada línea de código. No los dejen en paz hasta que den la cara.",
+        tweet: "Vayan todos a las menciones de @dev_clon_saas a recordarles de dónde sacaron cada línea de código. No los dejen en paz hasta que den la cara.",
         resultado: "Te pasás de la raya y la comunidad tech, que al principio te apoyaba, empieza a incomodarse con tus métodos.",
         efecto: { seguidores: 0.02, credibilidad: -20, odio: +20, saludMental: -15 }
       }
@@ -5351,12 +5445,21 @@ function makeCardContent(id, archId, usedSet=null) {
       };
     }
     case "descanso": {
+      const pool = (typeof descansoContent !== 'undefined' && Array.isArray(descansoContent) && descansoContent.length > 0)
+        ? descansoContent
+        : [{
+            titulo: "Día de Desconexión",
+            texto: "Gente, me voy a tomar el día offline. Mucha toxicidad hoy. Nos leemos mañana, pórtense bien.",
+            narrativaExito: "Te desconectaste a tiempo. El timeline pasó a otro tema y recuperaste la paz mental.",
+            narrativaFallo: "La tentación de mirar las menciones te ganó y volviste a entrar antes de tiempo."
+          }];
+      const item = pickUnusedItem(pool, set) || pool[0];
       return {
-        titulo: "Día de Desconexión",
-        texto: "Gente, me voy a tomar el día offline. Mucha toxicidad hoy. Nos leemos mañana, pórtense bien.",
-        narrativaExito: "Te desconectaste a tiempo. El timeline pasó a otro tema y recuperaste la paz mental.",
-        narrativaFallo: "La tentación de mirar las menciones te ganó y volviste a entrar antes de tiempo.",
-        eng: 0, hate: 0, amor: 30, odioP: 0, isPropio: true
+        titulo: item.titulo || "Día de Desconexión",
+        texto: item.texto || "Gente, me voy a tomar el día offline. Nos leemos mañana.",
+        narrativaExito: item.narrativaExito || "Te desconectaste a tiempo y recuperaste la paz mental.",
+        narrativaFallo: item.narrativaFallo || "La tentación de mirar las menciones te ganó y volviste antes de tiempo.",
+        eng: 0, hate: 0, amor: 30, odioP: 25, isPropio: true
       };
     }
     default:
@@ -5620,6 +5723,7 @@ class GameEngine {
     this.rachaViralActive = false;
     this.rachaViralCount = 0;
     this.rachaViralDone = false;
+    this.rachaViralDescansoUsed = false;
   }
 
   init(genero, archId, persId, customHandle=null) {
@@ -5751,6 +5855,7 @@ class GameEngine {
   startRachaViral() {
     this.rachaViralActive = true;
     this.rachaViralCount = 0;
+    this.rachaViralDescansoUsed = false;
     this.cachedCards = null;
   }
 
@@ -5861,7 +5966,7 @@ class GameEngine {
       { id:"politica",   ok:this.seguidores>=8000 },
       { id:"bait",       ok:baitAvailable },
       { id:"patrocinio", ok:this.seguidores>=(arch.bajomon?35000:18000) },
-      { id:"descanso",   ok:true }
+      { id:"descanso",   ok:!(this.rachaViralActive && this.rachaViralDescansoUsed) }
     ].filter(c=>c.ok).map(c=>{
       let w=c.id==="tema"?2.0:1.0;
       if(c.id==="descanso"){
@@ -5919,9 +6024,13 @@ class GameEngine {
       politica: 40,
       bait: 52,
       patrocinio: 65,
-      descanso: 80
+      descanso: 62
     };
     let c = bases[card.id] || 50;
+
+    // Modificadores de género (dificultad asimétrica)
+    if (this.genero === "mujer") c -= 3;
+    else if (this.genero === "diverso") c -= 7;
 
     if (!this.arquetipo.deb.some(d=>card.id.startsWith(d)||d.startsWith(card.id.slice(0,4)))) c += 4;
     if (this.personalidad.afines.some(a=>a===card.id)) c += 5;
@@ -5952,6 +6061,9 @@ class GameEngine {
         boosterUsed = b;
       }
     }
+
+    // Snapshot followers AFTER booster (so net gain in turn log includes cancellation loss)
+    const segsBeforeTurn = this.seguidores;
 
     // STRICT ANTI-REPETITION: add to played set
     this.playedTweetKeys.add(card.titulo);
@@ -5997,17 +6109,32 @@ class GameEngine {
       this.streakExitos++;
 
       if(card.id === "descanso") {
-        this.odio = Math.max(0, this.odio - 10);
-        this.saludMental = Math.min(100, this.saludMental + 15);
-        this.amor = Math.min(100, this.amor + 5);
+        if(this.rachaViralActive) {
+          this.rachaViralDescansoUsed = true;
+        }
+        if(this.lastCard?.id === "descanso") {
+          // Spam de descanso consecutivo: penalización por inactividad prolongada
+          this.saludMental = Math.max(0, this.saludMental - 10);
+        } else {
+          this.odio = Math.max(0, this.odio - 10);
+          this.saludMental = Math.min(100, this.saludMental + 15);
+          this.amor = Math.min(100, this.amor + 5);
+        }
       }
 
     } else {
       hateGain = Math.floor(card.hate * mult);
       segsGain = card.id === "descanso" ? 0 : -Math.floor(this.seguidores * 0.04 * mult);
       if(card.id === "descanso") {
-        this.odio = Math.max(0, this.odio - 4);
-        this.saludMental = Math.min(100, this.saludMental + 5);
+        if(this.rachaViralActive) {
+          this.rachaViralDescansoUsed = true;
+        }
+        if(this.lastCard?.id === "descanso") {
+          this.saludMental = Math.max(0, this.saludMental - 10);
+        } else {
+          this.odio = Math.max(0, this.odio - 4);
+          this.saludMental = Math.min(100, this.saludMental + 5);
+        }
       } else if(Math.random() * 100 < card.odioP) {
         this.odio = Math.min(100, this.odio + Math.floor(6 * mult));
       }
@@ -6047,7 +6174,9 @@ class GameEngine {
     let cancellationEvent = null;
     if(!ok && RISK_CARDS.includes(card.id)) {
       const isTroll = this.personalidad.id === "troll";
-      let riskPct = isTroll ? 25 : 15; // base 15%, troll 25%
+      let riskPct = isTroll ? 32 : 22; // base 22%, troll 32%
+      if (this.genero === "mujer") riskPct += 5;
+      else if (this.genero === "diverso") riskPct += 12;
       if (this.arquetipo.dificultad === "alta") riskPct += 12; // Arquetipos difíciles: peligro de cancelación latente
       else if (this.arquetipo.dificultad === "baja") riskPct -= 6; // Arquetipos casuales: cancelación protegida
       if(this.lastCard?.id === "descanso") riskPct -= 20;
@@ -6089,6 +6218,8 @@ class GameEngine {
           motivo: chosenCanc.motivo,
           texto: chosenCanc.texto,
           tweetSimulado: chosenCanc.tweetSimulado,
+          tweetReal: card.texto || null,
+          cardTituloReal: card.titulo || null,
           isFatal: this.strikesCancelacion >= 3
         };
 
@@ -6111,7 +6242,7 @@ class GameEngine {
       cardTitle: card.titulo,
       roll, chance, ok,
       booster: boosterUsed?.nombre || null,
-      segsGain, engGain, hateGain, dinGain,
+      segsGain: this.seguidores - segsBeforeTurn, engGain, hateGain, dinGain,
       cancellationEvent
     });
 
@@ -6128,6 +6259,7 @@ class GameEngine {
       chosen: {
         id: card.id,
         title: card.titulo,
+        text: card.texto || card.titulo || "",
         icon: CARD_ICONS[card.id] || "🃏",
         slot: chosenSlot >= 0 ? chosenSlot : 1,
         ok, roll, chance,
@@ -6298,7 +6430,7 @@ class GameEngine {
   generateMatchReport() {
     const report = {
       game: "Twitero",
-      version: "v15",
+      version: "v19",
       id: `TW-${Math.random().toString(36).substring(2, 7).toUpperCase()}`,
       setup: {
         genero: this.genero,
@@ -6356,6 +6488,7 @@ class UIEngine {
     this._setupProfileModal();
     this._setupShortcutsModal();
     this._setupGlobalKeyboardShortcuts();
+    this._setupFullscreenControls();
     if(window.twemoji) window.twemoji.parse(document.body);
   }
 
@@ -6816,10 +6949,12 @@ class UIEngine {
     // Populate slide 1 dynamically with the specific incident
     const slide1 = document.getElementById("s2-slide-1");
     if (slide1) {
+      const displayTweet = canc.tweetReal || canc.texto;
+      const tweetLabel = canc.tweetReal ? `<div style="font-size:0.7rem;color:var(--gray-1);margin-bottom:3px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.5px;">El tweet que lo desató:</div>` : "";
       slide1.innerHTML = `
         <h3>EL ESCÁNDALO: ${canc.titulo || "SEGUNDO STRIKE"} 🚨</h3>
         <p>${canc.motivo || "Un nuevo incidente sacudió tu timeline y acumuló reportes masivos contra tu cuenta."}</p>
-        ${canc.texto ? `<div style="font-family:var(--font-mono); font-size:0.82rem; color:var(--gray-1); border-left:3px solid var(--red); padding:8px 12px; margin-top:4px;">"${canc.texto}"</div>` : ""}
+        ${displayTweet ? `<div style="font-family:var(--font-mono); font-size:0.82rem; color:var(--gray-1); border-left:3px solid var(--red); padding:8px 12px; margin-top:4px;">${tweetLabel}"${displayTweet}"</div>` : ""}
       `;
     }
 
@@ -6862,10 +6997,21 @@ class UIEngine {
     const tweetEl  = document.getElementById("cgo-tweet");
     if (titleEl)  titleEl.textContent  = canc?.titulo  || "CUENTA SUSPENDIDA DEFINITIVAMENTE";
     if (reasonEl) reasonEl.textContent = canc?.motivo  || "";
-    if (tweetEl)  { tweetEl.textContent = canc?.texto ? `"${canc.texto}"` : ""; tweetEl.style.display = canc?.texto ? "block" : "none"; }
+    const displayTweet = canc?.tweetReal || canc?.texto;
+    if (tweetEl) {
+      if (displayTweet) {
+        const label = canc?.tweetReal ? "El tweet que lo desató:\n" : "";
+        tweetEl.textContent = label + `"${displayTweet}"`;
+        tweetEl.style.display = "block";
+      } else {
+        tweetEl.textContent = "";
+        tweetEl.style.display = "none";
+      }
+    }
     overlay.classList.add("active");
     overlay.focus();
   }
+
 
   _setupViralModal() {
 
@@ -6944,6 +7090,44 @@ class UIEngine {
     }
     snd.alert();
     overlay.classList.add("active");
+  }
+
+  _setupFullscreenControls() {
+    const toggleFullscreen = () => {
+      snd.click();
+      const doc = document;
+      const docEl = document.documentElement;
+      const isFullscreen = doc.fullscreenElement || doc.webkitFullscreenElement || doc.mozFullScreenElement || doc.msFullscreenElement;
+
+      if (!isFullscreen) {
+        const req = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.mozRequestFullScreen || docEl.msRequestFullscreen;
+        if (req) {
+          req.call(docEl).catch(err => {
+            console.warn("Fullscreen request error:", err);
+          });
+        } else {
+          // Fallback iOS Safari: mostrar sugerencia amigable
+          this.showAlert(
+            "PANTALLA COMPLETA EN iOS",
+            "Apple bloquea la pantalla completa directa en navegadores móviles. Para jugarlo en pantalla completa en iPhone o iPad, tocá el botón Compartir de Safari y elegí 'Agregar al inicio'.",
+            false,
+            null,
+            "📱"
+          );
+        }
+      } else {
+        const exit = doc.exitFullscreen || doc.webkitExitFullscreen || doc.mozCancelFullScreen || doc.msExitFullscreen;
+        if (exit) {
+          exit.call(doc).catch(err => console.warn(err));
+        }
+      }
+    };
+
+    const btnSplash = document.getElementById("btn-fullscreen-splash");
+    if (btnSplash) btnSplash.onclick = toggleFullscreen;
+
+    const btnGame = document.getElementById("btn-fullscreen-game");
+    if (btnGame) btnGame.onclick = toggleFullscreen;
   }
 
   _splash() {
@@ -7128,6 +7312,13 @@ class UIEngine {
   }
 
   _gender() {
+    const backBtn = document.getElementById("btn-back-gender");
+    if (backBtn) {
+      backBtn.onclick = () => {
+        snd.click();
+        this.showScreen("screen-splash");
+      };
+    }
     const grid=document.getElementById("gender-grid"); if(!grid) return;
     const opts=[{id:"hombre",icon:"👨",name:"Hombre",desc:"Pronombres masculinos.",meta:"PRON: ÉL"},{id:"mujer",icon:"👩",name:"Mujer",desc:"Pronombres femeninos.",meta:"PRON: ELLA"},{id:"diverso",icon:"🧑",name:"Diverso",desc:"Lenguaje neutro.",meta:"PRON: ELLE"}];
     grid.innerHTML=opts.map(o=>`<div class="sel-card" data-id="${o.id}"><div class="sc-icon-wrap">${o.icon}</div><div class="sc-name">${o.name}</div><div class="sc-desc">${o.desc}</div><div class="sc-meta">${o.meta}</div></div>`).join("");
@@ -7135,11 +7326,18 @@ class UIEngine {
   }
 
   _archetype() {
+    const backBtn = document.getElementById("btn-back-archetype");
+    if (backBtn) {
+      backBtn.onclick = () => {
+        snd.click();
+        this.showScreen("screen-gender");
+      };
+    }
     const grid=document.getElementById("archetype-grid"); if(!grid) return;
-    const available = typeof isArchetypeAvailableForGender === "function" 
-      ? ARCHETYPES.filter(a => isArchetypeAvailableForGender(a.id, this.sel.genero))
-      : ARCHETYPES;
-    grid.innerHTML=available.map(a=>{
+    grid.innerHTML=ARCHETYPES.map(a=>{
+      const isAvailable = typeof isArchetypeAvailableForGender === "function"
+        ? isArchetypeAvailableForGender(a.id, this.sel.genero)
+        : true;
       const genderedName = getGenderedArchetype(a, this.sel.genero);
       const difClass = a.dificultad === "alta" ? "chip-dif-alta" : a.dificultad === "media" ? "chip-dif-media" : "chip-dif-baja";
       const difBadge = `<span class="chip-dif ${difClass}">DIFICULTAD ${a.difLabel || "MEDIA"}</span>`;
@@ -7148,15 +7346,28 @@ class UIEngine {
       const passiveText = a.difDesc || (a.bajomon?"Bajo Monetize · ":"") + (a.odioRed?"Odio Reducido":"");
       const archDesc = typeof getGenderedArchetypeDesc === "function" ? getGenderedArchetypeDesc(a, this.sel.genero) : a.desc;
 
-      const tip = `<strong>${a.icono} ${genderedName.toUpperCase()}</strong><br><div style='margin:6px 0;'>${difBadge}</div>${archDesc}<br><div style='margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;'>${afinesHtml}${debilesHtml}</div>${passiveText ? `<div style='margin-top:6px;color:var(--blue);font-size:0.75rem;'>${passiveText}</div>` : ''}`.replace(/"/g, '&quot;');
+      // Tooltip: if locked, show which gender unlocks it
+      let lockHint = "";
+      if (!isAvailable) {
+        const unlockGenders = ["hombre","mujer","diverso"].filter(g => {
+          const allowed = (typeof ARCHETYPE_GENDER_RESTRICTIONS !== "undefined") ? ARCHETYPE_GENDER_RESTRICTIONS[g] : [];
+          return allowed && allowed.includes(a.id);
+        }).map(g => g === "hombre" ? "Él" : g === "mujer" ? "Ella" : "Elle");
+        lockHint = `<div style='margin-top:6px;color:var(--red);font-size:0.75rem;font-weight:700;'>🔒 Solo disponible para: ${unlockGenders.join(", ")}</div>`;
+      }
+      const tip = `<strong>${a.icono} ${genderedName.toUpperCase()}</strong><br><div style='margin:6px 0;'>${difBadge}</div>${archDesc}<br><div style='margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;'>${afinesHtml}${debilesHtml}</div>${passiveText ? `<div style='margin-top:6px;color:var(--blue);font-size:0.75rem;'>${passiveText}</div>` : ''}${lockHint}`.replace(/"/g, '&quot;');
 
-      return `<div class="sel-card sel-card-clean" data-id="${a.id}" data-tooltip="${tip}">
+      const lockedClass = isAvailable ? "" : " sel-card-locked";
+      const lockedBadge = isAvailable ? "" : `<div class="locked-badge-x">❌</div>`;
+
+      return `<div class="sel-card sel-card-clean${lockedClass}" data-id="${a.id}" data-tooltip="${tip}" data-locked="${isAvailable ? "0" : "1"}">
+        ${lockedBadge}
         <div class="sc-icon-wrap">${a.icono}</div>
         <div class="sc-name">${genderedName}</div>
         <div class="sc-desc">${archDesc}</div>
       </div>`;
     }).join("");
-    grid.querySelectorAll(".sel-card").forEach(c=>{
+    grid.querySelectorAll(".sel-card:not(.sel-card-locked)").forEach(c=>{
       c.onclick=()=>{
         snd.click();
         this.sel.arch=c.dataset.id;
@@ -7171,7 +7382,16 @@ class UIEngine {
     });
   }
 
+
   _personality() {
+    const backBtn = document.getElementById("btn-back-personality");
+    if (backBtn) {
+      backBtn.onclick = () => {
+        snd.click();
+        this.showScreen("screen-archetype");
+        this._archetype();
+      };
+    }
     const grid=document.getElementById("personality-grid"); if(!grid) return;
     grid.innerHTML=PERSONALITIES.map(p=>{
       const persDesc = typeof getGenderedPersonalityDesc === "function" ? getGenderedPersonalityDesc(p, this.sel.genero) : p.desc;
@@ -7548,11 +7768,10 @@ class UIEngine {
           </div>
           <div class="card-face card-front">
             <div class="truco-card" style="border-top-color:${palo.color}; cursor:pointer;" data-idx="${idx}">
-              ${badgeHtml}
               <div class="card-suit-tag" style="color:${palo.color};">
                 <span class="card-suit-dot" style="background:${palo.color};"></span>
                 ${palo.nombre.toUpperCase()}
-                <span class="card-key-badge">[${idx + 1}]</span>
+                ${isNew ? `<span class="card-new-badge">✨ NUEVA</span>` : `<span class="card-key-badge">[${idx + 1}]</span>`}
               </div>
               <div class="card-palo">${palo.icono}</div>
               <div class="card-title">${c.titulo}</div>
@@ -7944,34 +8163,40 @@ class UIEngine {
         </div>
       </div>
 
-      <!-- PLAYER'S PUBLISHED TWEET (Revealed on stop with pure white, large text) -->
-      <div class="simulated-tweet-box" id="simulated-tweet-box" style="display:none;">
-        <div class="tweet-left-avatar">${currentAvatar}</div>
-        <div class="tweet-right-content">
-          <div class="tweet-author-line">
-            <span class="tweet-author-name">${genderedArch}</span>
-            ${verifiedBadgeHtml}
-            <span class="tweet-handle">${e.handle}</span>
-            <span class="tweet-dot">·</span>
-            <span class="tweet-time">Turno ${String(e.turno).padStart(2,"0")}</span>
-          </div>
-          <div class="tweet-body-text" id="target-tweet-body">${tweetContent}</div>
-          <div class="tweet-metrics-bar ${!isSuccess?'is-ratio':''}" id="tweet-metrics-bar" style="display:none;">
-            <div class="t-metric metric-reply metric-hidden" id="metric-reply"><span class="m-icon">💬</span> <span class="m-val">${formatMetric(replies)}</span></div>
-            <div class="t-metric metric-rt metric-hidden" id="metric-rt"><span class="m-icon">🔁</span> <span class="m-val">${formatMetric(rts)}</span></div>
-            <div class="t-metric metric-like metric-hidden" id="metric-like"><span class="m-icon">❤️</span> <span class="m-val">${formatMetric(likes)}</span></div>
-            <div class="t-metric metric-view metric-hidden" id="metric-view"><span class="m-icon">👁️</span> <span class="m-val">${formatMetric(views)}</span></div>
+      <!-- MAIN RESULT SPLIT ROW (Side by side in landscape, stacked in desktop/portrait) -->
+      <div class="narrative-split-row" id="narrative-split-row">
+        <!-- LEFT: PLAYER'S PUBLISHED TWEET -->
+        <div class="simulated-tweet-box" id="simulated-tweet-box" style="display:none;">
+          <div class="tweet-left-avatar">${currentAvatar}</div>
+          <div class="tweet-right-content">
+            <div class="tweet-author-line">
+              <span class="tweet-author-name">${genderedArch}</span>
+              ${verifiedBadgeHtml}
+              <span class="tweet-handle">${e.handle}</span>
+              <span class="tweet-dot">·</span>
+              <span class="tweet-time">Turno ${String(e.turno).padStart(2,"0")}</span>
+            </div>
+            <div class="tweet-body-text" id="target-tweet-body">${tweetContent}</div>
+            <div class="tweet-metrics-bar ${!isSuccess?'is-ratio':''}" id="tweet-metrics-bar" style="display:none;">
+              <div class="t-metric metric-reply metric-hidden" id="metric-reply"><span class="m-icon">💬</span> <span class="m-val">${formatMetric(replies)}</span></div>
+              <div class="t-metric metric-rt metric-hidden" id="metric-rt"><span class="m-icon">🔁</span> <span class="m-val">${formatMetric(rts)}</span></div>
+              <div class="t-metric metric-like metric-hidden" id="metric-like"><span class="m-icon">❤️</span> <span class="m-val">${formatMetric(likes)}</span></div>
+              <div class="t-metric metric-view metric-hidden" id="metric-view"><span class="m-icon">👁️</span> <span class="m-val">${formatMetric(views)}</span></div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="narrative-consequence-box ${isSuccess?'pos':'neg'}" id="narrative-consequence" style="display:none;">
-        <div class="consequence-head">${outcomeTitle}</div>
-        ${consequenceText ? `<div class="consequence-desc">${consequenceText}</div>` : ''}
-      </div>
+        <!-- RIGHT: OUTCOME, LOGS & STATS -->
+        <div class="narrative-side-stats" id="narrative-side-stats">
+          <div class="narrative-consequence-box ${isSuccess?'pos':'neg'}" id="narrative-consequence" style="display:none;">
+            <div class="consequence-head">${outcomeTitle}</div>
+            ${consequenceText ? `<div class="consequence-desc">${consequenceText}</div>` : ''}
+          </div>
 
-      <div class="narrative-body" id="narrative-body" style="display:none;">
-        <div class="narrative-log" id="narrative-log"></div>
+          <div class="narrative-body" id="narrative-body" style="display:none;">
+            <div class="narrative-log" id="narrative-log"></div>
+          </div>
+        </div>
       </div>
 
       <div class="narrative-actions">
@@ -8391,6 +8616,13 @@ class UIEngine {
     const log = e.gameLog;
     if (!log || log.length === 0) return;
 
+    // ── MOBILE: TIMELINE FEED DE TWEETS (en vez de árbol SVG) ──
+    const isMobile = window.innerWidth <= 768 || (window.matchMedia && window.matchMedia("(max-width: 900px) and (orientation: landscape)").matches);
+    if (isMobile) {
+      this._showMobileTimelineFeed();
+      return;
+    }
+
     // ── MINIMALIST INFOGRAPHIC DENDROGRAM (v17) ────────────────────────
     // Inspirado en árbol de decisiones limpio con niveles horizontales sutiles,
     // curvas Bézier fluidas y paleta unificada al 100% con la UI de Twitero.
@@ -8640,11 +8872,13 @@ class UIEngine {
       node.addEventListener("mouseenter", ev => {
         const snap = td.snap || {};
         const isViral = td.chosen.viral;
+        const tweetText = td.chosen.text || td.chosen.title || "";
         tooltip.innerHTML = `
           <div style="color:${C.trunk};font-weight:800;font-size:12px;margin-bottom:4px;">
             ${td.chosen.icon || "💬"} ${td.chosen.title || "Carta"} &nbsp;
             <span style="color:#64748B;font-size:10px;">(Turno ${log[idx].t})</span>
           </div>
+          ${tweetText ? `<div style="font-family:'Plus Jakarta Sans', sans-serif;font-size:11px;color:#e2e8f0;background:rgba(255,255,255,0.06);border-left:2px solid ${C.trunk};padding:6px 8px;margin:6px 0;border-radius:3px;line-height:1.35;">"${tweetText}"</div>` : ""}
           <div style="color:${td.chosen.ok ? (isViral ? C.pipViral : C.pipOk) : C.pipFail};font-weight:700;">
             ${td.chosen.ok ? (isViral ? "✨ IMPACTO VIRAL" : "✅ TWEET EXITOSO") : "❌ RATIO EN EL TIMELINE"}
             &nbsp;<span style="color:#8b98a9;font-size:10px;font-family:'Space Mono', monospace;">[D${td.chosen.roll}/≤${td.chosen.chance}%]</span>
@@ -8775,6 +9009,90 @@ class UIEngine {
     ctx.closePath();
     if (fill)   { ctx.fillStyle = fill; ctx.fill(); }
     if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = strokeW || 1; ctx.stroke(); }
+  }
+
+  // ── MOBILE: TIMELINE FEED DE TWEETS (Reemplazo del árbol en pantallas chicas) ──
+  _showMobileTimelineFeed() {
+    const e = this.eng;
+    const log = e.gameLog;
+    if (!log || log.length === 0) return;
+
+    let overlay = document.getElementById("mobile-timeline-overlay");
+    if (!overlay) {
+      overlay = document.createElement("div");
+      overlay.id = "mobile-timeline-overlay";
+      overlay.className = "mobile-timeline-overlay";
+      document.body.appendChild(overlay);
+    }
+
+    const currentAvatar = e.getAvatar();
+    const genderedArch = typeof getGenderedArchetype === "function" ? getGenderedArchetype(e.arquetipo, e.genero) : e.arquetipo.nombre;
+
+    const cardsHtml = log.map(entry => {
+      const ch = entry.chosen;
+      const isSuccess = ch.ok;
+      const isViral = ch.viral;
+      const resultBadge = isViral
+        ? `<span class="mt-badge viral">✨ VIRAL</span>`
+        : isSuccess
+        ? `<span class="mt-badge ok">✅ ÉXITO</span>`
+        : `<span class="mt-badge fail">❌ RATIO</span>`;
+
+      const tweetText = ch.text || ch.title || "";
+      const segsDelta = entry.delta?.segs || 0;
+      const segsClass = segsDelta >= 0 ? "pos" : "neg";
+      const segsStr = (segsDelta >= 0 ? "+" : "") + segsDelta.toLocaleString();
+
+      return `
+      <div class="mobile-feed-card ${!isSuccess ? 'is-fail' : ''}">
+        <div class="mobile-feed-top">
+          <div class="mobile-feed-avatar">${currentAvatar}</div>
+          <div class="mobile-feed-meta">
+            <span class="mobile-feed-name">${genderedArch}</span>
+            <span class="mobile-feed-handle">${e.handle}</span>
+            <span class="mobile-feed-turn">· T${entry.t}</span>
+          </div>
+          <div class="mobile-feed-status">${resultBadge}</div>
+        </div>
+        <div class="mobile-feed-title">${ch.icon || "💬"} ${ch.title}</div>
+        ${tweetText ? `<div class="mobile-feed-text">"${tweetText}"</div>` : ''}
+        <div class="mobile-feed-stats">
+          <span class="mt-stat ${segsClass}">👥 ${segsStr}</span>
+          <span class="mt-stat">⚡ +${entry.delta?.eng || 0} eng</span>
+          ${entry.delta?.hate ? `<span class="mt-stat neg">💀 +${entry.delta.hate} odio</span>` : ''}
+          ${ch.booster ? `<span class="mt-stat booster">🚀 ${ch.booster}</span>` : ''}
+        </div>
+      </div>
+      `;
+    }).join("");
+
+    overlay.innerHTML = `
+      <div class="mobile-timeline-box">
+        <div class="mobile-timeline-header">
+          <div>
+            <div class="mobile-timeline-title">📱 TIMELINE DE LA PARTIDA</div>
+            <div class="mobile-timeline-sub">${e.handle} · ${log.length} TWEETS PUBLICADOS</div>
+          </div>
+          <button class="mobile-timeline-close" id="btn-close-mobile-timeline">✕</button>
+        </div>
+        <div class="mobile-timeline-scroll">
+          ${cardsHtml}
+        </div>
+        <div class="mobile-timeline-footer">
+          <button class="btn btn-primary" id="btn-ok-mobile-timeline" style="width:100%;">CERRAR TIMELINE ✕</button>
+        </div>
+      </div>
+    `;
+
+    overlay.classList.add("active");
+
+    const closeFeed = () => {
+      snd.click();
+      overlay.classList.remove("active");
+    };
+
+    document.getElementById("btn-close-mobile-timeline")?.addEventListener("click", closeFeed);
+    document.getElementById("btn-ok-mobile-timeline")?.addEventListener("click", closeFeed);
   }
 }
 
