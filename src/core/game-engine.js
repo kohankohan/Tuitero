@@ -394,12 +394,21 @@ function makeCardContent(id, archId, usedSet=null) {
       };
     }
     case "descanso": {
+      const pool = (typeof descansoContent !== 'undefined' && Array.isArray(descansoContent) && descansoContent.length > 0)
+        ? descansoContent
+        : [{
+            titulo: "Día de Desconexión",
+            texto: "Gente, me voy a tomar el día offline. Mucha toxicidad hoy. Nos leemos mañana, pórtense bien.",
+            narrativaExito: "Te desconectaste a tiempo. El timeline pasó a otro tema y recuperaste la paz mental.",
+            narrativaFallo: "La tentación de mirar las menciones te ganó y volviste a entrar antes de tiempo."
+          }];
+      const item = pickUnusedItem(pool, set) || pool[0];
       return {
-        titulo: "Día de Desconexión",
-        texto: "Gente, me voy a tomar el día offline. Mucha toxicidad hoy. Nos leemos mañana, pórtense bien.",
-        narrativaExito: "Te desconectaste a tiempo. El timeline pasó a otro tema y recuperaste la paz mental.",
-        narrativaFallo: "La tentación de mirar las menciones te ganó y volviste a entrar antes de tiempo.",
-        eng: 0, hate: 0, amor: 30, odioP: 0, isPropio: true
+        titulo: item.titulo || "Día de Desconexión",
+        texto: item.texto || "Gente, me voy a tomar el día offline. Nos leemos mañana.",
+        narrativaExito: item.narrativaExito || "Te desconectaste a tiempo y recuperaste la paz mental.",
+        narrativaFallo: item.narrativaFallo || "La tentación de mirar las menciones te ganó y volviste antes de tiempo.",
+        eng: 0, hate: 0, amor: 30, odioP: 25, isPropio: true
       };
     }
     default:
@@ -663,6 +672,7 @@ class GameEngine {
     this.rachaViralActive = false;
     this.rachaViralCount = 0;
     this.rachaViralDone = false;
+    this.rachaViralDescansoUsed = false;
   }
 
   init(genero, archId, persId, customHandle=null) {
@@ -794,6 +804,7 @@ class GameEngine {
   startRachaViral() {
     this.rachaViralActive = true;
     this.rachaViralCount = 0;
+    this.rachaViralDescansoUsed = false;
     this.cachedCards = null;
   }
 
@@ -904,7 +915,7 @@ class GameEngine {
       { id:"politica",   ok:this.seguidores>=8000 },
       { id:"bait",       ok:baitAvailable },
       { id:"patrocinio", ok:this.seguidores>=(arch.bajomon?35000:18000) },
-      { id:"descanso",   ok:true }
+      { id:"descanso",   ok:!(this.rachaViralActive && this.rachaViralDescansoUsed) }
     ].filter(c=>c.ok).map(c=>{
       let w=c.id==="tema"?2.0:1.0;
       if(c.id==="descanso"){
@@ -962,9 +973,13 @@ class GameEngine {
       politica: 40,
       bait: 52,
       patrocinio: 65,
-      descanso: 80
+      descanso: 62
     };
     let c = bases[card.id] || 50;
+
+    // Modificadores de género (dificultad asimétrica)
+    if (this.genero === "mujer") c -= 3;
+    else if (this.genero === "diverso") c -= 7;
 
     if (!this.arquetipo.deb.some(d=>card.id.startsWith(d)||d.startsWith(card.id.slice(0,4)))) c += 4;
     if (this.personalidad.afines.some(a=>a===card.id)) c += 5;
@@ -995,6 +1010,9 @@ class GameEngine {
         boosterUsed = b;
       }
     }
+
+    // Snapshot followers AFTER booster (so net gain in turn log includes cancellation loss)
+    const segsBeforeTurn = this.seguidores;
 
     // STRICT ANTI-REPETITION: add to played set
     this.playedTweetKeys.add(card.titulo);
@@ -1040,17 +1058,32 @@ class GameEngine {
       this.streakExitos++;
 
       if(card.id === "descanso") {
-        this.odio = Math.max(0, this.odio - 10);
-        this.saludMental = Math.min(100, this.saludMental + 15);
-        this.amor = Math.min(100, this.amor + 5);
+        if(this.rachaViralActive) {
+          this.rachaViralDescansoUsed = true;
+        }
+        if(this.lastCard?.id === "descanso") {
+          // Spam de descanso consecutivo: penalización por inactividad prolongada
+          this.saludMental = Math.max(0, this.saludMental - 10);
+        } else {
+          this.odio = Math.max(0, this.odio - 10);
+          this.saludMental = Math.min(100, this.saludMental + 15);
+          this.amor = Math.min(100, this.amor + 5);
+        }
       }
 
     } else {
       hateGain = Math.floor(card.hate * mult);
       segsGain = card.id === "descanso" ? 0 : -Math.floor(this.seguidores * 0.04 * mult);
       if(card.id === "descanso") {
-        this.odio = Math.max(0, this.odio - 4);
-        this.saludMental = Math.min(100, this.saludMental + 5);
+        if(this.rachaViralActive) {
+          this.rachaViralDescansoUsed = true;
+        }
+        if(this.lastCard?.id === "descanso") {
+          this.saludMental = Math.max(0, this.saludMental - 10);
+        } else {
+          this.odio = Math.max(0, this.odio - 4);
+          this.saludMental = Math.min(100, this.saludMental + 5);
+        }
       } else if(Math.random() * 100 < card.odioP) {
         this.odio = Math.min(100, this.odio + Math.floor(6 * mult));
       }
@@ -1090,7 +1123,9 @@ class GameEngine {
     let cancellationEvent = null;
     if(!ok && RISK_CARDS.includes(card.id)) {
       const isTroll = this.personalidad.id === "troll";
-      let riskPct = isTroll ? 25 : 15; // base 15%, troll 25%
+      let riskPct = isTroll ? 32 : 22; // base 22%, troll 32%
+      if (this.genero === "mujer") riskPct += 5;
+      else if (this.genero === "diverso") riskPct += 12;
       if (this.arquetipo.dificultad === "alta") riskPct += 12; // Arquetipos difíciles: peligro de cancelación latente
       else if (this.arquetipo.dificultad === "baja") riskPct -= 6; // Arquetipos casuales: cancelación protegida
       if(this.lastCard?.id === "descanso") riskPct -= 20;
@@ -1132,6 +1167,8 @@ class GameEngine {
           motivo: chosenCanc.motivo,
           texto: chosenCanc.texto,
           tweetSimulado: chosenCanc.tweetSimulado,
+          tweetReal: card.texto || null,
+          cardTituloReal: card.titulo || null,
           isFatal: this.strikesCancelacion >= 3
         };
 
@@ -1154,7 +1191,7 @@ class GameEngine {
       cardTitle: card.titulo,
       roll, chance, ok,
       booster: boosterUsed?.nombre || null,
-      segsGain, engGain, hateGain, dinGain,
+      segsGain: this.seguidores - segsBeforeTurn, engGain, hateGain, dinGain,
       cancellationEvent
     });
 
@@ -1171,6 +1208,7 @@ class GameEngine {
       chosen: {
         id: card.id,
         title: card.titulo,
+        text: card.texto || card.titulo || "",
         icon: CARD_ICONS[card.id] || "🃏",
         slot: chosenSlot >= 0 ? chosenSlot : 1,
         ok, roll, chance,
@@ -1341,7 +1379,7 @@ class GameEngine {
   generateMatchReport() {
     const report = {
       game: "Twitero",
-      version: "v15",
+      version: "v19",
       id: `TW-${Math.random().toString(36).substring(2, 7).toUpperCase()}`,
       setup: {
         genero: this.genero,

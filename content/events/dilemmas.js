@@ -93,7 +93,7 @@ export const archetypeEvents = [
     opciones: [
       {
         texto: "Hacer fotos casuales y rápidas en el espejo.",
-        tweet: "collab con @{collab} salió 🔥 unas fotos rápidas pero con toda la vibra. ya en el perfil 🖤",
+        tweet: "collab con @cherry_vip salió 🔥 unas fotos rápidas pero con toda la vibra. ya en el perfil 🖤",
         resultado: "Crecimiento estándar sin mucho esfuerzo de producción.",
         efecto: { seguidores: 0.10, credibilidad: 0, amor: +5, saludMental: +5, ingresos: 100 }
       },
@@ -1574,7 +1574,7 @@ export const archetypeEvents = [
       },
       {
         texto: "Iniciar una campaña de acoso organizado contra la cuenta del que te copió.",
-        tweet: "Vayan todos a las menciones de @{competencia} a recordarles de dónde sacaron cada línea de código. No los dejen en paz hasta que den la cara.",
+        tweet: "Vayan todos a las menciones de @dev_clon_saas a recordarles de dónde sacaron cada línea de código. No los dejen en paz hasta que den la cara.",
         resultado: "Te pasás de la raya y la comunidad tech, que al principio te apoyaba, empieza a incomodarse con tus métodos.",
         efecto: { seguidores: 0.02, credibilidad: -20, odio: +20, saludMental: -15 }
       }
