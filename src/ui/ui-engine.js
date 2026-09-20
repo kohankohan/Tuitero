@@ -22,6 +22,7 @@ class UIEngine {
     this._setupCancellationModal();
     this._setupHateModal();
     this._setupViralModal();
+    this._setupStoryUnlockModal();
     this._setupStrike2Modal();
     this._setupCancGameOverModal();
     this._setupMobileBoostersModal();
@@ -29,7 +30,70 @@ class UIEngine {
     this._setupShortcutsModal();
     this._setupGlobalKeyboardShortcuts();
     this._setupFullscreenControls();
+    this._setupAudioControls();
     if(window.twemoji) window.twemoji.parse(document.body);
+  }
+
+  _setupAudioControls() {
+    snd.initMusic();
+    const toggleMusic = document.getElementById("toggle-music");
+    const sliderMusic = document.getElementById("slider-music-vol");
+    const toggleSfx = document.getElementById("toggle-sfx");
+    const sliderSfx = document.getElementById("slider-sfx-vol");
+
+    if (toggleMusic) {
+      toggleMusic.checked = snd.musicEnabled;
+      toggleMusic.onchange = (e) => {
+        snd.setMusicEnabled(e.target.checked);
+      };
+    }
+    if (sliderMusic) {
+      sliderMusic.value = Math.round(snd.musicVolume * 100);
+      sliderMusic.oninput = (e) => {
+        snd.setMusicVolume(parseFloat(e.target.value) / 100);
+      };
+    }
+    if (toggleSfx) {
+      toggleSfx.checked = snd.sfxEnabled;
+      toggleSfx.onchange = (e) => {
+        snd.setSfxEnabled(e.target.checked);
+      };
+    }
+    if (sliderSfx) {
+      sliderSfx.value = Math.round(snd.sfxVolume * 100);
+      sliderSfx.oninput = (e) => {
+        snd.setSfxVolume(parseFloat(e.target.value) / 100);
+      };
+    }
+
+    // ── MODAL POP-UP DE AUDIO ──
+    const audioModal = document.getElementById("audio-modal-overlay");
+    const btnOpenAudio = document.getElementById("btn-open-audio-modal");
+    const btnCloseAudio = document.getElementById("btn-close-audio-modal");
+    const btnAudioOk = document.getElementById("btn-audio-modal-ok");
+
+    const openAudioModal = () => {
+      if (audioModal) audioModal.classList.add("active");
+    };
+    const closeAudioModal = () => {
+      if (audioModal) audioModal.classList.remove("active");
+    };
+
+    if (btnOpenAudio) btnOpenAudio.onclick = () => { snd.click(); openAudioModal(); };
+    if (btnCloseAudio) btnCloseAudio.onclick = () => { closeAudioModal(); };
+    if (btnAudioOk) btnAudioOk.onclick = () => { snd.click(); closeAudioModal(); };
+
+    if (audioModal) {
+      audioModal.addEventListener("click", (ev) => {
+        if (ev.target === audioModal) closeAudioModal();
+      });
+    }
+
+    window.addEventListener("keydown", (ev) => {
+      if (ev.key === "Escape" && audioModal && audioModal.classList.contains("active")) {
+        closeAudioModal();
+      }
+    });
   }
 
 
@@ -71,6 +135,51 @@ class UIEngine {
         if (isConfirm) {
           ev.preventDefault();
           document.getElementById("btn-canc-next")?.click();
+          return;
+        }
+      }
+
+      // ── Cancellation Game-Over Modal: Aceptar con Espacio ───────────────
+      const cancGameOverModal = document.getElementById("canc-gameover-modal-overlay");
+      if (cancGameOverModal && cancGameOverModal.classList.contains("active")) {
+        if (isConfirm) {
+          ev.preventDefault();
+          document.getElementById("btn-cgo-ok")?.click();
+          return;
+        }
+      }
+
+      // ── Repeat Archetype Modal: Aceptar con Espacio ─────────────────────
+      const repeatArchModal = document.getElementById("repeat-archetype-modal-overlay");
+      if (repeatArchModal && repeatArchModal.classList.contains("active")) {
+        if (isConfirm) {
+          ev.preventDefault();
+          document.getElementById("btn-repeat-arch-ok")?.click();
+          return;
+        }
+      }
+
+      // ── Story Unlock Modal: Siguiente o Finalizar con Espacio ───────────
+      const storyUnlockModal = document.getElementById("story-unlock-modal-overlay");
+      if (storyUnlockModal && storyUnlockModal.classList.contains("active")) {
+        if (isConfirm) {
+          ev.preventDefault();
+          const sNext = document.getElementById("btn-story-next");
+          if (sNext && sNext.style.display !== "none") {
+            sNext.click();
+          } else {
+            document.getElementById("btn-story-unlock-ok")?.click();
+          }
+          return;
+        }
+      }
+
+      // ── Audio Modal: Cerrar con Espacio / Enter ─────────────────────────
+      const audioModal = document.getElementById("audio-modal-overlay");
+      if (audioModal && audioModal.classList.contains("active")) {
+        if (isConfirm) {
+          ev.preventDefault();
+          document.getElementById("btn-audio-modal-ok")?.click();
           return;
         }
       }
@@ -632,6 +741,63 @@ class UIEngine {
     overlay.classList.add("active");
   }
 
+  _setupStoryUnlockModal() {
+    this.storySlide = 1;
+    this.storyMax = 3;
+    const overlay = document.getElementById("story-unlock-modal-overlay");
+    if (!overlay) return;
+
+    const updateStory = () => {
+      overlay.querySelectorAll(".tutorial-slide").forEach((s, i) => s.classList.toggle("active", i + 1 === this.storySlide));
+      overlay.querySelectorAll("#story-dots .dot").forEach((d, i) => d.classList.toggle("active", i + 1 === this.storySlide));
+      const prevBtn = document.getElementById("btn-story-prev");
+      const nextBtn = document.getElementById("btn-story-next");
+      const nav = document.getElementById("story-modal-nav");
+      if (prevBtn) prevBtn.style.visibility = this.storySlide > 1 ? "visible" : "hidden";
+      if (nextBtn) nextBtn.style.display = this.storySlide === this.storyMax ? "none" : "inline-flex";
+      if (nav) nav.style.display = this.storySlide === this.storyMax ? "none" : "flex";
+    };
+
+    document.getElementById("btn-story-next")?.addEventListener("click", () => {
+      snd.click();
+      if (this.storySlide < this.storyMax) {
+        this.storySlide++;
+        updateStory();
+      }
+    });
+
+    document.getElementById("btn-story-prev")?.addEventListener("click", () => {
+      snd.click();
+      if (this.storySlide > 1) {
+        this.storySlide--;
+        updateStory();
+      }
+    });
+
+    document.getElementById("btn-story-unlock-ok")?.addEventListener("click", () => {
+      snd.click();
+      overlay.classList.remove("active");
+      this.eng.storyModeActivated = true;
+    });
+  }
+
+  _openStoryUnlockModal() {
+    this.storySlide = 1;
+    const overlay = document.getElementById("story-unlock-modal-overlay");
+    if (!overlay) return;
+    overlay.querySelectorAll(".tutorial-slide").forEach((s, i) => s.classList.toggle("active", i === 0));
+    overlay.querySelectorAll("#story-dots .dot").forEach((d, i) => d.classList.toggle("active", i === 0));
+    const prevBtn = document.getElementById("btn-story-prev");
+    const nextBtn = document.getElementById("btn-story-next");
+    const nav = document.getElementById("story-modal-nav");
+    if (prevBtn) prevBtn.style.visibility = "hidden";
+    if (nextBtn) nextBtn.style.display = "inline-flex";
+    if (nav) nav.style.display = "flex";
+
+    snd.dramaticBraam();
+    overlay.classList.add("active");
+  }
+
   _setupFullscreenControls() {
     const toggleFullscreen = () => {
       snd.click();
@@ -748,10 +914,72 @@ class UIEngine {
     }
   }
 
+  _detectUserLanguage() {
+    try {
+      const saved = localStorage.getItem("twitero_preferred_lang");
+      if (saved) return saved;
+
+      const navLang = (navigator.languages && navigator.languages[0]) || navigator.language || "";
+      const langCode = navLang.toLowerCase().split("-")[0];
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+
+      // Detección Japón
+      if (langCode === "ja" || tz.includes("Tokyo") || tz.includes("Japan")) {
+        return "ja";
+      }
+
+      // Países de habla hispana
+      const spanishLangs = ["es"];
+      const spanishTzKeywords = [
+        "Argentina", "Buenos_Aires", "Cordoba", "Santiago", "Montevideo", "Asuncion",
+        "Lima", "Bogota", "Caracas", "La_Paz", "Mexico", "Cancun", "Merida", "Monterrey",
+        "Guatemala", "Costa_Rica", "Panama", "El_Salvador", "Tegucigalpa", "Managua",
+        "Madrid", "Ceuta", "Canary", "Havana", "Santo_Domingo", "Puerto_Rico", "Guayaquil", "Quito"
+      ];
+
+      if (spanishLangs.includes(langCode) || spanishTzKeywords.some(k => tz.includes(k))) {
+        return "es";
+      }
+
+      // Por defecto para el resto del mundo no-hispano: inglés
+      return "en";
+    } catch (e) {
+      return "es";
+    }
+  }
+
   _setupLanguageDropdown() {
     const btn = document.getElementById("lang-dropdown-btn");
     const menu = document.getElementById("lang-dropdown-menu");
     if (!btn || !menu) return;
+
+    // Detectar idioma inicial
+    const currentLang = this._detectUserLanguage();
+    const langData = {
+      es: { flag: "🇪🇸", name: "Español" },
+      en: { flag: "🇬🇧", name: "English" },
+      ja: { flag: "🇯🇵", name: "日本語" }
+    };
+
+    const updateBtn = (code) => {
+      const item = langData[code] || langData.es;
+      btn.innerHTML = `<span class="lang-flag">${item.flag}</span><span class="lang-name">${item.name}</span><span class="lang-arrow">▾</span>`;
+      if (window.twemoji) {
+        window.twemoji.parse(btn);
+      }
+    };
+
+    if (window.twemoji) {
+      window.twemoji.parse(menu);
+    }
+
+    if (currentLang && langData[currentLang]) {
+      updateBtn(currentLang);
+      menu.querySelectorAll(".lang-opt").forEach(opt => {
+        const isSelected = opt.dataset.lang === currentLang;
+        opt.classList.toggle("active", isSelected);
+      });
+    }
 
     btn.onclick = (e) => {
       e.stopPropagation();
@@ -769,8 +997,16 @@ class UIEngine {
         snd.click();
         const lang = opt.dataset.lang;
         menu.classList.remove("active");
-        if (lang === "es") return;
-        this._showAlert("IDIOMA EN DESARROLLO", `El soporte para ${lang==="en"?"Inglés (🇬🇧 English)":"Japonés (🇯🇵 日本語)"} estará disponible en una próxima actualización.`, "🌐 LOCALIZACIÓN");
+        if (lang === "es") {
+          try { localStorage.setItem("twitero_preferred_lang", "es"); } catch(_) {}
+          updateBtn("es");
+          menu.querySelectorAll(".lang-opt").forEach(o => o.classList.toggle("active", o.dataset.lang === "es"));
+          return;
+        }
+        try { localStorage.setItem("twitero_preferred_lang", lang); } catch(_) {}
+        updateBtn(lang);
+        menu.querySelectorAll(".lang-opt").forEach(o => o.classList.toggle("active", o.dataset.lang === lang));
+        this._showAlert("IDIOMA EN DESARROLLO", `El soporte para ${lang==="en"?"Inglés (🇬🇧 English)":"Japonés (🇯🇵 日本語)"} estará disponible en una próxima actualización. Actualmente los textos se mostrarán en Español.`, "🌐 LOCALIZACIÓN");
       };
     });
   }
@@ -950,13 +1186,62 @@ class UIEngine {
         this.sel.pers=c.dataset.id;
         const handleInput = document.getElementById("user-handle-input");
         const customHandle = handleInput ? handleInput.value.trim() : null;
-        this.eng.init(this.sel.genero, this.sel.arch, this.sel.pers, customHandle);
-        this.showScreen("screen-game");
-        this._updateStatsOnly();
-        this._onTutorialClose = () => {
-          this._renderFullTurn();
+        
+        // ── CHECK ARQUETIPO REPETIDO (PERSISTENCIA LOCALSTORAGE) ──
+        const playedStorageKey = "twitero_played_archetypes";
+        let playedArchs = [];
+        try {
+          playedArchs = JSON.parse(localStorage.getItem(playedStorageKey) || "[]");
+        } catch(err) {}
+
+        const isRepeat = playedArchs.includes(this.sel.arch);
+        if (!isRepeat) {
+          playedArchs.push(this.sel.arch);
+          try { localStorage.setItem(playedStorageKey, JSON.stringify(playedArchs)); } catch(err) {}
+        }
+
+        const proceedToGame = () => {
+          this.eng.init(this.sel.genero, this.sel.arch, this.sel.pers, customHandle);
+          this.showScreen("screen-game");
+          this._updateStatsOnly();
+
+          // Sincronizar Fase de metahistoria y música Lo-Fi adaptativa
+          const archKey = getArchKey(this.sel.arch);
+          const metaArc = typeof METAHISTORY_DATA !== 'undefined' ? METAHISTORY_DATA[archKey] : null;
+          const archPhase = metaArc?.fase || 1;
+          snd.setPhase(archPhase);
+          snd.startMusic();
+
+          const phaseBadge = document.getElementById("audio-phase-indicator");
+          if (phaseBadge) phaseBadge.textContent = `FASE ${archPhase}`;
+
+          this._onTutorialClose = () => {
+            this._renderFullTurn();
+          };
+          this._startTutorial();
         };
-        this._startTutorial();
+
+        if (isRepeat) {
+          const repOverlay = document.getElementById("repeat-archetype-modal-overlay");
+          const archObj = ARCHETYPES.find(a => a.id === this.sel.arch);
+          const genderedArch = getGenderedArchetype(archObj, this.sel.genero);
+          const titleEl = document.getElementById("repeat-arch-title");
+          const iconEl = document.getElementById("repeat-arch-icon");
+          const okBtn = document.getElementById("btn-repeat-arch-ok");
+
+          if (titleEl) titleEl.textContent = `HISTORIA DE ${genderedArch.toUpperCase()}`;
+          if (iconEl) iconEl.textContent = archObj?.icono || "🎭";
+          if (repOverlay) repOverlay.classList.add("active");
+
+          const handleRepClose = () => {
+            snd.click();
+            if (repOverlay) repOverlay.classList.remove("active");
+            proceedToGame();
+          };
+          if (okBtn) okBtn.onclick = handleRepClose;
+        } else {
+          proceedToGame();
+        }
       };
     });
   }
@@ -1283,13 +1568,31 @@ class UIEngine {
     this.currentCards=cards;
     const e=this.eng;
     const booster=this.preparedBoosterId?BOOSTERS.find(b=>b.id===this.preparedBoosterId):null;
+    const boosterMultiplier = booster?.fx?.mult ? `${booster.fx.mult}x` : "1.0x";
 
     container.innerHTML=cards.map((c,idx)=>{
       const palo = c.paloOverride || c.palo || CARD_PALOS[c.id] || { nombre:"TWEET", icono:"💬", color:"#1d9bf0" };
       const chance = this.eng._successChance(c, booster);
       const chanceColor = chance >= 70 ? "var(--green)" : chance >= 50 ? "var(--amber)" : "var(--red)";
-      const boosterMultiplier = booster?.fx.mult ? `${booster.fx.mult}x` : "1.0x";
-      const conceptDesc = CARD_CONCEPT_DESCS[c.id] || "Publicación estratégica en el feed.";
+      let conceptDesc = CARD_CONCEPT_DESCS[c.id] || "Publicación estratégica en el feed.";
+      if (c.isHistoria) {
+        const archKey = getArchKey(e.arquetipo?.id);
+        const STORY_HEADLINES = {
+          gamer: "Autos caros y una LLC de Delaware",
+          podcaster: "La modelo y su amigo misterioso",
+          influencer: "Sesión de fotos con una nave importada",
+          techie: "Hackearon el exchange",
+          humor: "Corralito digital cripto",
+          conspiranoico: "Comando Fierro en las sombras",
+          periodista: "Allanamiento judicial y sociedad fantasma",
+          futbolero: "Murmullos en los palcos de la AFA",
+          onlyfans: "El paseo secreto en el auto de lujo",
+          cryptobro: "La wallet expuesta del político",
+          militante: "Las casas que nunca se hicieron",
+          opinologo: "La verdad oculta dos años después"
+        };
+        conceptDesc = c.desc || STORY_HEADLINES[archKey] || "Revelación clave de la trama en el timeline.";
+      }
 
       // Badge visual de carta nueva
       const isNew = !e.seenCardTypes.has(c.id);
@@ -1297,21 +1600,25 @@ class UIEngine {
 
       const wrapClass = this.cardsAlreadyFlipped ? "card-flip-wrap flipped" : "card-flip-wrap";
 
+      const isDisabled = !!c.disabled;
+      const cardClass = isDisabled ? "truco-card story-disabled-card" : "truco-card";
+      const cursorStyle = isDisabled ? "cursor:not-allowed;" : "cursor:pointer;";
+
       return `
       <div class="${wrapClass}" id="card-wrap-${idx}">
         <div class="card-flip-inner">
           <div class="card-face card-back">
             <div class="card-back-minimal">
-              <img src="favicon.jpg" class="card-back-logo" alt="Twitero" />
-              <div class="card-back-label">TWITERO</div>
+              <img src="favicon.jpg" class="card-back-logo" alt="Tuitero" />
+              <div class="card-back-label">TUITERO</div>
             </div>
           </div>
           <div class="card-face card-front">
-            <div class="truco-card" style="border-top-color:${palo.color}; cursor:pointer;" data-idx="${idx}">
+            <div class="${cardClass}" style="border-top-color:${palo.color}; ${cursorStyle}" data-idx="${idx}">
               <div class="card-suit-tag" style="color:${palo.color};">
                 <span class="card-suit-dot" style="background:${palo.color};"></span>
                 ${palo.nombre.toUpperCase()}
-                ${isNew ? `<span class="card-new-badge">✨ NUEVA</span>` : `<span class="card-key-badge">[${idx + 1}]</span>`}
+                ${isNew && !isDisabled ? `<span class="card-new-badge">✨ NUEVA</span>` : `<span class="card-key-badge">[${idx + 1}]</span>`}
               </div>
               <div class="card-palo">${palo.icono}</div>
               <div class="card-title">${c.titulo}</div>
@@ -1324,7 +1631,9 @@ class UIEngine {
                 </div>
               </div>
 
-              <button class="card-play-btn" data-idx="${idx}">TUITEAR AHORA ▶</button>
+              <button class="card-play-btn" data-idx="${idx}" ${isDisabled ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''}>
+                ${isDisabled ? 'BLOQUEADA ✕' : 'TUITEAR AHORA ▶'}
+              </button>
             </div>
           </div>
         </div>
@@ -1356,6 +1665,7 @@ class UIEngine {
       cardEl.onclick=(e)=>{
         if(this.isResolvingAction) return;
         const idx=parseInt(cardEl.dataset.idx);
+        if(cards[idx]?.disabled) return;
         this._playCardIdx(idx);
       };
     });
@@ -1365,6 +1675,7 @@ class UIEngine {
         e.stopPropagation();
         if(this.isResolvingAction) return;
         const idx=parseInt(btn.dataset.idx);
+        if(cards[idx]?.disabled) return;
         this._playCardIdx(idx);
       };
     });
@@ -1591,6 +1902,55 @@ class UIEngine {
     this._showNarrativePanel(simulatedCard, outcomeRes, "⚡ IMPACTO DE TU ELECCIÓN EN EL TIMELINE", opt.resultado);
   }
 
+  _getTweetDate(fase = 1, turno = 1, cardFecha = null) {
+    if (cardFecha) {
+      return cardFecha.replace(/([A-Z][a-z]{2})/g, (m) => m.toLowerCase() + (m.endsWith('.') ? '' : '.'));
+    }
+    const meses = ["ene.", "feb.", "mar.", "abr.", "may.", "jun.", "jul.", "ago.", "sep.", "oct.", "nov.", "dic."];
+    let d, m, y;
+    if (turno >= 20 && fase < 4) {
+      return `14 mar. 2026`;
+    }
+    if (fase === 1) {
+      y = 2024; m = 1;
+      d = Math.min(29, 9 + turno);
+    } else if (fase === 2) {
+      y = 2024;
+      const dayOffset = (turno - 1) * 2;
+      if (15 + dayOffset <= 30) {
+        m = 3;
+        d = 15 + dayOffset;
+      } else {
+        m = 4;
+        d = Math.min(31, 15 + dayOffset - 30);
+      }
+    } else if (fase === 3) {
+      y = 2024;
+      const dayOffset = (turno - 1) * 2;
+      if (15 + dayOffset <= 31) {
+        m = 6;
+        d = 15 + dayOffset;
+      } else {
+        m = 7;
+        d = Math.min(31, 15 + dayOffset - 31);
+      }
+    } else {
+      y = 2026;
+      const dayOffset = (turno - 1) * 4;
+      if (10 + dayOffset <= 31) {
+        m = 0;
+        d = 10 + dayOffset;
+      } else if (10 + dayOffset <= 59) {
+        m = 1;
+        d = 10 + dayOffset - 31;
+      } else {
+        m = 2;
+        d = Math.min(31, 10 + dayOffset - 59);
+      }
+    }
+    return `${d} ${meses[m]} ${y}`;
+  }
+
   _showNarrativePanel(card, res, customOutcomeTitle=null, consequenceText=null) {
     const panel=document.getElementById("narrative-panel");
     if(!panel) return;
@@ -1656,7 +2016,9 @@ class UIEngine {
     const currentAvatar = e.getAvatar();
     const genderedArch = getGenderedArchetype(e.arquetipo, e.genero);
     const verifiedBadgeHtml = isVerified ? `<span class="tweet-verified-badge" title="Cuenta Verificada">☑️</span>` : '';
-    const outcomeTitle = customOutcomeTitle || (isSuccess ? "🎯 TWEET VIRAL — EXCELENTE ENGAGEMENT EN EL TIMELINE" : "💥 RATIO HISTÓRICO — EL TIMELINE SE TE VINO ENCIMA");
+    const outcomeTitle = card.isHistoria
+      ? "🔍 PISTA NARRATIVA DESCUBIERTA"
+      : (customOutcomeTitle || (isSuccess ? "🎯 TWEET VIRAL — EXCELENTE ENGAGEMENT EN EL TIMELINE" : "💥 RATIO HISTÓRICO — EL TIMELINE SE TE VINO ENCIMA"));
 
     // Pool of authentic community tweets scrolling in the timeline
     const communityTweets = [
@@ -1692,6 +2054,11 @@ class UIEngine {
       </div>
     `).join("");
 
+    // Fecha auténtica estilo Twitter (timestamp progresivo y coherente)
+    const archKeyForDate = getArchKey(e.arquetipo.id);
+    const metaArcForDate = typeof METAHISTORY_DATA !== 'undefined' ? METAHISTORY_DATA[archKeyForDate] : null;
+    const tweetDateFormatted = this._getTweetDate(metaArcForDate?.fase || 1, e.turno, card.fecha);
+
     panel.innerHTML = `
       <!-- TIMELINE FEED SCROLLER (Community stream scrolling up) -->
       <div class="timeline-feed-container" id="timeline-feed-container">
@@ -1714,15 +2081,23 @@ class UIEngine {
               ${verifiedBadgeHtml}
               <span class="tweet-handle">${e.handle}</span>
               <span class="tweet-dot">·</span>
-              <span class="tweet-time">Turno ${String(e.turno).padStart(2,"0")}</span>
+              <span class="tweet-date-stamp" style="color:#64748b; font-size:0.75rem; font-weight:400; letter-spacing:0.2px;">${tweetDateFormatted}</span>
             </div>
             <div class="tweet-body-text" id="target-tweet-body">${tweetContent}</div>
+            
+            <!-- BARRA DE MÉTRICAS CON SOPORTE PARA REPLY LATIENTE DE HISTORIA -->
             <div class="tweet-metrics-bar ${!isSuccess?'is-ratio':''}" id="tweet-metrics-bar" style="display:none;">
-              <div class="t-metric metric-reply metric-hidden" id="metric-reply"><span class="m-icon">💬</span> <span class="m-val">${formatMetric(replies)}</span></div>
+              <div class="t-metric metric-reply metric-hidden" id="metric-reply">
+                <span class="m-icon" id="reply-m-icon">💬</span>
+                <span class="m-val" id="reply-m-val">${formatMetric(replies)}</span>
+              </div>
               <div class="t-metric metric-rt metric-hidden" id="metric-rt"><span class="m-icon">🔁</span> <span class="m-val">${formatMetric(rts)}</span></div>
               <div class="t-metric metric-like metric-hidden" id="metric-like"><span class="m-icon">❤️</span> <span class="m-val">${formatMetric(likes)}</span></div>
               <div class="t-metric metric-view metric-hidden" id="metric-view"><span class="m-icon">👁️</span> <span class="m-val">${formatMetric(views)}</span></div>
             </div>
+
+            <!-- HILO DE REPLIES DE HISTORIA CRUZADA -->
+            <div class="tweet-story-replies" id="tweet-story-replies" style="display:none;"></div>
           </div>
         </div>
 
@@ -1788,6 +2163,9 @@ class UIEngine {
 
       // Dry clunk sound when feed locks onto player's tweet
       snd.clunk();
+      if (card.isHistoria && snd.storyClueCue) {
+        setTimeout(() => snd.storyClueCue(), 60);
+      }
 
       // Smooth switch: hide feed stream, reveal target tweet box
       if (feedContainer) feedContainer.style.display = "none";
@@ -1817,7 +2195,7 @@ class UIEngine {
         panel.style.borderTopColor = "var(--green)";
       }
 
-      // ── SEQUENTIAL DING DING DING METRICS (110ms apart) ──
+      // ── SEQUENTIAL DING DING DING METRICS (110ms apart — EXACTO v17) ──
       const metricList = [
         { el: mReply, index: 0 },
         { el: mRt,    index: 1 },
@@ -1839,6 +2217,123 @@ class UIEngine {
           }
         }, 150 + idx * 110);
       });
+
+      // ── METAHISTORIA: GESTIÓN DE REPLY LATIENTE & REPLIES CRUZADAS ──
+      const archKey = getArchKey(e.arquetipo.id);
+      const metaArc = typeof METAHISTORY_DATA !== 'undefined' ? METAHISTORY_DATA[archKey] : null;
+
+      // Disparador del modo historia en Turnos 5-8 si aún no está activado
+      // (rango ampliado para que eventos en T6 no bloqueen el disparo)
+      const isTriggerTurn = (e.turno >= 5 && e.turno <= 8);
+      const canTriggerHeartbeat = isTriggerTurn && !e.storyModeActivated && !e.storyFinished && metaArc?.activador;
+
+      if (canTriggerHeartbeat) {
+        // Habilitar reply latiente en el resultado
+        setTimeout(() => {
+          if (!mReply) return;
+          mReply.classList.add("metric-reply-heartbeat");
+          const replyIcon = document.getElementById("reply-m-icon");
+          if (replyIcon) replyIcon.classList.add("reply-pulsing-icon");
+
+          // Ritmo inicial (60 BPM)
+          document.documentElement.style.setProperty("--story-pulse-dur", "1.0s");
+
+          // Bucle de audio de latido
+          let heartbeatTimer = null;
+          const runPulse = () => {
+            if (!panel.classList.contains("active")) {
+              if (heartbeatTimer) clearInterval(heartbeatTimer);
+              return;
+            }
+            snd.heartbeatPulse(55, 0.28, 60);
+          };
+          runPulse();
+          heartbeatTimer = setInterval(runPulse, 1000);
+
+          // Click en el reply latiente
+          mReply.onclick = (ev) => {
+            ev.stopPropagation();
+            if (heartbeatTimer) clearInterval(heartbeatTimer);
+
+            // 1. Desplegar el reply sospechoso de contexto
+            const repliesBox = document.getElementById("tweet-story-replies");
+            if (repliesBox && metaArc.activador.replySospechosa) {
+              const rep = metaArc.activador.replySospechosa;
+              repliesBox.style.display = "flex";
+              repliesBox.innerHTML = `
+                <div class="story-reply-card">
+                  <div class="story-reply-avatar">🕵️</div>
+                  <div class="story-reply-content">
+                    <div class="story-reply-header">
+                      <span class="story-reply-author">${rep.autor}</span>
+                      <span class="story-reply-handle">${rep.handle}</span>
+                    </div>
+                    <div class="story-reply-text">${rep.texto}</div>
+                  </div>
+                </div>
+              `;
+            }
+
+            // 2. Dos segundos y medio después: Impacto dramático (BRAAM) y apertura de modal en 3 slides
+            // Damos tiempo para que el jugador lea la reply antes del modal
+            setTimeout(() => {
+              this._openStoryUnlockModal();
+            }, 2500);
+          };
+        }, 750);
+      } else if (e.storyModeActivated && card.isHistoria && card.replies && card.replies.length > 0) {
+        // Carta de historia Capa 2 jugada:
+        // No forzamos las replies — el jugador tiene que clickear el 💬 latiente para verlas
+        setTimeout(() => {
+          // Latido acelerado según cantidad de tweets de historia jugados
+          const storyStep = Math.min(6, e.storyCardsPlayed + 1);
+          const currentBpm = 60 + storyStep * 11; // 60 -> 71 -> 82 -> 93 -> 104 -> 115 BPM
+          const currentVol = 0.25 + storyStep * 0.11;
+          const durSec = (60 / currentBpm).toFixed(2);
+          document.documentElement.style.setProperty("--story-pulse-dur", `${durSec}s`);
+
+          if (mReply) {
+            mReply.classList.add("metric-reply-heartbeat");
+            const replyIcon = document.getElementById("reply-m-icon");
+            if (replyIcon) replyIcon.classList.add("reply-pulsing-icon");
+          }
+
+          let storyPulseTimer = null;
+          const runStoryPulse = () => {
+            if (!panel.classList.contains("active")) {
+              if (storyPulseTimer) clearInterval(storyPulseTimer);
+              return;
+            }
+            snd.heartbeatPulse(55, currentVol, currentBpm);
+          };
+          runStoryPulse();
+          storyPulseTimer = setInterval(runStoryPulse, (60 / currentBpm) * 1000);
+
+          // Click en el reply latiente de Capa 2: revelar las replies cruzadas
+          if (mReply) {
+            mReply.onclick = (ev) => {
+              ev.stopPropagation();
+              if (storyPulseTimer) clearInterval(storyPulseTimer);
+              const repliesBox = document.getElementById("tweet-story-replies");
+              if (repliesBox) {
+                repliesBox.style.display = "flex";
+                repliesBox.innerHTML = card.replies.map(r => `
+                  <div class="story-reply-card">
+                    <div class="story-reply-avatar">💬</div>
+                    <div class="story-reply-content">
+                      <div class="story-reply-header">
+                        <span class="story-reply-author">${r.autor}</span>
+                        <span class="story-reply-handle">${r.handle}</span>
+                      </div>
+                      <div class="story-reply-text">${r.texto}</div>
+                    </div>
+                  </div>
+                `).join("");
+              }
+            };
+          }
+        }, 750);
+      }
 
       // Show accept button after all metrics
       setTimeout(() => {
@@ -1974,6 +2469,7 @@ class UIEngine {
 
   _showEnd1() {
     this.showScreen("screen-end1");
+    snd.stopMusic();
     snd.fanfare();
     const f=this.eng.final, e=this.eng;
     const genderedArch = getGenderedArchetype(e.arquetipo, e.genero);
@@ -1989,15 +2485,24 @@ class UIEngine {
       <div class="end-stat-col"><span class="lbl">SALUD MENTAL</span><span class="val c-green">${e.saludMental}%</span></div>
     `;
 
-    // ── REPLAYABILITY HOOK: UNLOCKED FINALES COLLECTION ──
+    // ── REPLAYABILITY HOOK: UNLOCKED FINALES COLLECTION (26 FINALES: 14 BASE + 12 HISTORIAS) ──
     try {
-      const storageKey = "twitero_unlocked_finales_v17";
+      const storageKey = "twitero_unlocked_finales_v18";
       let unlocked = JSON.parse(localStorage.getItem(storageKey) || "[]");
-      if (f.titulo && !unlocked.includes(f.titulo)) {
-        unlocked.push(f.titulo);
+      // Migrar progreso previo si aún no existe en v18
+      if (unlocked.length === 0) {
+        const oldUnlocked = JSON.parse(localStorage.getItem("twitero_unlocked_finales_v17") || "[]");
+        if (oldUnlocked.length > 0) {
+          unlocked = [...oldUnlocked];
+        }
+      }
+      // Clave normalizada: los arcos de historia se identifican por arquetipo para no duplicar por género
+      const finaleKey = e.storyFinished ? `historia_${getArchKey(e.arquetipo?.id)}` : (f.id || f.titulo);
+      if (finaleKey && !unlocked.includes(finaleKey)) {
+        unlocked.push(finaleKey);
         localStorage.setItem(storageKey, JSON.stringify(unlocked));
       }
-      const totalFinales = 14;
+      const totalFinales = 26;
       const count = Math.min(totalFinales, Math.max(1, unlocked.length));
       const pct = Math.round((count / totalFinales) * 100);
       const countEl = document.getElementById("collection-count-text");
@@ -2006,11 +2511,28 @@ class UIEngine {
       if (barFill) barFill.style.width = `${pct}%`;
     } catch(err) {}
 
+    // ── BANNER NARRATIVO DE FIN DE JUEGO (SOLO SI COMPLETÓ LA HISTORIA) ──
+    const storyBanner = document.getElementById("end1-story-banner");
+    if (storyBanner) {
+      if (e.storyFinished) {
+        storyBanner.style.display = "block";
+        storyBanner.innerHTML = `
+          <div class="story-banner-text">
+            Completaste el arco narrativo de <strong>${genderedArch}</strong>. Ahora sabés un pedacito más de lo que pasó realmente.
+            <br><br>
+            💡 Podés revisar todos los tweets y pistas de esta partida haciendo clic en el <strong>Árbol de Decisiones</strong>: cada turno tiene el tweet que publicaste y las replies del hilo.
+          </div>
+        `;
+      } else {
+        storyBanner.style.display = "none";
+      }
+    }
+
     const btnShare=document.getElementById("btn-end1-share");
     if(btnShare){
       btnShare.onclick=()=>{
         snd.click();
-        const tweetText = `Jugué a Twitero como ${genderedArch} ${e.personalidad.nombre} (${e.handle}) y alcancé el final "${f.titulo}" con ${e.seguidores.toLocaleString()} seguidores y $${e.dinero.toLocaleString()} 🏆. ¿Podés superarme? Jugá a Twitero acá: https://bit.ly/playtwitero`;
+        const tweetText = `Jugué a Tuitero como ${genderedArch} ${e.personalidad.nombre} (${e.handle}) y alcancé el final "${f.titulo}" con ${e.seguidores.toLocaleString()} seguidores y $${e.dinero.toLocaleString()} 🏆. ¿Podés superarme? Jugá a Tuitero acá: https://bit.ly/playtwitero`;
         const modal = document.getElementById("share-modal-overlay");
         const textarea = document.getElementById("modal-share-textarea");
         if(textarea) textarea.value = tweetText;
@@ -2132,7 +2654,7 @@ class UIEngine {
     if (btnEnd2Share) {
       btnEnd2Share.onclick = () => {
         snd.click();
-        const tweetText = `Jugué a Twitero como ${genderedArch} ${e.personalidad.nombre} (${e.handle}) y alcancé el final "${f.titulo}" con ${e.seguidores.toLocaleString()} seguidores y $${e.dinero.toLocaleString()} 🏆. ¿Podés superarme? Jugá a Twitero acá: https://bit.ly/playtwitero`;
+        const tweetText = `Jugué a Tuitero como ${genderedArch} ${e.personalidad.nombre} (${e.handle}) y alcancé el final "${f.titulo}" con ${e.seguidores.toLocaleString()} seguidores y $${e.dinero.toLocaleString()} 🏆. ¿Podés superarme? Jugá a Tuitero acá: https://bit.ly/playtwitero`;
         const modal = document.getElementById("share-modal-overlay");
         const textarea = document.getElementById("modal-share-textarea");
         if(textarea) textarea.value = tweetText;
@@ -2393,10 +2915,10 @@ class UIEngine {
           </svg>
         </div>
         <div id="tree-tooltip" style="display:none;position:fixed;z-index:9200;
-          background:#0b1120;border:1px solid rgba(29,155,240,0.4);border-radius:8px;
-          padding:12px 14px;font-size:12px;color:#fff;min-width:240px;max-width:300px;
-          box-shadow:0 12px 40px rgba(0,0,0,0.85);pointer-events:none;line-height:1.5;
-          backdrop-filter:blur(8px);font-family:'Plus Jakarta Sans', sans-serif;"></div>
+          background:#0b1120;border:1px solid rgba(29,155,240,0.5);border-radius:10px;
+          padding:14px 16px;font-size:13px;color:#fff;min-width:280px;max-width:380px;
+          box-shadow:0 14px 45px rgba(0,0,0,0.9);pointer-events:none;line-height:1.55;
+          backdrop-filter:blur(10px);font-family:'Plus Jakarta Sans', sans-serif;"></div>
       </div>`;
 
     overlay.style.display = "flex";
@@ -2414,29 +2936,29 @@ class UIEngine {
         const isViral = td.chosen.viral;
         const tweetText = td.chosen.text || td.chosen.title || "";
         tooltip.innerHTML = `
-          <div style="color:${C.trunk};font-weight:800;font-size:12px;margin-bottom:4px;">
+          <div style="color:${C.trunk};font-weight:800;font-size:13px;margin-bottom:6px;">
             ${td.chosen.icon || "💬"} ${td.chosen.title || "Carta"} &nbsp;
-            <span style="color:#64748B;font-size:10px;">(Turno ${log[idx].t})</span>
+            <span style="color:#64748B;font-size:11px;">(Turno ${log[idx].t})</span>
           </div>
-          ${tweetText ? `<div style="font-family:'Plus Jakarta Sans', sans-serif;font-size:11px;color:#e2e8f0;background:rgba(255,255,255,0.06);border-left:2px solid ${C.trunk};padding:6px 8px;margin:6px 0;border-radius:3px;line-height:1.35;">"${tweetText}"</div>` : ""}
-          <div style="color:${td.chosen.ok ? (isViral ? C.pipViral : C.pipOk) : C.pipFail};font-weight:700;">
+          ${tweetText ? `<div style="font-family:'Plus Jakarta Sans', sans-serif;font-size:13.5px;color:#f1f5f9;background:rgba(255,255,255,0.08);border-left:3px solid ${C.trunk};padding:9px 12px;margin:8px 0;border-radius:4px;line-height:1.45;font-weight:500;">"${tweetText}"</div>` : ""}
+          <div style="color:${td.chosen.ok ? (isViral ? C.pipViral : C.pipOk) : C.pipFail};font-weight:700;font-size:12px;">
             ${td.chosen.ok ? (isViral ? "✨ IMPACTO VIRAL" : "✅ TWEET EXITOSO") : "❌ RATIO EN EL TIMELINE"}
-            &nbsp;<span style="color:#8b98a9;font-size:10px;font-family:'Space Mono', monospace;">[D${td.chosen.roll}/≤${td.chosen.chance}%]</span>
+            &nbsp;<span style="color:#8b98a9;font-size:11px;font-family:'Space Mono', monospace;">[D${td.chosen.roll}/≤${td.chosen.chance}%]</span>
           </div>
-          <hr style="border-color:rgba(255,255,255,0.08);margin:6px 0;">
-          <div style="font-weight:600;">👥 ${td.delta.segs >= 0 ? "+" : ""}${(td.delta.segs||0).toLocaleString()} seguidores</div>
-          <div>⚡ ${td.delta.eng >= 0 ? "+" : ""}${td.delta.eng||0} engagement</div>
-          ${td.delta.hate ? `<div style="color:${C.pipFail};">💀 +${td.delta.hate} odio generado</div>` : ""}
-          ${td.chosen.booster ? `<div style="color:${C.trunk};">🚀 Booster: ${td.chosen.booster}</div>` : ""}
-          <hr style="border-color:rgba(255,255,255,0.08);margin:6px 0;">
-          <div style="color:#64748B;font-size:10px;text-transform:uppercase;">Balance al cierre de turno:</div>
-          <div style="font-family:'Space Mono', monospace;font-size:11px;">👥 ${(snap.segs||0).toLocaleString()} &nbsp;·&nbsp; 💰 $${(snap.dinero||0).toLocaleString()} &nbsp;·&nbsp; ❤️ ${snap.salud||0}%</div>`;
+          <hr style="border-color:rgba(255,255,255,0.1);margin:8px 0;">
+          <div style="font-weight:600;font-size:12px;">👥 ${td.delta.segs >= 0 ? "+" : ""}${(td.delta.segs||0).toLocaleString()} seguidores</div>
+          <div style="font-size:12px;">⚡ ${td.delta.eng >= 0 ? "+" : ""}${td.delta.eng||0} engagement</div>
+          ${td.delta.hate ? `<div style="color:${C.pipFail};font-size:12px;">💀 +${td.delta.hate} odio generado</div>` : ""}
+          ${td.chosen.booster ? `<div style="color:${C.trunk};font-size:12px;">🚀 Booster: ${td.chosen.booster}</div>` : ""}
+          <hr style="border-color:rgba(255,255,255,0.1);margin:8px 0;">
+          <div style="color:#64748B;font-size:10.5px;text-transform:uppercase;">Balance al cierre de turno:</div>
+          <div style="font-family:'Space Mono', monospace;font-size:11.5px;">👥 ${(snap.segs||0).toLocaleString()} &nbsp;·&nbsp; 💰 $${(snap.dinero||0).toLocaleString()} &nbsp;·&nbsp; ❤️ ${snap.salud||0}%</div>`;
         tooltip.style.display = "block";
       });
       node.addEventListener("mousemove", ev => {
         const r = overlay.getBoundingClientRect();
-        tooltip.style.left = Math.min(ev.clientX + 16, r.right - 310) + "px";
-        tooltip.style.top  = Math.min(ev.clientY + 8,  r.bottom - 210) + "px";
+        tooltip.style.left = Math.min(ev.clientX + 16, r.right - 390) + "px";
+        tooltip.style.top  = Math.min(ev.clientY + 8,  r.bottom - 260) + "px";
       });
       node.addEventListener("mouseleave", () => { tooltip.style.display = "none"; });
     });
@@ -2499,7 +3021,7 @@ class UIEngine {
         oc.toBlob(pngBlob => {
           if (!pngBlob) { btn.textContent = "❌ Error"; btn.disabled = false; return; }
           const textSummary =
-            `Twitero — ${handleText} (${genderedArch})\n` +
+            `Tuitero — ${handleText} (${genderedArch})\n` +
             `Final: ${f.titulo}\n` +
             `👥 ${e.seguidores.toLocaleString()} · 💰 $${e.dinero.toLocaleString()} · ❤️ ${e.saludMental}%\n` +
             `${cols} turnos jugados en el timeline`;

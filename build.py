@@ -24,6 +24,7 @@ ORDERED_MODULES = [
     ("content", "events", "fortuities.js"),
     ("content", "events", "super-habilidades.js"),
     ("content", "events", "viral-events.js"),
+    ("content", "events", "metahistory.js"),
 
     # 4. Motores de juego y presentaci?n
     ("src", "audio", "sound-engine.js"),
@@ -43,14 +44,14 @@ def clean_code(code):
 
 def build():
     chunks = [
-        "/* ???????????????????????????????????????????????????????\n"
-        "   js/bundle.js ? Twitero v17 ? Definitive Release\n"
-        "   Arquitectura Senior Modular ? Clean Code & Data-Driven\n"
+        "/* ═══════════════════════════════════════════════════════\n"
+        "   js/bundle.js · Tuitero v19 · Definitive Release\n"
+        "   Arquitectura Senior Modular · Clean Code & Data-Driven\n"
         "   Pensado por @kohantoys | https://x.com/kohantoys\n"
-        "   ??????????????????????????????????????????????????????? */\n"
+        "   ═══════════════════════════════════════════════════════ */\n"
     ]
 
-    print("== Compilando Twitero v17 ==")
+    print("== Compilando Tuitero v19 ==")
     for parts in ORDERED_MODULES:
         fpath = os.path.join(BASE_DIR, *parts)
         rel_path = "/".join(parts)
