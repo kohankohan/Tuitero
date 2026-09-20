@@ -395,67 +395,79 @@ const liveTweetContent = {
   ]
 };
 
-// ── TEMA DEL DÍA (pool de 3 por arquetipo) ──
+// ── TEMA DEL DÍA (Alineado estrictamente a la Fase de cada arquetipo segun Spec v2) ──
 const temaDelDiaContent = {
+  // FASE 4: 2026 (Mirada retrospectiva, nada de coyuntura vieja en presente)
   opinologo:    [
-    { titulo: "Mi take del trending", texto: "Todos hablando de lo mismo. Yo tengo una lectura que todavía nadie tiró. Ahí va, agárrense.", engagement: 50, hate: 20 },
-    { titulo: "El tema que explota", texto: "Llegué tarde a esta conversación, lo reconozco, pero llego con algo para aportar. Al menos eso.", engagement: 45, hate: 18 },
-    { titulo: "Ángulo original del trending", texto: "Mil tweets sobre esto hoy y ni uno solo mencionó lo más importante. Yo sí lo voy a decir.", engagement: 52, hate: 22 },
+    { titulo: "A dos años del caso", texto: "Pasaron dos años del escándalo de la LLC y hoy la política discute cosas completamente distintas, pero las cicatrices siguen ahí. Hilo.", engagement: 54, hate: 18 },
+    { titulo: "La lección no aprendida", texto: "En 2024 todos se rasgaban las vestiduras por el auto del streamer. Hoy nadie se acuerda ni del nombre del ministro. Así funciona la memoria acá.", engagement: 50, hate: 16 },
+    { titulo: "El archivo no perdona", texto: "Revisando lo que opinaban varios en pleno estallido de la causa hace dos años... qué fácil es indignarse cuando la cámara está prendida.", engagement: 56, hate: 22 },
   ],
+  // FASE 3: Corrupción estalla (Julio-Agosto 2024)
   futbolero:    [
-    { titulo: "El tema del día, edición fútbol", texto: "Todo el mundo hablando de política hoy. Yo voy a seguir hablando de fútbol, con la misma pasión y el mismo enojo.", engagement: 45, hate: 15 },
-    { titulo: "El trending que me importa", texto: "Mientras trendea el político de turno, yo hago trend la táctica del partido de mañana. Prioridades.", engagement: 42, hate: 12 },
-    { titulo: "Mi versión del tema viral", texto: "Agarré el formato del meme viral de hoy y lo adapté al fútbol. Salió mejor la versión mía, lo digo con orgullo.", engagement: 48, hate: 10 },
+    { titulo: "El auto en todos los canales", texto: "Prendo la tele y está ESE auto que vi en el garage de la casa del funcionario en cadena nacional. Al final la tribuna no mentía.", engagement: 52, hate: 14 },
+    { titulo: "Trending político vs domingo de cancha", texto: "Todo el país hablando de licitaciones y causas judiciales y yo lo único que quiero es que llegue el domingo para ver a Boca.", engagement: 46, hate: 12 },
+    { titulo: "Entre los palcos y los ministerios", texto: "En los palcos VIP de la cancha se cruzan los mismos apellidos que ahora salen en los zócalos de noticias. Casualidad las pelotas.", engagement: 50, hate: 15 },
   ],
+  // FASE 4: 2026 (Mirada retrospectiva, desencanto posterior)
   militante:    [
-    { titulo: "Bajada de línea del trending", texto: "El tema del día tiene una lectura política que los grandes medios evitan hacer a propósito. La hago yo, gratis.", engagement: 40, hate: 30 },
-    { titulo: "El trending que conviene ignorar", texto: "Está trending porque le conviene a alguien que hablemos de esto y no de lo otro. No caigan en la cortina de humo.", engagement: 38, hate: 28 },
-    { titulo: "Postura ante el tema de hoy", texto: "Algunos compañeros están mal parados en esto y se los digo de frente, con respeto pero sin vueltas.", engagement: 42, hate: 32 },
+    { titulo: "La autocrítica pendiente", texto: "A dos años de la causa que nos quebró el espacio, hay compañeros que todavía no quieren mirar el balance de aquel plan de viviendas. No se construye tapando el barro.", engagement: 46, hate: 28 },
+    { titulo: "Coyuntura actual y viejas sombras", texto: "Discutimos las elecciones de este año como si no tuviéramos un ex funcionario procesado que militaba al lado nuestro. Memoria y verdad.", engagement: 42, hate: 26 },
+    { titulo: "Militancia sin caretas", texto: "Militar en 2026 exige no repetir los errores de 2024. El que se queda callado cuando los suyos afanan no es compañero, es cómplice.", engagement: 48, hate: 30 },
   ],
+  // FASE 2: Hackeo Cripto & Comando Fierro (Abril-Mayo 2024)
   humor:        [
-    { titulo: "Meme rápido del trending", texto: "Tardé 3 minutos en editar este meme del trending topic del día. Si no se mean de la risa con el remate, me retiro del humor y me pongo una rotisería en Alta Gracia.", engagement: 55, hate: 10 },
-    { titulo: "El chiste del trending", texto: "Todos indignados con la noticia número uno del país y yo encontrándole el lado absurdo con una analogía de choripán y cuarteto. Dios bendiga mi cerebro.", engagement: 52, hate: 8 },
-    { titulo: "Reel del momento viral", texto: "Agarré el video que se hizo viral hoy y le doblé la voz con tonada cordobesa enojada. Quedó tan perfecto que parece documental de Discovery Channel.", engagement: 58, hate: 6 },
+    { titulo: "El Corralito Cripto en memes", texto: "Gente llorando porque un exchange local les comió los ahorros y yo acá metiéndole música de Titanic a las placas de Crónica. Perdón, el humor es gratis.", engagement: 62, hate: 10 },
+    { titulo: "Comando Fierro trending topic", texto: "Trendea 'Comando Fierro' y pensé que era una banda de cumbia santafesina. Resulta que son hackers que dejaron en bolas a media city porteña.", engagement: 58, hate: 8 },
+    { titulo: "La modelo y el garage", texto: "Todo el feed con el video de la OnlyFans bajándose del autazo importado. Muchachos, no es física cuántica: billetera mata galán de Twitch.", engagement: 60, hate: 12 },
   ],
+  // FASE 3: Corrupción estalla (Julio-Agosto 2024)
   periodista:   [
-    { titulo: "Contexto real del trending", texto: "El tema está trending desde temprano, pero nadie explica bien por qué importa realmente. Lo resumo en un hilo corto.", engagement: 48, hate: 15 },
-    { titulo: "Lo que falta en la conversación", texto: "10.000 tweets sobre esto hoy y ninguno menciona el dato que en realidad cambia todo. Lo pongo yo.", engagement: 52, hate: 12 },
-    { titulo: "Fact-check del trending", texto: "Tres afirmaciones que se viralizaron hoy: una es cierta, una es a medias, y una directamente es mentira. Vamos una por una.", engagement: 55, hate: 10 },
+    { titulo: "La LLC bajo la lupa", texto: "El expediente de Delaware es público. Cruzamos tres firmas y coinciden con el entorno directo de la secretaría. La documentación es irrefutable.", engagement: 58, hate: 14 },
+    { titulo: "Allanamiento en marcha", texto: "Urgente: ordenan allanamientos vinculados a la causa del plan de viviendas y los autos de lujo. Fuentes judiciales confirman medidas inminentes.", engagement: 65, hate: 18 },
+    { titulo: "El silencio oficial", texto: "Tres ministros apagaron los celulares desde que publicamos la nota de la LLC. El silencio a veces es la confesión más ruidosa.", engagement: 62, hate: 15 },
   ],
+  // FASE 3: Corrupción estalla (Julio-Agosto 2024)
   cryptobro:    [
-    { titulo: "El trending y el mercado", texto: "El tema del día tiene correlación directa con los movimientos del mercado. Se las muestro, ustedes saquen sus propias conclusiones.", engagement: 38, hate: 22 },
-    { titulo: "Cómo jugar el trending", texto: "Cada evento masivo crea oportunidades en el mercado. Las señalo sin prometer nada, no soy asesor financiero, solo un tipo mirando gráficos.", engagement: 42, hate: 20 },
-    { titulo: "El ángulo cripto del trending", texto: "Todo pasa. La blockchain queda. Incluso esto va a terminar siendo un caso de estudio on-chain.", engagement: 35, hate: 18 },
+    { titulo: "Pánico en el feed financiero", texto: "Están linkeando wallets de empresas offshore con causas políticas locales. Gente, no mezclen regulación con pánico. DYOR.", engagement: 44, hate: 22 },
+    { titulo: "La resaca del hackeo", texto: "Todavía hay gente llorando por el exchange de hace dos meses mientras los tribunales investigan a dónde fueron a parar los fondos. Todo on-chain queda.", engagement: 48, hate: 20 },
+    { titulo: "El mercado no perdona", texto: "Cuando la política mete la mano en estructuras corporativas, el spread te come vivo. Operen en frío, sin emociones.", engagement: 40, hate: 16 },
   ],
+  // FASE 1: Auto & Modelo (Febrero 2024)
   gamer:        [
-    { titulo: "El tema del día, versión gamer", texto: "El trending de hoy, pero contado exactamente como si fuera el lore de un videojuego. Funciona mejor de lo que pensaba.", engagement: 42, hate: 12 },
-    { titulo: "Meme gaming sobre el trending", texto: "Este meme de videojuego describe perfecto lo que está pasando hoy afuera. A veces la ficción se adelanta.", engagement: 45, hate: 10 },
-    { titulo: "El ángulo gamer del tema", texto: "Nadie lo comentó todavía, pero el tema del día tiene un paralelo exacto con cualquier arco narrativo de MMORPG.", engagement: 40, hate: 8 },
+    { titulo: "La nave es tendencia", texto: "Che por qué hay gente discutiendo de patentes abajo del clip de mi garage?? Jajaja dejen de perseguirse fantasmas y miren los 60fps.", engagement: 50, hate: 12 },
+    { titulo: "El clip del millón", texto: "Trend topic por prender la nave en directo. Gracias a los que bancan, a los envidiosos que sigan jugando en 720p 🏎️🎮", engagement: 48, hate: 10 },
+    { titulo: "Setup nuevo en camino", texto: "Se viene stream histórico desde el living nuevo. Mi viejo me ayudó con unos trámites y quedó de locos.", engagement: 46, hate: 8 },
   ],
+  // FASE 2: Hackeo Cripto & Comando Fierro (Abril-Mayo 2024)
   conspiranoico:[ 
-    { titulo: "Lo que nadie dice del trending", texto: "El tema del día tiene una segunda capa que prácticamente nadie está viendo todavía. La muestro acá.", engagement: 40, hate: 28 },
-    { titulo: "Por qué está trending esto hoy", texto: "No es casualidad que esto sea trending justo hoy, justo ahora. Falta el contexto real, y yo lo tengo.", engagement: 38, hate: 30 },
-    { titulo: "Trending conveniente", texto: "Cada vez que pasa algo importante de verdad, esto o algo muy parecido empieza a trendear al mismo tiempo. Siempre.", engagement: 42, hate: 32 },
+    { titulo: "La wallet y la política", texto: "Nadie mira los hashes. Esa transferencia del exchange hackeado fue directa a una sociedad fantasma. Comando Fierro tiró la primera piedra, yo tengo el mapa.", engagement: 48, hate: 26 },
+    { titulo: "La cortina de humo", texto: "Nos ponen a hablar del Corralito Cripto para tapar lo que está pasando en los despachos ministeriales. ABRAN LOS OJOS.", engagement: 45, hate: 28 },
+    { titulo: "Se caen los servidores", texto: "Conveniente que el exchange se caiga justo cuando los saldos empezaban a no cerrar. No fue hackeo ordinario, fue voladura controlada.", engagement: 52, hate: 30 },
   ],
+  // FASE 1: Auto & Modelo (Febrero 2024)
   influencer:   [
-    { titulo: "Mi look inspirado en el trending", texto: "El tema del día me inspiró un outfit entero. A veces el universo te tira la idea y solo hay que ejecutarla.", engagement: 45, hate: 15 },
-    { titulo: "Mi opinión sobre el trending", texto: "No siempre me meto en los trending, prefiero mi burbuja positiva, pero este en particular siento que vale la pena compartir.", engagement: 42, hate: 18 },
-    { titulo: "Contenido del trending", texto: "Hice mi versión de este trend y siento que salió mejor que las que vi hasta ahora. Es subjetivo, pero bueno, es mi verdad.", engagement: 48, hate: 12 },
+    { titulo: "Vibra de alta gama", texto: "Ver ese auto importado en el garage me hizo replantear mi tablero de metas para este año. Hay que rodearse de gente que vibre abundancia real ✨🙏", engagement: 48, hate: 14 },
+    { titulo: "El chisme del momento", texto: "Todo el mundo comentando quién iba adentro del auto en la foto de ayer. Chicas, el chisme atrasa, la gratitud eleva 👀☕", engagement: 45, hate: 16 },
+    { titulo: "Visualización activa", texto: "Si ellos pudieron financiar semejante nave, cualquiera con disciplina y mentalidad puede. Decretado para mi 2024.", engagement: 50, hate: 18 },
   ],
+  // FASE 3: Corrupción estalla (Julio-Agosto 2024)
   onlyfans:     [
-    { titulo: "Mi take sobre el trending", texto: "El tema del día, pero desde la perspectiva de alguien que trabaja en un rubro del que casi nadie habla en serio. Ahí va la mía.", engagement: 40, hate: 20 },
-    { titulo: "Trending de contenido adulto", texto: "El formato que está explotando esta semana en el rubro, yo lo vengo haciendo hace meses. Se los muestro, comparen.", engagement: 45, hate: 18 },
-    { titulo: "Opinión sobre el tema viral", texto: "Me preguntan constantemente qué pienso del trending de hoy. Ahí va, con total honestidad, sin filtrar nada.", engagement: 38, hate: 22 },
+    { titulo: "Mi nombre en los noticieros", texto: "Tener que salir a aclarar que no soy testaferro de nadie porque me bajé de un auto con un amigo... el nivel de misoginia de este país es histórico.", engagement: 56, hate: 22 },
+    { titulo: "Publicidad involuntaria", texto: "Sigan hablando de mí en los paneles de chimentos que las suscripciones a mi perfil vip no paran de subir. Besitos a los fiscales 💅", engagement: 62, hate: 25 },
+    { titulo: "Basta de inventar", texto: "Nunca toqué un peso de la política ni me interesa. Si quieren investigar corrupción vayan a Comodoro Py, no a mi cuenta de fotos.", engagement: 58, hate: 18 },
   ],
+  // FASE 2: Hackeo Cripto & Comando Fierro (Abril-Mayo 2024)
   techie:       [
-    { titulo: "El ángulo tech del trending", texto: "El tema del día tiene implicancias tecnológicas que casi nadie está discutiendo en el mainstream. Las señalo yo.", engagement: 42, hate: 12 },
-    { titulo: "Trending tech de la semana", texto: "Esto que está explotando puntualmente en el sector tech esta semana. Mi análisis rápido, en caliente.", engagement: 45, hate: 10 },
-    { titulo: "Cómo afecta el trending a la industria", texto: "Cuando algo tendea así de fuerte, siempre hay una oportunidad de producto escondida ahí adentro. Ya la estoy viendo.", engagement: 40, hate: 8 },
+    { titulo: "Postmortem del hackeo", texto: "Analicé el exploit del exchange local: las keys estaban guardadas en texto plano en un bucket mal configurado. Comando Fierro ni tuvo que esforzarse.", engagement: 64, hate: 10 },
+    { titulo: "El Corralito Cripto", texto: "El ecosistema local acaba de retroceder 5 años por la desprolijidad de este exchange. La fuga de liquidez hacia exchanges de afuera es masiva.", engagement: 60, hate: 8 },
+    { titulo: "Seguridad vs Marketing", texto: "Gastaban 50K verdes por mes en pauta con influencers y cero en auditorías de smart contracts. Ahí tienen los resultados.", engagement: 58, hate: 12 },
   ],
+  // FASE 1: Auto & Modelo (Febrero 2024)
   podcaster:    [
-    { titulo: "El trending del episodio de esta semana", texto: "El tema del día va a terminar siendo el episodio completo de esta semana. Les anticipo por dónde va a ir la charla.", engagement: 40, hate: 10 },
-    { titulo: "Charlamos el trending en vivo", texto: "Episodio especial sobre el tema del día, se graba esta noche mismo. Manden sus preguntas antes de las 20.", engagement: 42, hate: 8 },
-    { titulo: "Mi take corto del trending", texto: "Para el episodio completo con todos los detalles, esperen al jueves. Pero acá les dejo el anticipo corto.", engagement: 38, hate: 6 },
+    { titulo: "El episodio del que todos hablan", texto: "Grabamos una charla casual en una casa y de repente el auto que sale de fondo es trending nacional. Mañana sacamos el detrás de escena.", engagement: 54, hate: 10 },
+    { titulo: "Chismes de café", texto: "En los cafés de Palermo no se habla de otra cosa que de quién puso la plata para el auto del streamer. A veces el backstage rinde más que la entrevista.", engagement: 50, hate: 8 },
+    { titulo: "La repercusión mediática", texto: "Me llamaron de tres radios preguntando si el auto era real o alquilado. El morbo argentino por la guita ajena es digno de un paper sociológico.", engagement: 52, hate: 12 },
   ]
 };
 

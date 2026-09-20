@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Twitero — Simulador de Redes Sociales</title>
+  <title>Tuitero — Simulador de Redes Sociales</title>
 
-  <meta name="description" content="Twitero es un simulador de redes sociales satírico y estratégico. Elegí tu arquetipo, dominá el algoritmo, monetizá tu fama y sobreviví a la cultura de la cancelación en 20 turnos.">
-  <meta name="keywords" content="twitero, juego twitter, simulador twitter, simulador redes sociales, juego de cartas satirico, juego online">
-  <meta name="author" content="Twitero">
+  <meta name="description" content="Tuitero es un simulador de redes sociales satírico y estratégico. Elegí tu arquetipo, dominá el algoritmo, monetizá tu fama y sobreviví a la cultura de la cancelación en 20 turnos.">
+  <meta name="keywords" content="tuitero, juego twitter, simulador twitter, simulador redes sociales, juego de cartas satirico, juego online">
+  <meta name="author" content="Tuitero">
   <meta name="robots" content="index, follow">
   <meta name="theme-color" content="#000000">
   <link rel="canonical" href="https://twitero.vercel.app/">
@@ -19,16 +19,16 @@
   <!-- Open Graph / Facebook / WhatsApp -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://twitero.vercel.app/">
-  <meta property="og:site_name" content="Twitero">
+  <meta property="og:site_name" content="Tuitero">
   <meta property="og:locale" content="es_AR">
-  <meta property="og:title" content="Twitero — Simulador de Redes Sociales">
+  <meta property="og:title" content="Tuitero — Simulador de Redes Sociales">
   <meta property="og:description" content="Elegí tu arquetipo, manejá tu timeline y sobreviví a la cultura de la cancelación en 20 turnos.">
   <meta property="og:image" content="og-image.jpg">
 
   <!-- Twitter / X Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:url" content="https://twitero.vercel.app/">
-  <meta name="twitter:title" content="Twitero — Simulador de Redes Sociales">
+  <meta name="twitter:title" content="Tuitero — Simulador de Redes Sociales">
   <meta name="twitter:description" content="Elegí tu arquetipo, manejá tu timeline y sobreviví a la cultura de la cancelación en 20 turnos.">
   <meta name="twitter:image" content="og-image.jpg">
 
@@ -48,15 +48,25 @@
 <div id="screen-splash" class="screen active">
   <div class="splash-shell">
     <div class="splash-meta-bar">
-      <span>TWITERO // SIMULADOR DE REDES</span>
-      
       <!-- LANGUAGE DROPDOWN WITH BIG FLAGS -->
       <div class="lang-dropdown-wrap">
-        <button class="lang-dropdown-btn" id="lang-dropdown-btn">🇪🇸 Español ▾</button>
+        <button class="lang-dropdown-btn" id="lang-dropdown-btn">
+          <span class="lang-flag">🇪🇸</span>
+          <span class="lang-name">Español</span>
+          <span class="lang-arrow">▾</span>
+        </button>
         <div class="lang-dropdown-menu" id="lang-dropdown-menu">
-          <div class="lang-opt active" data-lang="es">🇪🇸 Español <span class="lang-tag">Activo ✓</span></div>
-          <div class="lang-opt locked" data-lang="en">🇬🇧 English <span class="lang-tag">🔒 Pronto</span></div>
-          <div class="lang-opt locked" data-lang="ja">🇯🇵 日本語 <span class="lang-tag">🔒 近日</span></div>
+          <div class="lang-opt active" data-lang="es">
+            <span class="lang-opt-left"><span class="lang-flag">🇪🇸</span> Español</span>
+          </div>
+          <div class="lang-opt locked" data-lang="en">
+            <span class="lang-opt-left"><span class="lang-flag">🇬🇧</span> English</span>
+            <span class="lang-lock">🔒</span>
+          </div>
+          <div class="lang-opt locked" data-lang="ja">
+            <span class="lang-opt-left"><span class="lang-flag">🇯🇵</span> 日本語</span>
+            <span class="lang-lock">🔒</span>
+          </div>
         </div>
       </div>
 
@@ -64,15 +74,15 @@
       <button class="btn-fullscreen-toggle" id="btn-fullscreen-splash" title="Pantalla Completa">⛶ PANTALLA COMPLETA</button>
     </div>
 
-    <!-- POSTER IMAGE (CLEAN NEO-INDUSTRIAL TWITERO BANNER) -->
+    <!-- POSTER IMAGE (CLEAN NEO-INDUSTRIAL TUITERO BANNER) -->
     <div class="splash-hero-poster">
-      <img src="splash.jpg" alt="Twitero">
+      <img src="splash.jpg" alt="Tuitero">
     </div>
 
     <!-- CLEAN SPLASH BODY WITH CENTERED CTA -->
     <div class="splash-body">
       <div class="splash-desc">
-        <p>El simulador definitivo de fama digital. Construí tu comunidad en redes, gestioná tu salud mental y saldo financiero, enfrentá peleas en el timeline y eventos inesperados. Cada elección cuenta.</p>
+        <p class="splash-intro-text">Ganá seguidores, monetizá tu contenido y sobreviví a las cancelaciones. Un solo tweet puede consagrarte o condenarte.</p>
         
         <!-- PROMINENT CTA BUTTON -->
         <div class="splash-cta-wrap">
@@ -217,6 +227,9 @@
     <button class="btn-ver-perfil" id="btn-ver-perfil">📋 VER PERFIL COMPLETO</button>
     <!-- ATAJOS DE TECLADO button -->
     <button class="btn-ver-shortcuts" id="btn-ver-shortcuts">⌨️ ATAJOS DE TECLADO</button>
+
+    <!-- BOTÓN DE OPCIONES DE AUDIO -->
+    <button class="btn-ver-shortcuts" id="btn-open-audio-modal" style="margin-top:6px;">🎧 OPCIONES DE AUDIO</button>
 
   </aside>
 
@@ -380,12 +393,15 @@
     <div class="end-collection-badge" id="end1-collection-badge">
       <div class="collection-header">
         <span class="collection-title">🏆 COLECCIÓN DE FINALES</span>
-        <span class="collection-count" id="collection-count-text">1 / 14 DESCUBIERTOS</span>
+        <span class="collection-count" id="collection-count-text">1 / 26 DESCUBIERTOS</span>
       </div>
       <div class="collection-bar-track">
         <div class="collection-bar-fill" id="collection-bar-fill" style="width: 7%;"></div>
       </div>
     </div>
+
+    <!-- BANNER NARRATIVO (solo si modo historia activado) -->
+    <div class="end-story-banner" id="end1-story-banner" style="display:none;"></div>
 
     <!-- JERARQUÍA DE ACCIONES (GRAN BOTÓN + GRILLA 2x2 + CAFECITO) -->
     <div class="end-actions-master">
@@ -630,6 +646,63 @@
   </div>
 </div>
 
+<!-- ══ REPEAT ARCHETYPE HINT MODAL ═══════════════════════════ -->
+<div class="tutorial-modal-overlay" id="repeat-archetype-modal-overlay">
+  <div class="tutorial-modal-box" style="border: 2px solid var(--blue); box-shadow: 0 0 45px rgba(29, 155, 240, 0.3); text-align:center;">
+    <div class="tutorial-modal-header" style="border-bottom-color: rgba(29, 155, 240, 0.3); justify-content:center;">
+      <span class="spec-label" style="color:var(--blue); font-size:0.8rem; letter-spacing:2px;">🔄 PERSONAJE YA JUGADO</span>
+    </div>
+    <div style="display:flex; flex-direction:column; align-items:center; gap:12px; padding: 12px 0;">
+      <div style="font-size:3rem; line-height:1;" id="repeat-arch-icon">🎭</div>
+      <div id="repeat-arch-title" style="font-family:var(--font-display); font-size:1.4rem; font-weight:900; color:#fff; text-transform:uppercase;"></div>
+      <div style="font-family:var(--font-body); font-size:0.92rem; color:var(--off-white); line-height:1.55; max-width:400px;">
+        Ya completaste una partida con este personaje anteriormente.<br><br>
+        Esta vez, <strong>prestá mucha atención a los tweets, menciones y respuestas</strong> que aparezcan en tus cartas. Podrías descubrir qué sucedió realmente detrás de escena.
+      </div>
+    </div>
+    <button class="btn btn-primary" id="btn-repeat-arch-ok" style="width:100%; margin-top:8px;">COMENZAR PARTIDA <span class="key-hint-pill">␣ ESPACIO</span> ▶</button>
+  </div>
+</div>
+
+<!-- ══ STORY MODE UNLOCKED MODAL (3 SLIDES) ════════════════ -->
+<div class="tutorial-modal-overlay" id="story-unlock-modal-overlay">
+  <div class="tutorial-modal-box" style="border: 2px solid #e0245e; box-shadow: 0 0 50px rgba(224, 36, 94, 0.45); max-width:440px;">
+    <div class="tutorial-modal-header" style="border-bottom-color: rgba(224, 36, 94, 0.3);">
+      <span class="spec-label" style="color:#ff5489; font-size:0.8rem; letter-spacing:2px;">⚡ NUEVA TRAMA DESCUBIERTA</span>
+    </div>
+    <div class="tutorial-slides-container">
+      <div class="tutorial-slide active" id="story-slide-1">
+        <div style="text-align:center; font-size:2.8rem; margin-bottom:8px;">🔍</div>
+        <h3 style="text-align:center; color:#ff5489;">¡Entraste en modo historia!</h3>
+        <p>Acabás de descubrir una pista que conecta a varios personajes detrás de escena.</p>
+        <p>Prestá atención a lo que sucede en el feed.</p>
+      </div>
+      <div class="tutorial-slide" id="story-slide-2">
+        <div style="text-align:center; font-size:2.8rem; margin-bottom:8px;">💬</div>
+        <h3 style="text-align:center; color:#ff5489;">Prestá atención al contexto</h3>
+        <p>Prestá atención al contexto y a los <strong>replies latientes</strong>.</p>
+        <p>Cada carta de historia esconde respuestas de otros usuarios que revelan qué está pasando realmente.</p>
+      </div>
+      <div class="tutorial-slide" id="story-slide-3">
+        <div style="text-align:center; font-size:2.8rem; margin-bottom:8px;">🎭</div>
+        <h3 style="text-align:center; color:#ff5489;">La historia es colectiva</h3>
+        <p>Para entender la historia entera, tenés que <strong>jugar con otros personajes</strong>.</p>
+        <p>Cada arquetipo vive una parte de la verdad y tiene su propio punto de vista.</p>
+        <button class="btn btn-danger" id="btn-story-unlock-ok" style="width:100%; margin-top:14px; background:linear-gradient(135deg,#e0245e,#be123c);">
+          SEGUIR JUGANDO <span class="key-hint-pill">␣ ESPACIO</span> ▶
+        </button>
+      </div>
+    </div>
+    <div class="tutorial-modal-actions" id="story-modal-nav">
+      <button class="btn btn-secondary-back" id="btn-story-prev" style="visibility:hidden">⬅ ATRÁS</button>
+      <div class="tutorial-dots" id="story-dots">
+        <span class="dot active"></span><span class="dot"></span><span class="dot"></span>
+      </div>
+      <button class="btn btn-primary" id="btn-story-next" style="background:linear-gradient(135deg,#e0245e,#be123c);">SIGUIENTE ➡ <span class="key-hint-pill">␣ ESPACIO</span></button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ VIRAL STREAK EVENT MODAL (3 STEPS) ════════════════════ -->
 
 <div class="tutorial-modal-overlay" id="viral-modal-overlay">
@@ -795,6 +868,35 @@
     <div class="alert-title" id="alert-title">ATENCIÓN</div>
     <div class="alert-text"  id="alert-text"></div>
     <button class="btn btn-primary" id="alert-ok-btn" style="width:100%; margin-top:6px;">[ ENTENDIDO ] <span class="key-hint-pill">␣ ESPACIO</span></button>
+  </div>
+</div>
+
+<!-- ══ AUDIO OPTIONS MODAL ════════════════════════════════ -->
+<div class="tutorial-modal-overlay" id="audio-modal-overlay">
+  <div class="tutorial-modal-box" style="max-width:380px;">
+    <div class="tutorial-modal-header">
+      <span class="spec-label">🎧 OPCIONES DE AUDIO</span>
+      <button class="tutorial-modal-close" id="btn-close-audio-modal">✕</button>
+    </div>
+    <div style="padding: 16px 0; display:flex; flex-direction:column; gap:16px;">
+      <!-- Fila Música -->
+      <div class="audio-row">
+        <label class="audio-label" for="toggle-music">
+          <input type="checkbox" id="toggle-music" checked>
+          <span>🎵 MÚSICA</span>
+        </label>
+        <input type="range" id="slider-music-vol" class="audio-slider" min="0" max="100" value="35" title="Volumen Música">
+      </div>
+      <!-- Fila Efectos (SFX) -->
+      <div class="audio-row">
+        <label class="audio-label" for="toggle-sfx">
+          <input type="checkbox" id="toggle-sfx" checked>
+          <span>🔔 EFECTOS DE SONIDO</span>
+        </label>
+        <input type="range" id="slider-sfx-vol" class="audio-slider" min="0" max="100" value="80" title="Volumen Efectos">
+      </div>
+    </div>
+    <button class="btn btn-primary" id="btn-audio-modal-ok" style="width:100%; margin-top:4px;">LISTO <span class="key-hint-pill">␣ ESPACIO</span></button>
   </div>
 </div>
 

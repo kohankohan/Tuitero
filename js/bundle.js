@@ -1,8 +1,8 @@
-/* ???????????????????????????????????????????????????????
-   js/bundle.js ? Twitero v17 ? Definitive Release
-   Arquitectura Senior Modular ? Clean Code & Data-Driven
+/* ═══════════════════════════════════════════════════════
+   js/bundle.js · Tuitero v19 · Definitive Release
+   Arquitectura Senior Modular · Clean Code & Data-Driven
    Pensado por @kohantoys | https://x.com/kohantoys
-   ??????????????????????????????????????????????????????? */
+   ═══════════════════════════════════════════════════════ */
 
 
 /* ?? M?DULO: content/archetypes.js ?? */
@@ -401,6 +401,7 @@ const BOOSTERS = [
   { id:"ghost",     icono:"✍️", nombre:"Contratar CM",         costo:1500, cooldown:2, desc:"+60 eng · +14% éxito · Multiplicador 1.35x", fx:{ eng:60, mult:1.35, chanceBonus:14 } },
   { id:"shoutout",  icono:"🤝", nombre:"Arrobar a un famoso",   costo:1800, cooldown:2, desc:"+25% segs · +60 eng · Multiplicador 1.5x",   fx:{ segsPct:0.25, eng:60, mult:1.50, chanceBonus:8 } },
   { id:"bots",      icono:"🤖", nombre:"Usar Bots",            costo:3000, cooldown:3, desc:"+40% segs · +10 odio · Multiplicador 1.8x",  fx:{ segsPct:0.40, odio:10, mult:1.80, chanceBonus:6 } },
+  { id:"agencia_pr",icono:"🏢", nombre:"Agencia de PR & Influencers", costo:3500, cooldown:3, desc:"-20 odio · +22% segs · +65 eng · Multiplicador 1.5x", fx:{ odio:-20, segsPct:0.22, eng:65, mult:1.50, chanceBonus:10 } },
   { id:"trollfarm", icono:"🧌", nombre:"Granja de Trolls",     costo:4500, cooldown:4, desc:"+120 eng · +15 odio · Multiplicador 2.0x",   fx:{ eng:120, odio:15, mult:2.00, chanceBonus:10 } }
 ];
 
@@ -1629,67 +1630,79 @@ const liveTweetContent = {
   ]
 };
 
-// ── TEMA DEL DÍA (pool de 3 por arquetipo) ──
+// ── TEMA DEL DÍA (Alineado estrictamente a la Fase de cada arquetipo segun Spec v2) ──
 const temaDelDiaContent = {
+  // FASE 4: 2026 (Mirada retrospectiva, nada de coyuntura vieja en presente)
   opinologo:    [
-    { titulo: "Mi take del trending", texto: "Todos hablando de lo mismo. Yo tengo una lectura que todavía nadie tiró. Ahí va, agárrense.", engagement: 50, hate: 20 },
-    { titulo: "El tema que explota", texto: "Llegué tarde a esta conversación, lo reconozco, pero llego con algo para aportar. Al menos eso.", engagement: 45, hate: 18 },
-    { titulo: "Ángulo original del trending", texto: "Mil tweets sobre esto hoy y ni uno solo mencionó lo más importante. Yo sí lo voy a decir.", engagement: 52, hate: 22 },
+    { titulo: "A dos años del caso", texto: "Pasaron dos años del escándalo de la LLC y hoy la política discute cosas completamente distintas, pero las cicatrices siguen ahí. Hilo.", engagement: 54, hate: 18 },
+    { titulo: "La lección no aprendida", texto: "En 2024 todos se rasgaban las vestiduras por el auto del streamer. Hoy nadie se acuerda ni del nombre del ministro. Así funciona la memoria acá.", engagement: 50, hate: 16 },
+    { titulo: "El archivo no perdona", texto: "Revisando lo que opinaban varios en pleno estallido de la causa hace dos años... qué fácil es indignarse cuando la cámara está prendida.", engagement: 56, hate: 22 },
   ],
+  // FASE 3: Corrupción estalla (Julio-Agosto 2024)
   futbolero:    [
-    { titulo: "El tema del día, edición fútbol", texto: "Todo el mundo hablando de política hoy. Yo voy a seguir hablando de fútbol, con la misma pasión y el mismo enojo.", engagement: 45, hate: 15 },
-    { titulo: "El trending que me importa", texto: "Mientras trendea el político de turno, yo hago trend la táctica del partido de mañana. Prioridades.", engagement: 42, hate: 12 },
-    { titulo: "Mi versión del tema viral", texto: "Agarré el formato del meme viral de hoy y lo adapté al fútbol. Salió mejor la versión mía, lo digo con orgullo.", engagement: 48, hate: 10 },
+    { titulo: "El auto en todos los canales", texto: "Prendo la tele y está ESE auto que vi en el garage de la casa del funcionario en cadena nacional. Al final la tribuna no mentía.", engagement: 52, hate: 14 },
+    { titulo: "Trending político vs domingo de cancha", texto: "Todo el país hablando de licitaciones y causas judiciales y yo lo único que quiero es que llegue el domingo para ver a Boca.", engagement: 46, hate: 12 },
+    { titulo: "Entre los palcos y los ministerios", texto: "En los palcos VIP de la cancha se cruzan los mismos apellidos que ahora salen en los zócalos de noticias. Casualidad las pelotas.", engagement: 50, hate: 15 },
   ],
+  // FASE 4: 2026 (Mirada retrospectiva, desencanto posterior)
   militante:    [
-    { titulo: "Bajada de línea del trending", texto: "El tema del día tiene una lectura política que los grandes medios evitan hacer a propósito. La hago yo, gratis.", engagement: 40, hate: 30 },
-    { titulo: "El trending que conviene ignorar", texto: "Está trending porque le conviene a alguien que hablemos de esto y no de lo otro. No caigan en la cortina de humo.", engagement: 38, hate: 28 },
-    { titulo: "Postura ante el tema de hoy", texto: "Algunos compañeros están mal parados en esto y se los digo de frente, con respeto pero sin vueltas.", engagement: 42, hate: 32 },
+    { titulo: "La autocrítica pendiente", texto: "A dos años de la causa que nos quebró el espacio, hay compañeros que todavía no quieren mirar el balance de aquel plan de viviendas. No se construye tapando el barro.", engagement: 46, hate: 28 },
+    { titulo: "Coyuntura actual y viejas sombras", texto: "Discutimos las elecciones de este año como si no tuviéramos un ex funcionario procesado que militaba al lado nuestro. Memoria y verdad.", engagement: 42, hate: 26 },
+    { titulo: "Militancia sin caretas", texto: "Militar en 2026 exige no repetir los errores de 2024. El que se queda callado cuando los suyos afanan no es compañero, es cómplice.", engagement: 48, hate: 30 },
   ],
+  // FASE 2: Hackeo Cripto & Comando Fierro (Abril-Mayo 2024)
   humor:        [
-    { titulo: "Meme rápido del trending", texto: "Tardé 3 minutos en editar este meme del trending topic del día. Si no se mean de la risa con el remate, me retiro del humor y me pongo una rotisería en Alta Gracia.", engagement: 55, hate: 10 },
-    { titulo: "El chiste del trending", texto: "Todos indignados con la noticia número uno del país y yo encontrándole el lado absurdo con una analogía de choripán y cuarteto. Dios bendiga mi cerebro.", engagement: 52, hate: 8 },
-    { titulo: "Reel del momento viral", texto: "Agarré el video que se hizo viral hoy y le doblé la voz con tonada cordobesa enojada. Quedó tan perfecto que parece documental de Discovery Channel.", engagement: 58, hate: 6 },
+    { titulo: "El Corralito Cripto en memes", texto: "Gente llorando porque un exchange local les comió los ahorros y yo acá metiéndole música de Titanic a las placas de Crónica. Perdón, el humor es gratis.", engagement: 62, hate: 10 },
+    { titulo: "Comando Fierro trending topic", texto: "Trendea 'Comando Fierro' y pensé que era una banda de cumbia santafesina. Resulta que son hackers que dejaron en bolas a media city porteña.", engagement: 58, hate: 8 },
+    { titulo: "La modelo y el garage", texto: "Todo el feed con el video de la OnlyFans bajándose del autazo importado. Muchachos, no es física cuántica: billetera mata galán de Twitch.", engagement: 60, hate: 12 },
   ],
+  // FASE 3: Corrupción estalla (Julio-Agosto 2024)
   periodista:   [
-    { titulo: "Contexto real del trending", texto: "El tema está trending desde temprano, pero nadie explica bien por qué importa realmente. Lo resumo en un hilo corto.", engagement: 48, hate: 15 },
-    { titulo: "Lo que falta en la conversación", texto: "10.000 tweets sobre esto hoy y ninguno menciona el dato que en realidad cambia todo. Lo pongo yo.", engagement: 52, hate: 12 },
-    { titulo: "Fact-check del trending", texto: "Tres afirmaciones que se viralizaron hoy: una es cierta, una es a medias, y una directamente es mentira. Vamos una por una.", engagement: 55, hate: 10 },
+    { titulo: "La LLC bajo la lupa", texto: "El expediente de Delaware es público. Cruzamos tres firmas y coinciden con el entorno directo de la secretaría. La documentación es irrefutable.", engagement: 58, hate: 14 },
+    { titulo: "Allanamiento en marcha", texto: "Urgente: ordenan allanamientos vinculados a la causa del plan de viviendas y los autos de lujo. Fuentes judiciales confirman medidas inminentes.", engagement: 65, hate: 18 },
+    { titulo: "El silencio oficial", texto: "Tres ministros apagaron los celulares desde que publicamos la nota de la LLC. El silencio a veces es la confesión más ruidosa.", engagement: 62, hate: 15 },
   ],
+  // FASE 3: Corrupción estalla (Julio-Agosto 2024)
   cryptobro:    [
-    { titulo: "El trending y el mercado", texto: "El tema del día tiene correlación directa con los movimientos del mercado. Se las muestro, ustedes saquen sus propias conclusiones.", engagement: 38, hate: 22 },
-    { titulo: "Cómo jugar el trending", texto: "Cada evento masivo crea oportunidades en el mercado. Las señalo sin prometer nada, no soy asesor financiero, solo un tipo mirando gráficos.", engagement: 42, hate: 20 },
-    { titulo: "El ángulo cripto del trending", texto: "Todo pasa. La blockchain queda. Incluso esto va a terminar siendo un caso de estudio on-chain.", engagement: 35, hate: 18 },
+    { titulo: "Pánico en el feed financiero", texto: "Están linkeando wallets de empresas offshore con causas políticas locales. Gente, no mezclen regulación con pánico. DYOR.", engagement: 44, hate: 22 },
+    { titulo: "La resaca del hackeo", texto: "Todavía hay gente llorando por el exchange de hace dos meses mientras los tribunales investigan a dónde fueron a parar los fondos. Todo on-chain queda.", engagement: 48, hate: 20 },
+    { titulo: "El mercado no perdona", texto: "Cuando la política mete la mano en estructuras corporativas, el spread te come vivo. Operen en frío, sin emociones.", engagement: 40, hate: 16 },
   ],
+  // FASE 1: Auto & Modelo (Febrero 2024)
   gamer:        [
-    { titulo: "El tema del día, versión gamer", texto: "El trending de hoy, pero contado exactamente como si fuera el lore de un videojuego. Funciona mejor de lo que pensaba.", engagement: 42, hate: 12 },
-    { titulo: "Meme gaming sobre el trending", texto: "Este meme de videojuego describe perfecto lo que está pasando hoy afuera. A veces la ficción se adelanta.", engagement: 45, hate: 10 },
-    { titulo: "El ángulo gamer del tema", texto: "Nadie lo comentó todavía, pero el tema del día tiene un paralelo exacto con cualquier arco narrativo de MMORPG.", engagement: 40, hate: 8 },
+    { titulo: "La nave es tendencia", texto: "Che por qué hay gente discutiendo de patentes abajo del clip de mi garage?? Jajaja dejen de perseguirse fantasmas y miren los 60fps.", engagement: 50, hate: 12 },
+    { titulo: "El clip del millón", texto: "Trend topic por prender la nave en directo. Gracias a los que bancan, a los envidiosos que sigan jugando en 720p 🏎️🎮", engagement: 48, hate: 10 },
+    { titulo: "Setup nuevo en camino", texto: "Se viene stream histórico desde el living nuevo. Mi viejo me ayudó con unos trámites y quedó de locos.", engagement: 46, hate: 8 },
   ],
+  // FASE 2: Hackeo Cripto & Comando Fierro (Abril-Mayo 2024)
   conspiranoico:[ 
-    { titulo: "Lo que nadie dice del trending", texto: "El tema del día tiene una segunda capa que prácticamente nadie está viendo todavía. La muestro acá.", engagement: 40, hate: 28 },
-    { titulo: "Por qué está trending esto hoy", texto: "No es casualidad que esto sea trending justo hoy, justo ahora. Falta el contexto real, y yo lo tengo.", engagement: 38, hate: 30 },
-    { titulo: "Trending conveniente", texto: "Cada vez que pasa algo importante de verdad, esto o algo muy parecido empieza a trendear al mismo tiempo. Siempre.", engagement: 42, hate: 32 },
+    { titulo: "La wallet y la política", texto: "Nadie mira los hashes. Esa transferencia del exchange hackeado fue directa a una sociedad fantasma. Comando Fierro tiró la primera piedra, yo tengo el mapa.", engagement: 48, hate: 26 },
+    { titulo: "La cortina de humo", texto: "Nos ponen a hablar del Corralito Cripto para tapar lo que está pasando en los despachos ministeriales. ABRAN LOS OJOS.", engagement: 45, hate: 28 },
+    { titulo: "Se caen los servidores", texto: "Conveniente que el exchange se caiga justo cuando los saldos empezaban a no cerrar. No fue hackeo ordinario, fue voladura controlada.", engagement: 52, hate: 30 },
   ],
+  // FASE 1: Auto & Modelo (Febrero 2024)
   influencer:   [
-    { titulo: "Mi look inspirado en el trending", texto: "El tema del día me inspiró un outfit entero. A veces el universo te tira la idea y solo hay que ejecutarla.", engagement: 45, hate: 15 },
-    { titulo: "Mi opinión sobre el trending", texto: "No siempre me meto en los trending, prefiero mi burbuja positiva, pero este en particular siento que vale la pena compartir.", engagement: 42, hate: 18 },
-    { titulo: "Contenido del trending", texto: "Hice mi versión de este trend y siento que salió mejor que las que vi hasta ahora. Es subjetivo, pero bueno, es mi verdad.", engagement: 48, hate: 12 },
+    { titulo: "Vibra de alta gama", texto: "Ver ese auto importado en el garage me hizo replantear mi tablero de metas para este año. Hay que rodearse de gente que vibre abundancia real ✨🙏", engagement: 48, hate: 14 },
+    { titulo: "El chisme del momento", texto: "Todo el mundo comentando quién iba adentro del auto en la foto de ayer. Chicas, el chisme atrasa, la gratitud eleva 👀☕", engagement: 45, hate: 16 },
+    { titulo: "Visualización activa", texto: "Si ellos pudieron financiar semejante nave, cualquiera con disciplina y mentalidad puede. Decretado para mi 2024.", engagement: 50, hate: 18 },
   ],
+  // FASE 3: Corrupción estalla (Julio-Agosto 2024)
   onlyfans:     [
-    { titulo: "Mi take sobre el trending", texto: "El tema del día, pero desde la perspectiva de alguien que trabaja en un rubro del que casi nadie habla en serio. Ahí va la mía.", engagement: 40, hate: 20 },
-    { titulo: "Trending de contenido adulto", texto: "El formato que está explotando esta semana en el rubro, yo lo vengo haciendo hace meses. Se los muestro, comparen.", engagement: 45, hate: 18 },
-    { titulo: "Opinión sobre el tema viral", texto: "Me preguntan constantemente qué pienso del trending de hoy. Ahí va, con total honestidad, sin filtrar nada.", engagement: 38, hate: 22 },
+    { titulo: "Mi nombre en los noticieros", texto: "Tener que salir a aclarar que no soy testaferro de nadie porque me bajé de un auto con un amigo... el nivel de misoginia de este país es histórico.", engagement: 56, hate: 22 },
+    { titulo: "Publicidad involuntaria", texto: "Sigan hablando de mí en los paneles de chimentos que las suscripciones a mi perfil vip no paran de subir. Besitos a los fiscales 💅", engagement: 62, hate: 25 },
+    { titulo: "Basta de inventar", texto: "Nunca toqué un peso de la política ni me interesa. Si quieren investigar corrupción vayan a Comodoro Py, no a mi cuenta de fotos.", engagement: 58, hate: 18 },
   ],
+  // FASE 2: Hackeo Cripto & Comando Fierro (Abril-Mayo 2024)
   techie:       [
-    { titulo: "El ángulo tech del trending", texto: "El tema del día tiene implicancias tecnológicas que casi nadie está discutiendo en el mainstream. Las señalo yo.", engagement: 42, hate: 12 },
-    { titulo: "Trending tech de la semana", texto: "Esto que está explotando puntualmente en el sector tech esta semana. Mi análisis rápido, en caliente.", engagement: 45, hate: 10 },
-    { titulo: "Cómo afecta el trending a la industria", texto: "Cuando algo tendea así de fuerte, siempre hay una oportunidad de producto escondida ahí adentro. Ya la estoy viendo.", engagement: 40, hate: 8 },
+    { titulo: "Postmortem del hackeo", texto: "Analicé el exploit del exchange local: las keys estaban guardadas en texto plano en un bucket mal configurado. Comando Fierro ni tuvo que esforzarse.", engagement: 64, hate: 10 },
+    { titulo: "El Corralito Cripto", texto: "El ecosistema local acaba de retroceder 5 años por la desprolijidad de este exchange. La fuga de liquidez hacia exchanges de afuera es masiva.", engagement: 60, hate: 8 },
+    { titulo: "Seguridad vs Marketing", texto: "Gastaban 50K verdes por mes en pauta con influencers y cero en auditorías de smart contracts. Ahí tienen los resultados.", engagement: 58, hate: 12 },
   ],
+  // FASE 1: Auto & Modelo (Febrero 2024)
   podcaster:    [
-    { titulo: "El trending del episodio de esta semana", texto: "El tema del día va a terminar siendo el episodio completo de esta semana. Les anticipo por dónde va a ir la charla.", engagement: 40, hate: 10 },
-    { titulo: "Charlamos el trending en vivo", texto: "Episodio especial sobre el tema del día, se graba esta noche mismo. Manden sus preguntas antes de las 20.", engagement: 42, hate: 8 },
-    { titulo: "Mi take corto del trending", texto: "Para el episodio completo con todos los detalles, esperen al jueves. Pero acá les dejo el anticipo corto.", engagement: 38, hate: 6 },
+    { titulo: "El episodio del que todos hablan", texto: "Grabamos una charla casual en una casa y de repente el auto que sale de fondo es trending nacional. Mañana sacamos el detrás de escena.", engagement: 54, hate: 10 },
+    { titulo: "Chismes de café", texto: "En los cafés de Palermo no se habla de otra cosa que de quién puso la plata para el auto del streamer. A veces el backstage rinde más que la entrevista.", engagement: 50, hate: 8 },
+    { titulo: "La repercusión mediática", texto: "Me llamaron de tres radios preguntando si el auto era real o alquilado. El morbo argentino por la guita ajena es digno de un paper sociológico.", engagement: 52, hate: 12 },
   ]
 };
 
@@ -4852,6 +4865,806 @@ const viralizacionExtremaContent = {
 };
 
 
+/* ?? M?DULO: content/events/metahistory.js ?? */
+/* ═══════════════════════════════════════════════════════════
+   Twitero v18 — content/events/metahistory.js
+   Metajuego Narrativo Coral: 12 Arquetipos, 3 Capas, 4 Fases
+   Basado en la especificación rectora: METAHISTORY 2 / 4-metahistoria-update-v2.md
+   - Fechas discretas en cada tweet (Her Story timestamp).
+   - 1 sola reply por tweet.
+   - Distribución estricta por fases (F1 a F4).
+   - Menciones veladas de Comando Fierro / Corralito Cripto.
+   - Contradicción directa objetiva (contradiccion_id: "origen_del_caso").
+   - Cierres de Capa 3 en flash-forward 2026:
+     * Grupo A: Reconocen el pasado (Gamer, Periodista, Crypto Bro, Humorista).
+     * Grupo B: Siguen su vida como si nada (Futbolero, Influencer, Techie, Podcaster, Conspiranoico, OnlyFans).
+     * Opinólogo y Militante viven completos en 2026.
+   - Cero frases cliché de IA estilo "no es X, es Y".
+   ═══════════════════════════════════════════════════════════ */
+
+const METAHISTORY_DATA = {
+  // ─── 1. GAMER (FASE 1: Feb 2024 — Cierre 2026 Grupo A) ─────────────────
+  gamer: {
+    fase: 1,
+    activador: {
+      id: "gamer_act",
+      fecha: "12 Feb 2024",
+      titulo: "Grabando el especial",
+      texto: "el chabon me hizo repetir la entrada del stream tres veces jaja, grabamos en mi casa, quedó bueno el material",
+      replySospechosa: {
+        autor: "Seguidor Anónimo",
+        handle: "@patentes_arg",
+        texto: "Dejá de vender humo. Ese auto importado que asoma en tu garage no lo pagás ni con 50 años de stream. ¿A nombre de qué empresa está?"
+      }
+    },
+    capa2: [
+      {
+        id: "gamer_01",
+        fase: 1,
+        fecha: "16 Feb 2024",
+        titulo: "La nave en el garage",
+        texto: "vieron la nave que me compré? un importado de re alta gama, de esos que hay solo DOS en todo el país. mi viejo me tiró una mano con la financiación jaja",
+        replies: [
+          { autor: "Curioso de Twitter", handle: "@patentes_arg", texto: "Financiación de qué forma exactamente, a nombre de qué empresa está el auto" }
+        ],
+        stats: { eng: 68, hate: 14, cred: 10, chance: 65 }
+      },
+      {
+        id: "gamer_02",
+        fase: 1,
+        fecha: "20 Feb 2024",
+        titulo: "Asado con el 9",
+        texto: "comiendo un asado con mi hermano de la vida, el 9 de Boca. los de afuera hablan al pedo, nosotros festejamos en silencio 🥩🔥",
+        replies: [
+          { autor: "Seguidor de Twitch", handle: "@pibe_stream", texto: "Subite una vuelta en la nave con el 9 amigo, rompen internet" }
+        ],
+        stats: { eng: 72, hate: 12, cred: 15, chance: 62 }
+      },
+      {
+        id: "gamer_03",
+        fase: 1,
+        fecha: "24 Feb 2024",
+        titulo: "Papeles del juzgado",
+        texto: "me llegó una notificación de una fiscalía pidiendo declarar por la titularidad del auto, no entiendo nada de términos legales así que le dije a mi viejo que se encargue él",
+        replies: [
+          { autor: "Seguidor de Twitch", handle: "@pibe_stream", texto: "Cuidado rey, asesorate con un boga propio y no firmes nada a ciegas" }
+        ],
+        stats: { eng: 82, hate: 22, cred: 14, chance: 60 }
+      }
+    ],
+    // Cierre Capa 3: 2026 (Grupo A: Cínico, apoya a su padre)
+    capa3: {
+      id: "gamer_cierre_2026",
+      fase: 4,
+      fecha: "14 Mar 2026",
+      titulo: "Reglas del juego",
+      texto: "dos años después y la gente sigue insistiendo con lo mismo de mi viejo. él se banca todo solo, como siempre. son las reglas del juego, no shockea",
+      replies: [
+        { autor: "Seguidor de Twitch", handle: "@pibe_stream", texto: "prendé stream rey, la gente habla porque tiene boca nomás" }
+      ],
+      stats: { eng: 88, hate: 35, cred: 10, chance: 75 }
+    }
+  },
+
+  // ─── 2. PODCASTER (FASE 1: Feb 2024 — Cierre 2026 Grupo B) ─────────────
+  podcaster: {
+    fase: 1,
+    activador: {
+      id: "podcaster_act",
+      fecha: "11 Feb 2024",
+      titulo: "Trailer en el garage",
+      texto: "mañana sale la entrevista completa con @gamer_stream, grabada en su casa. hay una escena en el garage que se las va a volar la cabeza",
+      replySospechosa: {
+        autor: "Usuario Indignado",
+        handle: "@feed_watcher",
+        texto: "¿Cuánto te están pagando de pauta para que en tu podcast no menciones al exchange cripto que nos cagó la guita a todos?"
+      }
+    },
+    capa2: [
+      {
+        id: "podcaster_01",
+        fase: 1,
+        fecha: "15 Feb 2024",
+        titulo: "El chisme del café",
+        texto: "en el café con @lifestyle_arg terminamos hablando más del auto de @gamer_stream que del episodio en sí, la gente ama un auto caro más que el contenido",
+        replies: [
+          { autor: "Influencer Lifestyle", handle: "@lifestyle_arg", texto: "Es que te juro que no puedo dejar de pensar en esa nave, la energía que maneja" }
+        ],
+        stats: { eng: 65, hate: 10, cred: 20, chance: 64 }
+      },
+      {
+        id: "podcaster_02",
+        fase: 1,
+        fecha: "24 Feb 2024",
+        titulo: "Repercusiones del episodio",
+        texto: "el clip del auto ya pasó el millón de vistas en reels. me escriben hasta periodistas preguntando de dónde salió esa toma",
+        replies: [
+          { autor: "Seguidor del Podcast", handle: "@oyente_fiel", texto: "Ojo a quién le das micrófono que después te pegan las esquirlas" }
+        ],
+        stats: { eng: 74, hate: 15, cred: 22, chance: 60 }
+      },
+      {
+        id: "podcaster_03",
+        fase: 1,
+        fecha: "28 Feb 2024",
+        titulo: "Dilema de producción",
+        texto: "estamos en debate interno con la producción sobre si bajar el clip del garage o clavarle pauta y monetizarlo al mango, la ética versus las métricas",
+        replies: [
+          { autor: "Productor", handle: "@onda_media", texto: "Si lo bajamos ahora parecemos cómplices, mejor dejarlo y que hable la justicia" }
+        ],
+        stats: { eng: 78, hate: 18, cred: 28, chance: 62 }
+      }
+    ],
+    // Cierre Capa 3: 2026 (Grupo B: Sigue su vida normal)
+    capa3: {
+      id: "podcaster_cierre_2026",
+      fase: 4,
+      fecha: "22 Abr 2026",
+      titulo: "200 episodios",
+      texto: "200 episodios cumplidos esta semana. quién me iba a decir cuando arrancamos grabando en mi living",
+      replies: [
+        { autor: "Oyente Frecuente", handle: "@radio_fan", texto: "felicitaciones chabón, te sigo desde que grababas con el auricular del celu" }
+      ],
+      stats: { eng: 80, hate: 5, cred: 35, chance: 78 }
+    }
+  },
+
+  // ─── 3. INFLUENCER LIFESTYLE (FASE 1: Feb 2024 — Cierre 2026 Grupo B) ──
+  influencer: {
+    fase: 1,
+    activador: {
+      id: "influencer_act",
+      fecha: "14 Feb 2024",
+      titulo: "Manifestando abundancia",
+      texto: "manifestando la energía de comprarme un auto como el de @gamer_stream, un importado de re alta gama que ni en la calle se ven, que encima lo tiene a nombre de una empresa, mentalidad de rico 🙏👀",
+      replySospechosa: {
+        autor: "Stalker VIP",
+        handle: "@chisme_digital",
+        texto: "Che reina, ¿y de la sociedad fantasma en Delaware donde figura la nave importada no vas a opinar?"
+      }
+    },
+    capa2: [
+      {
+        id: "influencer_01",
+        fase: 1,
+        fecha: "18 Feb 2024",
+        titulo: "Extrañando en silencio",
+        texto: "hay días que extraño a alguien que ya no me habla, aunque la siga viendo pasar en fotos que suben otros. igual, gratitud infinita por el presente 🙏✨",
+        replies: [
+          { autor: "Seguidora", handle: "@vivi_zen", texto: "Soltá lo que no fue para vos reina, el universo te tiene guardado algo mejor" }
+        ],
+        stats: { eng: 62, hate: 8, cred: 15, chance: 66 }
+      },
+      {
+        id: "influencer_02",
+        fase: 1,
+        fecha: "26 Feb 2024",
+        titulo: "Filtros y apariencias",
+        texto: "a veces posteo la vida perfecta y por dentro estoy pensando en gente que ya no está. el algoritmo no sabe eso",
+        replies: [
+          { autor: "Amiga de Palermo", handle: "@sofia_fit", texto: "Te quiero amiga, esta semana merendamos y me contás todo" }
+        ],
+        stats: { eng: 68, hate: 10, cred: 18, chance: 63 }
+      },
+      {
+        id: "influencer_03",
+        fase: 1,
+        fecha: "01 Mar 2024",
+        titulo: "Energías y noticias",
+        texto: "viendo las noticias de hoy y sintiendo una vibra pesadísima con cierta gente que aparece en todos los portales, hay presencias que te drenan la luz aunque ya no estén cerca ✨🧘‍♀️",
+        replies: [
+          { autor: "Seguidora", handle: "@vivi_zen", texto: "Te banco reina, limpiá tu aura con palo santo y no mires más la tele" }
+        ],
+        stats: { eng: 75, hate: 14, cred: 20, chance: 64 }
+      }
+    ],
+    // Cierre Capa 3: 2026 (Grupo B: Sigue su vida normal)
+    capa3: {
+      id: "influencer_cierre_2026",
+      fase: 4,
+      fecha: "19 May 2026",
+      titulo: "Nueva rutina matutina",
+      texto: "nueva rutina matutina que me cambió la vida por completo, se las cuento en el video de hoy 🙏✨",
+      replies: [
+        { autor: "Seguidora Fiel", handle: "@lucia_style", texto: "amé el matcha que recomendaste, pasá el link de la taza!" }
+      ],
+      stats: { eng: 82, hate: 6, cred: 25, chance: 80 }
+    }
+  },
+
+  // ─── 4. TECHIE (FASE 2: Abr-May 2024 — Cierre 2026 Grupo B) ───────────
+  techie: {
+    fase: 2,
+    activador: {
+      id: "techie_act",
+      fecha: "15 Abr 2024",
+      titulo: "Rumores en la City",
+      texto: "hay rumores de un colectivo de hackers locales dando vueltas por la city cripto hace semanas, gente seria dice que no es joda",
+      replySospechosa: {
+        autor: "Dev Cripto",
+        handle: "@rust_coder",
+        texto: "Dejá de chapear con tus startups y decí la verdad: ¿cuándo carajo liberan los retiros del exchange hackeado?"
+      }
+    },
+    capa2: [
+      {
+        id: "techie_01",
+        fase: 2,
+        fecha: "25 Abr 2024",
+        titulo: "La bomba por estallar",
+        texto: "sé de una bomba grande que está por estallar en las próximas semanas, tiene que ver con plata y con gente conocida. no puedo decir más, NDA de por medio",
+        replies: [
+          { autor: "Inversor Ángel", handle: "@seed_fund", texto: "Tirame una pista por Signal que tengo liquidez parada en dos exchanges porteños" }
+        ],
+        stats: { eng: 70, hate: 12, cred: 28, chance: 62 }
+      },
+      {
+        id: "techie_02",
+        fase: 2,
+        fecha: "10 May 2024",
+        titulo: "El Corralito Cripto",
+        texto: "confirmado: la bomba era el hackeo al exchange local. quien haya tenido guita ahí adentro, lo siento mucho, yo también perdí",
+        replies: [
+          { autor: "Comediante", handle: "@humor_arg", texto: "Pará pará pará, ¿me estás diciendo que mis ahorros en $PEPEARG desaparecieron?" }
+        ],
+        stats: { eng: 84, hate: 20, cred: 35, chance: 58 }
+      },
+      {
+        id: "techie_03",
+        fase: 2,
+        fecha: "18 May 2024",
+        titulo: "El manifiesto decodificado",
+        texto: "acabo de terminar de leer el volcado de datos y el manifiesto de Comando Fierro. el exploit al exchange no fue al azar, fueron directo a rastrear las billeteras puente de fondos públicos",
+        replies: [
+          { autor: "Dev Cripto", handle: "@solidity_dev", texto: "Lo vi en GitHub antes de que tiren el repo. Había contratos inteligentes vinculados al fideicomiso." }
+        ],
+        stats: { eng: 88, hate: 15, cred: 42, chance: 60 }
+      }
+    ],
+    // Cierre Capa 3: 2026 (Grupo B: Sigue su vida normal)
+    capa3: {
+      id: "techie_cierre_2026",
+      fase: 4,
+      fecha: "08 Jun 2026",
+      titulo: "Serie A cerrada",
+      texto: "cerramos la serie A más grande del año para el sector, día histórico para todo el equipo 🚀",
+      replies: [
+        { autor: "Venture Capital", handle: "@latam_vc", texto: "Orgullo ver crecer este proyecto desde el día cero. A romperla!" }
+      ],
+      stats: { eng: 86, hate: 8, cred: 45, chance: 76 }
+    }
+  },
+
+  // ─── 5. HUMORISTA (FASE 2: Abr-May 2024 — Cierre 2026 Grupo A) ────────
+  humor: {
+    fase: 2,
+    activador: {
+      id: "humor_act",
+      fecha: "18 Abr 2024",
+      titulo: "El chiste del auto",
+      texto: "la vi bajarse de un auto importado carísimo, de esos que hay solo dos en el país, enfrente del edificio del gobierno, algo me dice que el 'amigo' que la lleva no es programador junior precisamente 💀",
+      replySospechosa: {
+        autor: "Víctima del Corralito",
+        handle: "@sin_ahorros",
+        texto: "Reíte todo lo que quieras con tus chistecitos, pero de los fondos que desaparecieron con el corralito cripto no te vi hacer ningún meme."
+      }
+    },
+    capa2: [
+      {
+        id: "humor_01",
+        fase: 2,
+        fecha: "26 Abr 2024",
+        titulo: "Chiste sobre hackers",
+        texto: "hackers peronistas debería ser una contradicción, ¿acaso hackean desde su iPhone 18 Max?",
+        replies: [
+          { autor: "Usuario Anónimo", handle: "@fierro_fan", texto: "Reíte tranquilo que cuando veas la base de datos del exchange te vas a atragantar con el tweet" }
+        ],
+        stats: { eng: 72, hate: 16, cred: 12, chance: 64 }
+      },
+      {
+        id: "humor_02",
+        fase: 2,
+        fecha: "12 May 2024",
+        titulo: "Víctima del Corralito Cripto",
+        texto: "epa, ¿yo tenía guita en el exchange que hackeó Comando Fierro? preguntando por un amigo que soy yo mismo y que perdió todos sus ahorros en $PEPEARG 😭💀",
+        replies: [
+          { autor: "Amigo del Standup", handle: "@guionista_x", texto: "Decime por favor que es un remate para el show del viernes y que no te fundiste posta" }
+        ],
+        stats: { eng: 88, hate: 14, cred: 22, chance: 56 }
+      },
+      {
+        id: "humor_03",
+        fase: 2,
+        fecha: "22 May 2024",
+        titulo: "Risas con sabor amargo",
+        texto: "hago chistes de la polenta y del dólar pero posta me quedé en cero por el corralito este, no es gracioso tener que pedirle guita a mi vieja a los 30 años",
+        replies: [
+          { autor: "Amigo del Standup", handle: "@guionista_x", texto: "Fuerza loco, el viernes en el bar pasamos la gorra para darte una mano" }
+        ],
+        stats: { eng: 92, hate: 12, cred: 26, chance: 58 }
+      }
+    ],
+    // Cierre Capa 3: 2026 (Grupo A: Vergüenza residual y madurez)
+    capa3: {
+      id: "humor_cierre_2026",
+      fase: 4,
+      fecha: "29 May 2026",
+      titulo: "El tweet viejo",
+      texto: "cada tanto alguien me tagea en el chiste viejo. ya no me da risa como antes, la vida te va cambiando el sentido del humor",
+      replies: [
+        { autor: "Seguidor de Standup", handle: "@standup_fan", texto: "creciste un montón chabón, se nota en los monólogos nuevos" }
+      ],
+      stats: { eng: 80, hate: 12, cred: 30, chance: 74 }
+    }
+  },
+
+  // ─── 6. CONSPIRANOICO (FASE 2: Abr-May 2024 — Cierre 2026 Grupo B) ─────
+  conspiranoico: {
+    fase: 2,
+    activador: {
+      id: "conspiranoico_act",
+      fecha: "14 Abr 2024",
+      titulo: "Rastros en la blockchain",
+      texto: "la wallet que mueve $PEPEARG (la memecoin que sigo hace meses) está conectada a otra wallet que recibió transferencias de una LLC. esto no es casualidad (hilo)",
+      replySospechosa: {
+        autor: "Cyber Rebelde",
+        handle: "@fierro_fan",
+        texto: "Te hacés el despierto hablando de ovnis, pero de Comando Fierro y la filtración de la base de datos te comiste los mocos."
+      }
+    },
+    capa2: [
+      {
+        id: "conspiranoico_04", // MECÁNICA HER STORY (CONTRADICCIÓN DIRECTA CON periodista_04)
+        fase: 2,
+        fecha: "18 Abr 2024",
+        contradiccion_id: "origen_del_caso",
+        titulo: "El origen ignorado",
+        texto: "vengo señalando movimientos raros en esa wallet desde ENERO, mucho antes de que se hiciera viral la foto del auto. a mí nadie me escuchó, como siempre",
+        replies: [
+          { autor: "Periodista de Investigación", handle: "@periodista_indie", texto: "Gráficos de paint y capturas sin firma criptográfica no son pruebas, aprendan a investigar" }
+        ],
+        stats: { eng: 70, hate: 22, cred: 15, chance: 58 }
+      },
+      {
+        id: "conspiranoico_02",
+        fase: 2,
+        fecha: "02 May 2024",
+        titulo: "La advertencia de Comando Fierro",
+        texto: "hay un colectivo de hackers locales detrás de todo esto, lo vengo diciendo hace meses y se me ríen en la cara, YA VAN A VER",
+        replies: [
+          { autor: "Troll de Twitter", handle: "@bot_argento", texto: "Tomate la pastilla que los extraterrestres te están hackeando el router" }
+        ],
+        stats: { eng: 75, hate: 25, cred: 10, chance: 55 }
+      },
+      {
+        id: "conspiranoico_03",
+        fase: 2,
+        fecha: "15 May 2024",
+        titulo: "De Delaware a los terrenos",
+        texto: "la ruta de la guita va de la LLC en Delaware directo a los terrenos baldíos del plan de viviendas, pero los radares satelitales de la NASA marcan interferencias electromagnéticas en esa misma coordenada",
+        replies: [
+          { autor: "Trader Paranoico", handle: "@whale_tracker", texto: "Ibas perfecto con la triangulación financiera hasta que metiste a la NASA en el medio..." }
+        ],
+        stats: { eng: 80, hate: 26, cred: 12, chance: 54 }
+      }
+    ],
+    // Cierre Capa 3: 2026 (Grupo B: Sigue en sus conspiraciones normales)
+    capa3: {
+      id: "conspiranoico_cierre_2026",
+      fase: 4,
+      fecha: "11 Jul 2026",
+      titulo: "El anuncio en el Congreso",
+      texto: "lo que están por anunciar esta semana en el Congreso va a confirmar TODO lo que vengo diciendo hace meses",
+      replies: [
+        { autor: "Creyente Fiel", handle: "@ojo_abierto", texto: "estamos listos, abran los ojos que se les cae la careta a todos" }
+      ],
+      stats: { eng: 82, hate: 20, cred: 15, chance: 72 }
+    }
+  },
+
+  // ─── 7. PERIODISTA (FASE 3: Jul-Ago 2024 — Cierre 2026 Grupo A) ───────
+  periodista: {
+    fase: 3,
+    activador: {
+      id: "periodista_act",
+      fecha: "15 Jul 2024",
+      titulo: "La pista del gobierno",
+      texto: "un auto importado de re alta gama, de esos que hay solo dos en el país, a nombre de una empresa fantasma, un streamer que no sabe de dónde salió la plata, y un apellido que empieza a sonar cerca del gobierno. sigan atentos",
+      replySospechosa: {
+        autor: "Lector Desencantado",
+        handle: "@sin_filtro",
+        texto: "¿Por qué estás tan callado con la LLC del Secretario de gobierno? Llegó el sobre de pauta y te borraste de la investigación."
+      }
+    },
+    capa2: [
+      {
+        id: "periodista_02",
+        fase: 3,
+        fecha: "28 Jul 2024",
+        titulo: "Persiguiendo la fuente",
+        texto: "estoy persiguiendo a una fuente clave de esta historia con mucha energía aunque la fuente se niega a hablar conmigo. la verdad no se esconde sola",
+        replies: [
+          { autor: "Creadora OnlyFans", handle: "@vip_content", texto: "Dejá de acosarme por mensaje directo flaco, no tengo nada que ver con tus políticos" }
+        ],
+        stats: { eng: 78, hate: 18, cred: 35, chance: 65 }
+      },
+      {
+        id: "periodista_04", // MECÁNICA HER STORY (CONTRADICCIÓN DIRECTA CON conspiranoico_04)
+        fase: 3,
+        fecha: "09 Ago 2024",
+        contradiccion_id: "origen_del_caso",
+        titulo: "El hilo de la verdad",
+        texto: "todo esto arrancó con una foto de un auto en febrero. desde ahí no paramos de tirar del hilo hasta acá",
+        replies: [
+          { autor: "Editor Político", handle: "@diario_central", texto: "Portada de mañana confirmada. Gran trabajo de documentación rigurosa." }
+        ],
+        stats: { eng: 88, hate: 22, cred: 48, chance: 60 }
+      },
+      {
+        id: "periodista_03",
+        fase: 3,
+        fecha: "18 Ago 2024",
+        titulo: "El organigrama de la LLC",
+        texto: "exclusivo: organigrama completo de la sociedad offshore radicada en Delaware. el testaferro y único firmante de las cuentas bancarias es un trader local de 24 años",
+        replies: [
+          { autor: "Editor Político", handle: "@diario_central", texto: "Impactante documento. Ya está en la portada de la edición digital." }
+        ],
+        stats: { eng: 92, hate: 20, cred: 50, chance: 62 }
+      }
+    ],
+    // Cierre Capa 3: 2026 (Grupo A: Orgullo profesional, hito de carrera)
+    capa3: {
+      id: "periodista_cierre_2026",
+      fase: 4,
+      fecha: "14 Ago 2026",
+      titulo: "El caso que cambió mi carrera",
+      texto: "se cumplen dos años del caso que me cambió la carrera entera. todavía me paran en la calle por esa nota. valió cada noche sin dormir",
+      replies: [
+        { autor: "Colega de Redacción", handle: "@cronista_arg", texto: "un antes y un después en el periodismo de investigación local" }
+      ],
+      stats: { eng: 92, hate: 15, cred: 50, chance: 80 }
+    }
+  },
+
+  // ─── 8. FUTBOLERO (FASE 3: Jul-Ago 2024 — Cierre 2026 Grupo B) ────────
+  futbolero: {
+    fase: 3,
+    activador: {
+      id: "futbolero_act",
+      fecha: "16 Jul 2024",
+      titulo: "Conexión en la Bombonera",
+      texto: "el 9 de Boca es amigo de la infancia de un pibe que labura en streaming, medio que se mueven en otra categoría de guita esos dos",
+      replySospechosa: {
+        autor: "Hincha Furioso",
+        handle: "@anti_casta_boca",
+        texto: "Che, ¿vos no te sacaste una foto en la Bombonera con el pibe del auto importado? ¿O del allanamiento al Secretario en los palcos no decís nada?"
+      }
+    },
+    capa2: [
+      {
+        id: "futbolero_01",
+        fase: 3,
+        fecha: "24 Jul 2024",
+        titulo: "El auto frente al ministerio",
+        texto: "ESE auto importado que subieron hace unos meses, de esos que hay solo dos en el país, es EL MISMO que vi estacionado afuera de la casa de un funcionario, no me cabe duda",
+        replies: [
+          { autor: "Periodista de Investigación", handle: "@periodista_indie", texto: "¿Te acordás la fecha exacta y la calle? Te hablé al privado, es urgente" }
+        ],
+        stats: { eng: 74, hate: 10, cred: 30, chance: 65 }
+      },
+      {
+        id: "futbolero_02",
+        fase: 3,
+        fecha: "05 Ago 2024",
+        titulo: "La charla con el periodista",
+        texto: "un periodista me consultó por el auto importado que vi. le conté todo lo que sé, parece que hay un político metido en el medio. yo solo dije lo que vi",
+        replies: [
+          { autor: "Amigo de la Cancha", handle: "@bostero_12", texto: "No te metas en quilombos de la política fiera, mirá si te suspenden el carnet de socio" }
+        ],
+        stats: { eng: 80, hate: 15, cred: 35, chance: 62 }
+      },
+      {
+        id: "futbolero_03",
+        fase: 3,
+        fecha: "12 Ago 2024",
+        titulo: "Rumores en el palco",
+        texto: "en el entretiempo subí a buscar un café cerca de los palcos y escuché a dos dirigentes de AFA hablando preocupados del allanamiento al secretario, se miraban con cara de velorio",
+        replies: [
+          { autor: "Socio de Boca", handle: "@xeneize_puro", texto: "Están todos hasta las manos fiera, se les viene la noche a varios" }
+        ],
+        stats: { eng: 84, hate: 12, cred: 38, chance: 64 }
+      }
+    ],
+    // Cierre Capa 3: 2026 (Grupo B: Sigue con el fútbol como si nada)
+    capa3: {
+      id: "futbolero_cierre_2026",
+      fase: 4,
+      fecha: "18 Sep 2026",
+      titulo: "20 años de socio",
+      texto: "20 años de socio cumplidos este mes, ya estoy organizando el asado para el próximo clásico. no hay nada como esto",
+      replies: [
+        { autor: "Socio Vitalicio", handle: "@boca_amor", texto: "Salud fiera! Llevo el tinto y la bandera para la previa" }
+      ],
+      stats: { eng: 84, hate: 5, cred: 30, chance: 82 }
+    }
+  },
+
+  // ─── 9. ONLYFANS (FASE 3: Jul-Ago 2024 — Cierre 2026 Grupo B) ─────────
+  onlyfans: {
+    fase: 3,
+    activador: {
+      id: "onlyfans_act",
+      fecha: "18 Jul 2024",
+      titulo: "El rumor y las suscripciones",
+      texto: "no voy a confirmar ni negar de quién es el auto en el que me vieron subir 👀 (los que saben, saben) [link a mi perfil]",
+      replySospechosa: {
+        autor: "Hater del TL",
+        handle: "@moralista_x",
+        texto: "Che, ¿vos no eras la que se bajó del importado con la pareja del Secretario? ¿De esa plata no hablás?"
+      }
+    },
+    capa2: [
+      {
+        id: "onlyfans_01",
+        fase: 3,
+        fecha: "29 Jul 2024",
+        titulo: "Basta de acoso",
+        texto: "a ver, en serio: dejen de mandarme DMs a las 4am preguntando dónde vivo 'para hablar'. no está bueno, basta",
+        replies: [
+          { autor: "Suscriptora VIP", handle: "@mica_love", texto: "Bloqueá a esos enfermos reina, están todos obsesionados con vos" }
+        ],
+        stats: { eng: 76, hate: 20, cred: 22, chance: 66 }
+      },
+      {
+        id: "onlyfans_02",
+        fase: 3,
+        fecha: "12 Ago 2024",
+        titulo: "La verdad sobre el streamer",
+        texto: "listo, ya perdí la amistad de @gamer_stream por este rumor así que ahora sí lo digo clarito: nunca tuve nada que ver con ningún político. es mi amigo, punto.",
+        replies: [
+          { autor: "Comediante", handle: "@humor_arg", texto: "La conocí hace poco y es una genia total. El chiste que hice hace unos meses fue cualquiera, posta perdón." }
+        ],
+        stats: { eng: 86, hate: 16, cred: 35, chance: 60 }
+      },
+      {
+        id: "onlyfans_03",
+        fase: 3,
+        fecha: "20 Ago 2024",
+        titulo: "Capturas y disculpas",
+        texto: "estas son solo algunas de las 400 amenazas que recibí esta semana [capturas]. al menos @gamer_stream me mandó un audio pidiendo disculpas por no haber aclarado antes",
+        replies: [
+          { autor: "Suscriptora VIP", handle: "@mica_love", texto: "Sos enorme reina, que la justicia se encargue de los violentos" }
+        ],
+        stats: { eng: 90, hate: 18, cred: 40, chance: 62 }
+      }
+    ],
+    // Cierre Capa 3: 2026 (Grupo B: Ahora es influencer de cafés de especialidad)
+    capa3: {
+      id: "onlyfans_cierre_2026",
+      fase: 4,
+      fecha: "20 Oct 2026",
+      titulo: "Café de especialidad",
+      texto: "probé el café de especialidad más rico de la ciudad esta semana, review completo ya está arriba ☕",
+      replies: [
+        { autor: "Coffee Lover", handle: "@flat_white_fan", texto: "pasá la dirección que ese tostado etíope se ve tremendo" }
+      ],
+      stats: { eng: 82, hate: 6, cred: 30, chance: 80 }
+    }
+  },
+
+  // ─── 10. CRYPTO BRO (FASE 3: Jul-Ago 2024 — Cierre 2026 Grupo A) ──────
+  cryptobro: {
+    fase: 3,
+    activador: {
+      id: "cryptobro_act",
+      fecha: "19 Jul 2024",
+      titulo: "La empresa en Delaware",
+      texto: "hay un tema de una empresa que armé para alguien hace tiempo que me tiene mal hace semanas. no puedo hablar del tema todavía. DYOR, cuídense entre ustedes",
+      replySospechosa: {
+        autor: "Trader Fundido",
+        handle: "@liquidado_eth",
+        texto: "¿Cuánto te pagó el político para lavarle la guita antes de que Comando Fierro les reventara la wallet en público?"
+      }
+    },
+    capa2: [
+      {
+        id: "cryptobro_01",
+        fase: 3,
+        fecha: "01 Ago 2024",
+        titulo: "Riesgos del corazón",
+        texto: "quién no arriesga no gana dicen en las finanzas. a veces el riesgo no es de plata, es de confiar en la persona equivocada",
+        replies: [
+          { autor: "Seguidor Cripto", handle: "@hodl_pibe", texto: "¿Liquidaste la posición en pérdida rey? El mercado siempre da revancha" }
+        ],
+        stats: { eng: 72, hate: 12, cred: 25, chance: 64 }
+      },
+      {
+        id: "cryptobro_02",
+        fase: 3,
+        fecha: "15 Ago 2024",
+        titulo: "La confesión de la LLC",
+        texto: "la LLC la armé yo, para él. no fue por la comisión ni por la plata. lo hice por amor, y si tengo que hacerlo de nuevo lo vuelvo a hacer",
+        replies: [
+          { autor: "Usuario Anónimo", handle: "@feed_watcher", texto: "esperen... ESTO no era sobre el exchange hackeado, ¿era la pareja del secretario?" }
+        ],
+        stats: { eng: 94, hate: 28, cred: 30, chance: 58 }
+      },
+      {
+        id: "cryptobro_03",
+        fase: 3,
+        fecha: "22 Ago 2024",
+        titulo: "Firmas en soledad",
+        texto: "me enteré por su abogado que en la presentación judicial dicen que la sociedad era un emprendimiento puramente mío. me dejó como único firmante de todo el desastre",
+        replies: [
+          { autor: "Trader Local", handle: "@cripto_alfa", texto: "Te usaron de fusible hermano. Buscate un penalista urgente antes de que te llamen a indagatoria." }
+        ],
+        stats: { eng: 96, hate: 24, cred: 32, chance: 56 }
+      }
+    ],
+    // Cierre Capa 3: 2026 (Grupo A: Dolor genuino, sin arrepentimiento)
+    capa3: {
+      id: "cryptobro_cierre_2026",
+      fase: 4,
+      fecha: "25 Nov 2026",
+      titulo: "Dos años después",
+      texto: "dos años y todavía no sé bien qué extraño más, si a él o a la persona que era antes de conocerlo. igual no me arrepiento de nada",
+      replies: [
+        { autor: "Trader Amigo", handle: "@defi_sur", texto: "fuerza hermano, el tiempo acomoda todo aunque cueste aceptarlo" }
+      ],
+      stats: { eng: 90, hate: 14, cred: 35, chance: 76 }
+    }
+  },
+
+  // ─── 11. MILITANTE (FASE 4: 2026 Completa — Flash-forward) ───────────
+  militante: {
+    fase: 4,
+    activador: {
+      id: "militante_act",
+      fecha: "10 Feb 2026",
+      titulo: "El recuerdo amargo",
+      texto: "pasaron dos años y todavía me preguntan por qué banqué tanto a nuestro secretario en su momento. era de los nuestros, yo fui el primero en no querer creerlo",
+      replySospechosa: {
+        autor: "Vecino del Barrio",
+        handle: "@barrio_pie",
+        texto: "Ah pero del plan de las 200 viviendas populares que nunca se hicieron no decís nada, ¿no? Cómplice del Secretario."
+      }
+    },
+    capa2: [
+      {
+        id: "militante_01",
+        fase: 4,
+        fecha: "28 Feb 2026",
+        titulo: "La crítica al método",
+        texto: "me contaban que algunos simpatizaban con las ideas de nuestro espacio, pero la verdad se equivocaron con el método",
+        replies: [
+          { autor: "Usuario Anónimo", handle: "@fierro_fan", texto: "Si Comando Fierro no abría esa base de datos, las casas sin terminar no las denunciaba nadie" }
+        ],
+        stats: { eng: 78, hate: 22, cred: 38, chance: 62 }
+      },
+      {
+        id: "militante_02",
+        fase: 4,
+        fecha: "18 Mar 2026",
+        titulo: "El curro de las viviendas",
+        texto: "un plan de viviendas que nunca se construyó es una estafa al pueblo. estafa armada por los nuestros, no por el enemigo de siempre",
+        replies: [
+          { autor: "Vecino del Barrio", handle: "@barrio_pie", texto: "Los cimientos siguen ahí juntando yuyos. Nos mintieron en la cara compañero." }
+        ],
+        stats: { eng: 86, hate: 25, cred: 44, chance: 58 }
+      },
+      {
+        id: "militante_03",
+        fase: 4,
+        fecha: "25 Mar 2026",
+        titulo: "El precio del silencio",
+        texto: "varios de los compañeros que en su momento pedían sumario interno para el secretario hoy están acomodados en secretarías con sueldo en mano. el silencio cotiza en dólares",
+        replies: [
+          { autor: "Compañero de Base", handle: "@militante_leal", texto: "Dolió más la traición de los que se vendieron por un cargo que el choreo original." }
+        ],
+        stats: { eng: 90, hate: 24, cred: 46, chance: 60 }
+      },
+      {
+        id: "militante_04",
+        fase: 4,
+        fecha: "15 Abr 2026",
+        titulo: "Los terrenos vacíos",
+        texto: "pasé caminando por el predio donde iban a construir las 200 viviendas populares. solo hay pasto crecido, perros callejeros y un cartel oxidado que da vergüenza ajena",
+        replies: [
+          { autor: "Vecino del Barrio", handle: "@barrio_pie", texto: "Mis hijos ya tienen 5 años y seguimos alquilando una pieza. No nos olvidamos más." }
+        ],
+        stats: { eng: 94, hate: 22, cred: 50, chance: 58 }
+      }
+    ],
+    // Cierre Capa 3: 2026
+    capa3: {
+      id: "militante_cierre_2026",
+      fase: 4,
+      fecha: "05 May 2026",
+      titulo: "El desencanto final",
+      texto: "todavía me cuesta asumir que mientras nosotros tocábamos timbre por un plan de viviendas que nunca se hizo, él ya sabía que no se iba a hacer. era de los nuestros. me equivoqué, y lo digo acá para que quede escrito",
+      replies: [
+        { autor: "Compañera de Unidad Básica", handle: "@militancia_viva", texto: "valiente autocrítica compañero, militar de verdad es decirse la verdad de frente" }
+      ],
+      stats: { eng: 92, hate: 20, cred: 48, chance: 75 }
+    }
+  },
+
+  // ─── 12. OPINÓLOGO (FASE 4: 2026 Completa — Narrador en Retrospectiva) ──
+  opinologo: {
+    fase: 4,
+    activador: {
+      id: "opinologo_act",
+      fecha: "04 Ene 2026",
+      titulo: "Reescribiendo la historia",
+      texto: "a dos años de todo lo del auto, la LLC y el secretario, sigo pensando que nadie entendió bien lo que realmente pasó. yo sí. abro hilo",
+      replySospechosa: {
+        autor: "Seguidor Antiguo",
+        handle: "@memoria_red",
+        texto: "Mucho análisis geopolítico de cartón, pero de la causa de corrupción que encubrieron hace dos años no te escuché decir una sola palabra."
+      }
+    },
+    capa2: [
+      {
+        id: "opinologo_01",
+        fase: 4,
+        fecha: "20 Ene 2026",
+        titulo: "La parte del amor",
+        texto: "todos se quedaron con la parte del auto y la plata. la parte importante fue la del amor, y casi nadie la vio venir en su momento",
+        replies: [
+          { autor: "Seguidor Antiguo", handle: "@hilo_adicto", texto: "Totalmente. El pibe de cripto sacrificó su libertad por proteger al secretario." }
+        ],
+        stats: { eng: 80, hate: 15, cred: 35, chance: 64 }
+      },
+      {
+        id: "opinologo_02",
+        fase: 4,
+        fecha: "15 Feb 2026",
+        titulo: "La distancia del tiempo",
+        texto: "raro pensar que hace dos años esto era solo un rumor de café y hoy es historia vieja para todos menos para los que la vivieron",
+        replies: [
+          { autor: "Usuario Ocasional", handle: "@timeline_sur", texto: "Así es Twitter/X, hoy te cancelan y en dos años nadie se acuerda ni de tu nombre" }
+        ],
+        stats: { eng: 84, hate: 12, cred: 40, chance: 60 }
+      },
+      {
+        id: "opinologo_03",
+        fase: 4,
+        fecha: "02 Mar 2026",
+        titulo: "El sueño de Comodoro Py",
+        texto: "a dos años del escándalo, la causa judicial duerme el sueño de los justos en el juzgado federal 4. no hay ni un solo procesado con prisión preventiva, la rosca judicial funciona aceitada",
+        replies: [
+          { autor: "Lector Escéptico", handle: "@lector_x", texto: "Comodoro Py haciendo lo que mejor sabe hacer: planchar causas hasta que prescriban." }
+        ],
+        stats: { eng: 88, hate: 18, cred: 44, chance: 62 }
+      },
+      {
+        id: "opinologo_04",
+        fase: 4,
+        fecha: "20 Mar 2026",
+        titulo: "La anatomía del olvido",
+        texto: "el ciclo de indignación en redes dura exactamente 72 horas. después la gente necesita indignarse con otra cosa o reírse con un perro que baila. nadie sostiene la memoria",
+        replies: [
+          { autor: "Seguidor Antiguo", handle: "@hilo_adicto", texto: "Triste pero 100% real. Consumimos causas como si fueran historias de instagram." }
+        ],
+        stats: { eng: 92, hate: 14, cred: 48, chance: 66 }
+      }
+    ],
+    // Cierre Capa 3: 2026
+    capa3: {
+      id: "opinologo_cierre_2026",
+      fase: 4,
+      fecha: "28 Mar 2026",
+      titulo: "El veredicto final",
+      texto: "la política argentina es el único lugar donde una foto en el garage de un streamer puede terminar destapando un ministerio entero. fin del hilo",
+      replies: [
+        { autor: "Seguidor de Debates", handle: "@politica_arg", texto: "Excelente hilo doctor, un resumen quirúrgico de lo que fue el 2024" }
+      ],
+      stats: { eng: 90, hate: 16, cred: 45, chance: 78 }
+    }
+  }
+};
+
+
 /* ?? M?DULO: src/audio/sound-engine.js ?? */
 /* ???????????????????????????????????????????????????????
    Twitero v15 ? src/audio/sound-engine.js
@@ -4877,13 +5690,15 @@ class SoundEngine {
 
   _note(f, type, dur, vol=0.13, d=0) {
     if(!this.ctx) return;
+    if (this.sfxEnabled === false) return;
+    const effectiveVol = vol * (this.sfxVolume !== undefined ? this.sfxVolume : 0.8);
     try {
       const t = this.ctx.currentTime + d;
       const o = this.ctx.createOscillator();
       const g = this.ctx.createGain();
       o.type = type;
       o.frequency.setValueAtTime(f, t);
-      g.gain.setValueAtTime(vol, t);
+      g.gain.setValueAtTime(effectiveVol, t);
       g.gain.exponentialRampToValueAtTime(0.001, t + dur);
       o.connect(g);
       g.connect(this.ctx.destination);
@@ -4897,10 +5712,10 @@ class SoundEngine {
     this._note(750, "sine", 0.04, 0.08);
   }
 
-  // ?? SONIDO DE NAIPE / PAPEL REALISTA (Ruido blanco breve con filtro paso banda) ??
   cardFlip(i = 0) {
     this._go();
     if (!this.ctx) return;
+    if (this.sfxEnabled === false) return;
     try {
       const t = this.ctx.currentTime;
       // Buffer de ruido blanco
@@ -4914,14 +5729,15 @@ class SoundEngine {
       const noise = this.ctx.createBufferSource();
       noise.buffer = buffer;
 
-      // Filtro paso banda para darle textura de papel/cartulina desliz?ndose
+      // Filtro paso banda para darle textura de papel/cartulina deslizándose
       const filter = this.ctx.createBiquadFilter();
       filter.type = "bandpass";
       filter.frequency.setValueAtTime(1400 + i * 180, t);
       filter.Q.setValueAtTime(2.2, t);
 
+      const effectiveVol = 0.18 * (this.sfxVolume !== undefined ? this.sfxVolume : 0.8);
       const gain = this.ctx.createGain();
-      gain.gain.setValueAtTime(0.18, t);
+      gain.gain.setValueAtTime(effectiveVol, t);
       gain.gain.exponentialRampToValueAtTime(0.001, t + 0.065);
 
       noise.connect(filter);
@@ -4933,7 +5749,7 @@ class SoundEngine {
       // Micro chasquido sutil de naipe
       this._note(520 + i * 50, "sine", 0.03, 0.04, 0.01);
     } catch(e) {
-      // Fallback arm?nico si el buffer falla
+      // Fallback armónico si el buffer falla
       this._note(480 + i * 60, "triangle", 0.05, 0.07);
     }
   }
@@ -4997,6 +5813,7 @@ class SoundEngine {
   tick(speed = 1) {
     this._go();
     if (!this.ctx) return;
+    if (this.sfxEnabled === false) return;
     try {
       const c = this.ctx;
       const t = c.currentTime;
@@ -5012,8 +5829,9 @@ class SoundEngine {
       flt.frequency.setValueAtTime(1800 + Math.random() * 400, t);
       flt.Q.setValueAtTime(1.4, t);
 
+      const effectiveVol = 0.13 * (this.sfxVolume !== undefined ? this.sfxVolume : 0.8);
       const g = c.createGain();
-      g.gain.setValueAtTime(0.13, t);
+      g.gain.setValueAtTime(effectiveVol, t);
       g.gain.exponentialRampToValueAtTime(0.001, t + 0.038);
 
       noise.connect(flt);
@@ -5042,6 +5860,411 @@ class SoundEngine {
     const freqs = [220, 196, 164]; // descending minor
     const f = freqs[index % freqs.length] || 180;
     this._note(f, "sawtooth", 0.12, 0.12);
+  }
+
+  // ─── LATIDO BIOLÓGICO (LUB-DUB) ──────────────────────────────
+  heartbeatPulse(baseFreq = 55, vol = 0.35, bpm = 65) {
+    this._go();
+    if (!this.ctx) return;
+    if (this.sfxEnabled === false) return;
+    try {
+      const now = this.ctx.currentTime;
+      const effectiveBaseVol = vol * (this.sfxVolume !== undefined ? this.sfxVolume : 0.8);
+      const playSinglePulse = (time, freq, dur, peakGain) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        const filter = this.ctx.createBiquadFilter();
+
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(freq, time);
+        osc.frequency.exponentialRampToValueAtTime(Math.max(25, freq * 0.5), time + dur);
+
+        filter.type = "lowpass";
+        filter.frequency.setValueAtTime(140, time);
+
+        gain.gain.setValueAtTime(0.0001, time);
+        gain.gain.exponentialRampToValueAtTime(Math.max(0.001, peakGain), time + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(time);
+        osc.stop(time + dur + 0.05);
+      };
+
+      // 1. "Lub"
+      playSinglePulse(now, baseFreq, 0.12, effectiveBaseVol);
+      // 2. "Dub" (retraso según BPM)
+      const dubDelay = Math.max(0.10, Math.min(0.16, (60 / bpm) * 0.18));
+      playSinglePulse(now + dubDelay, baseFreq * 1.25, 0.09, effectiveBaseVol * 0.85);
+    } catch(e) {}
+  }
+
+  // ─── IMPACTO DRAMÁTICO ("BRAAM" CINEMATOGRÁFICO) ────────────
+  dramaticBraam() {
+    this._go();
+    if (!this.ctx) return;
+    if (this.sfxEnabled === false) return;
+    try {
+      const now = this.ctx.currentTime;
+      const osc1 = this.ctx.createOscillator();
+      const osc2 = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      const filter = this.ctx.createBiquadFilter();
+
+      osc1.type = "sawtooth";
+      osc1.frequency.setValueAtTime(110, now);
+      osc1.frequency.exponentialRampToValueAtTime(32, now + 1.8);
+
+      osc2.type = "sine";
+      osc2.frequency.setValueAtTime(65, now);
+      osc2.frequency.exponentialRampToValueAtTime(28, now + 2.0);
+
+      filter.type = "lowpass";
+      filter.frequency.setValueAtTime(450, now);
+      filter.frequency.exponentialRampToValueAtTime(80, now + 1.6);
+
+      const effectivePeak = 0.7 * (this.sfxVolume !== undefined ? this.sfxVolume : 0.8);
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(effectivePeak, now + 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 2.2);
+
+      osc1.connect(filter);
+      osc2.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc1.start(now);
+      osc2.start(now);
+      osc1.stop(now + 2.3);
+      osc2.stop(now + 2.3);
+    } catch(e) {}
+  }
+
+  // ─── TENSE ATMOSPHERIC CUE (PISTA NARRATIVA DESCUBIERTA) ────
+  storyClueCue() {
+    this._go();
+    if (!this.ctx || this.sfxEnabled === false) return;
+    try {
+      const now = this.ctx.currentTime;
+      const vol = 0.28 * (this.sfxVolume !== undefined ? this.sfxVolume : 0.8);
+
+      // Acorde cinematográfico tenso: D3 (146.8 Hz), F#3 (185 Hz), C#4 (277.2 Hz)
+      const freqs = [146.83, 185.00, 277.18];
+      freqs.forEach((freq, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        const filter = this.ctx.createBiquadFilter();
+
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(freq, now);
+        osc.frequency.exponentialRampToValueAtTime(freq * 0.98, now + 1.2);
+
+        filter.type = "lowpass";
+        filter.frequency.setValueAtTime(320, now);
+
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.linearRampToValueAtTime(vol * (idx === 0 ? 1.0 : 0.7), now + 0.06);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 1.25);
+      });
+    } catch(e) {}
+  }
+  // ─── MÚSICA PROCEDURAL BALATRO (SUITE 4 FASES) ─────────────
+  initMusic() {
+    if (this._musicInitialized) return;
+    this._musicInitialized = true;
+    this.musicEnabled = localStorage.getItem("twitero_music_enabled") !== "false";
+    this.musicVolume = parseFloat(localStorage.getItem("twitero_music_vol") || "0.35");
+    this.sfxEnabled = localStorage.getItem("twitero_sfx_enabled") !== "false";
+    this.sfxVolume = parseFloat(localStorage.getItem("twitero_sfx_vol") || "0.8");
+    this.currentPhase = 1;
+    this._musicStep = 0;
+    this._musicTimer = null;
+  }
+
+  setPhase(fase) {
+    if (this.currentPhase !== fase) {
+      this.currentPhase = fase;
+      if (this._musicPlaying) {
+        this.stopMusic();
+        this.startMusic();
+      }
+    }
+  }
+
+  setMusicVolume(v) {
+    this.musicVolume = Math.max(0, Math.min(1, v));
+    localStorage.setItem("twitero_music_vol", this.musicVolume);
+    if (this._musicMasterGain && this.ctx) {
+      this._musicMasterGain.gain.setValueAtTime(this.musicEnabled ? this.musicVolume * 0.45 : 0, this.ctx.currentTime);
+    }
+  }
+
+  setMusicEnabled(on) {
+    this.musicEnabled = !!on;
+    localStorage.setItem("twitero_music_enabled", this.musicEnabled);
+    if (this.musicEnabled) {
+      if (!this._musicPlaying) this.startMusic();
+      else if (this._musicMasterGain && this.ctx) {
+        this._musicMasterGain.gain.setValueAtTime(this.musicVolume * 0.45, this.ctx.currentTime);
+      }
+    } else {
+      if (this._musicMasterGain && this.ctx) {
+        this._musicMasterGain.gain.setValueAtTime(0, this.ctx.currentTime);
+      }
+    }
+  }
+
+  setSfxEnabled(on) {
+    this.sfxEnabled = !!on;
+    localStorage.setItem("twitero_sfx_enabled", this.sfxEnabled);
+  }
+
+  setSfxVolume(v) {
+    this.sfxVolume = Math.max(0, Math.min(1, v));
+    localStorage.setItem("twitero_sfx_vol", this.sfxVolume);
+  }
+
+  startMusic() {
+    this.initMusic();
+    if (!this.musicEnabled) return;
+    this._go();
+    if (!this.ctx) return;
+    if (this._musicPlaying) return;
+    this._musicPlaying = true;
+    this._musicStep = 0;
+
+    if (!this._musicMasterGain) {
+      this._musicMasterGain = this.ctx.createGain();
+      this._musicMasterGain.gain.setValueAtTime(this.musicVolume * 0.45, this.ctx.currentTime);
+
+      this._musicFilter = this.ctx.createBiquadFilter();
+      this._musicFilter.type = "lowpass";
+      this._musicFilter.frequency.setValueAtTime(800, this.ctx.currentTime);
+
+      // Tremolo MUY SUTIL (profundidad 0.25 en vez de 0.7) para que no rompa en parlantes chicos
+      this._tremoloLFO = this.ctx.createOscillator();
+      this._tremoloLFO.frequency.setValueAtTime(3.8, this.ctx.currentTime);
+      this._tremoloGain = this.ctx.createGain();
+      this._tremoloGain.gain.setValueAtTime(0.35, this.ctx.currentTime);
+
+      const tremoloDepth = this.ctx.createGain();
+      tremoloDepth.gain.setValueAtTime(0.22, this.ctx.currentTime); // Trémolo suave
+
+      this._tremoloLFO.connect(tremoloDepth);
+      tremoloDepth.connect(this._tremoloGain.gain);
+      this._tremoloLFO.start();
+
+      this._musicMasterGain.connect(this._musicFilter);
+      this._musicFilter.connect(this._tremoloGain);
+      this._tremoloGain.connect(this.ctx.destination);
+    } else {
+      this._musicMasterGain.gain.setValueAtTime(this.musicVolume * 0.45, this.ctx.currentTime);
+    }
+
+    // Variaciones armónicas por fase (F1 a F4)
+    const suite = {
+      1: {
+        bpm: 70, filter: 880,
+        chords: [
+          [130.81, 196.00, 233.08, 293.66, 392.00], // Cm9
+          [116.54, 174.61, 233.08, 293.66, 349.23], // Bb6
+          [103.83, 155.56, 207.65, 261.63, 311.13], // Abmaj7
+          [98.00, 155.56, 196.00, 246.94, 311.13]   // Eb/G
+        ],
+        melody: [
+          392.00, 0, 349.23, 0, 293.66, 0, 349.23, 392.00,
+          0, 293.66, 0, 349.23, 0, 440.00, 349.23, 0,
+          311.13, 0, 261.63, 0, 311.13, 0, 392.00, 0,
+          293.66, 0, 246.94, 0, 293.66, 0, 349.23, 0
+        ],
+        bass: [
+          65.41, 0, 0, 65.41, 0, 0, 77.78, 0,
+          58.27, 0, 0, 58.27, 0, 0, 69.30, 0,
+          51.91, 0, 0, 51.91, 0, 0, 65.41, 0,
+          49.00, 0, 0, 49.00, 0, 0, 58.27, 0
+        ]
+      },
+      2: {
+        bpm: 66, filter: 750,
+        chords: [
+          [146.83, 220.00, 261.63, 329.63, 392.00], // Dm11
+          [138.59, 207.65, 246.94, 293.66, 369.99], // C#dim7
+          [130.81, 196.00, 246.94, 293.66, 369.99], // Cmaj7#11
+          [123.47, 185.00, 220.00, 261.63, 329.63]  // Bm7b5
+        ],
+        melody: [
+          0, 293.66, 0, 329.63, 293.66, 0, 261.63, 0,
+          220.00, 0, 0, 246.94, 277.18, 0, 220.00, 0,
+          0, 246.94, 0, 293.66, 0, 329.63, 293.66, 0,
+          261.63, 0, 220.00, 0, 185.00, 0, 220.00, 0
+        ],
+        bass: [
+          73.42, 0, 0, 0, 73.42, 0, 65.41, 0,
+          69.30, 0, 0, 0, 69.30, 0, 61.74, 0,
+          65.41, 0, 0, 0, 65.41, 0, 58.27, 0,
+          61.74, 0, 0, 0, 61.74, 0, 55.00, 0
+        ]
+      },
+      3: {
+        bpm: 68, filter: 700,
+        chords: [
+          [130.81, 196.00, 233.08, 293.66, 349.23], // Cm9
+          [174.61, 261.63, 311.13, 392.00, 466.16], // Fm9
+          [207.65, 261.63, 311.13, 392.00, 587.33], // Abmaj7
+          [196.00, 246.94, 311.13, 369.99, 415.30]  // G7alt
+        ],
+        melody: [
+          523.25, 0, 466.16, 0, 392.00, 0, 349.23, 392.00,
+          0, 466.16, 0, 523.25, 0, 622.25, 523.25, 0,
+          587.33, 0, 466.16, 0, 392.00, 0, 349.23, 0,
+          415.30, 0, 369.99, 0, 311.13, 0, 246.94, 0
+        ],
+        bass: [
+          65.41, 0, 0, 65.41, 0, 0, 77.78, 0,
+          87.31, 0, 0, 87.31, 0, 0, 103.83, 0,
+          103.83, 0, 0, 103.83, 0, 0, 98.00, 0,
+          98.00, 0, 0, 98.00, 0, 0, 82.41, 0
+        ]
+      },
+      4: {
+        bpm: 60, filter: 620,
+        chords: [
+          [220.00, 277.18, 329.63, 415.30], // Amaj7
+          [185.00, 246.94, 311.13, 369.99], // F#m7
+          [146.83, 220.00, 261.63, 329.63], // Dmaj7
+          [164.81, 220.00, 293.66, 329.63]  // E7sus4
+        ],
+        melody: [
+          415.30, 0, 369.99, 0, 329.63, 0, 277.18, 329.63,
+          0, 369.99, 0, 415.30, 0, 329.63, 0, 0,
+          369.99, 0, 329.63, 0, 293.66, 0, 261.63, 0,
+          277.18, 0, 293.66, 0, 329.63, 0, 220.00, 0
+        ],
+        bass: [
+          55.00, 0, 0, 0, 55.00, 0, 65.41, 0,
+          46.25, 0, 0, 0, 46.25, 0, 55.00, 0,
+          73.42, 0, 0, 0, 73.42, 0, 82.41, 0,
+          82.41, 0, 0, 0, 82.41, 0, 73.42, 0
+        ]
+      }
+    };
+
+    const currentTrack = suite[this.currentPhase] || suite[1];
+    if (this._musicFilter) this._musicFilter.frequency.setValueAtTime(currentTrack.filter, this.ctx.currentTime);
+
+    const playRhodesNote = (freq, dur, vel) => {
+      if (!this.ctx || freq <= 0) return;
+      const t = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const osc2 = this.ctx.createOscillator();
+      const g = this.ctx.createGain();
+      const g2 = this.ctx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, t);
+
+      osc2.type = "triangle";
+      osc2.frequency.setValueAtTime(freq * 3.98, t);
+
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.linearRampToValueAtTime(vel, t + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+
+      g2.gain.setValueAtTime(vel * 0.3, t);
+      g2.gain.exponentialRampToValueAtTime(0.0001, t + 0.08);
+
+      osc.connect(g);
+      osc2.connect(g2);
+      g.connect(this._musicMasterGain);
+      g2.connect(this._musicMasterGain);
+
+      osc.start(t);
+      osc2.start(t);
+      osc.stop(t + dur + 0.05);
+      osc2.stop(t + 0.1);
+    };
+
+    const playSub = (freq, dur) => {
+      if (!this.ctx || freq <= 0) return;
+      const t = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const g = this.ctx.createGain();
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(freq, t);
+      g.gain.setValueAtTime(0.001, t);
+      g.gain.linearRampToValueAtTime(0.18, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      osc.connect(g);
+      g.connect(this._musicMasterGain);
+      osc.start(t);
+      osc.stop(t + dur + 0.05);
+    };
+
+    const playCard = () => {
+      if (!this.ctx) return;
+      const t = this.ctx.currentTime;
+      const bSize = Math.floor(this.ctx.sampleRate * 0.018);
+      const b = this.ctx.createBuffer(1, bSize, this.ctx.sampleRate);
+      const data = b.getChannelData(0);
+      for (let i = 0; i < bSize; i++) data[i] = Math.random() * 2 - 1;
+      const src = this.ctx.createBufferSource();
+      src.buffer = b;
+      const bp = this.ctx.createBiquadFilter();
+      bp.type = "bandpass";
+      bp.frequency.setValueAtTime(2200, t);
+      bp.Q.setValueAtTime(1.8, t);
+      const g = this.ctx.createGain();
+      g.gain.setValueAtTime(0.035, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.016);
+      src.connect(bp);
+      bp.connect(g);
+      g.connect(this._musicMasterGain);
+      src.start(t);
+    };
+
+    const onStep = () => {
+      if (!this._musicPlaying) return;
+      const bar = Math.floor(this._musicStep / 8);
+
+      if (this._musicStep % 8 === 0) {
+        const chord = currentTrack.chords[bar] || [];
+        chord.forEach((f, idx) => {
+          setTimeout(() => playRhodesNote(f, 2.4, 0.055), idx * 20);
+        });
+      }
+
+      const mel = currentTrack.melody[this._musicStep];
+      if (mel > 0) playRhodesNote(mel, 1.2, 0.11);
+
+      const bass = currentTrack.bass[this._musicStep];
+      if (bass > 0) playSub(bass, 0.75);
+
+      if (this._musicStep % 2 === 0) playCard();
+
+      this._musicStep = (this._musicStep + 1) % 32;
+    };
+
+    const stepMs = (60 / currentTrack.bpm / 2) * 1000;
+    onStep();
+    this._musicTimer = setInterval(onStep, stepMs);
+  }
+
+  stopMusic() {
+    this._musicPlaying = false;
+    if (this._musicTimer) {
+      clearInterval(this._musicTimer);
+      this._musicTimer = null;
+    }
   }
 }
 
@@ -5562,7 +6785,7 @@ const FINALES = [
     evaluar:(e)=>e.seguidores>=80000
   },
   {
-    id:"nicho", titulo:"EL TWITTERO DE NICHO", icon:"🎙️", sub:"Carrera regular pero honesta en redes.",
+    id:"nicho", titulo:"EL TUITERO DE NICHO", icon:"🎙️", sub:"Carrera regular pero honesta en redes.",
     narrativas:[
       "20 turnos en la plataforma. Construiste una comunidad modesta y seguís tuiteando con dignidad.",
       "No sos viral, pero tus seguidores te leen y responden de verdad. Eso no lo tiene cualquier cuenta masiva.",
@@ -5718,12 +6941,19 @@ class GameEngine {
     this.algorithmEffect = null;
     this.mediosTriggered = false;
     this.famosoTriggered = false;
-    this.algorithmTriggered = false;
-    this.rachaViralTriggered = false;
-    this.rachaViralActive = false;
-    this.rachaViralCount = 0;
     this.rachaViralDone = false;
     this.rachaViralDescansoUsed = false;
+
+    // ─── METAHISTORIA NARRATIVA ─────────────────────────────────
+    this.storyModeActivated = false;     // Si el jugador abrió el reply latiente
+    this.storyPendingTrigger = false;    // Si en el turno actual hay reply latiente disponible
+    this.storyTriggerTurn = 5;           // Se dispara en turno 5 o 6
+    this.storyCardsPlayed = 0;           // Contador de cartas Capa 2 jugadas
+    this.storyObligatoriaActive = false; // Si la carta Capa 3 obligatoria está activa
+    this.storyCurrentIndex = 0;          // Índice secuencial de cartas de historia
+    this.storyFinished = false;          // Si completó la Capa 3
+    this.storyLastPlayedCard = null;     // Última carta de historia jugada para mostrar replies
+    this.playedStoryCardIds = new Set(); // IDs únicos de cartas de historia jugadas
   }
 
   init(genero, archId, persId, customHandle=null) {
@@ -5994,21 +7224,220 @@ class GameEngine {
     if(this.cachedCards?.length===3) return this.cachedCards;
     const pool=this._cardPool(), drawn=[], remaining=[...pool];
     const handKeys = new Set();
+    const archKey = getArchKey(this.arquetipo.id);
+    const metaArc = typeof METAHISTORY_DATA !== 'undefined' ? METAHISTORY_DATA[archKey] : null;
 
-    while(drawn.length<3&&remaining.length>0){
+    // ─── CHECK CAPA 3: HISTORIA OBLIGATORIA ─────────────────────
+    // Solo se activa en el turno 20 exacto y si ya se jugaron todas las Capa 2 disponibles
+    const totalCapa2Available = metaArc?.capa2 ? metaArc.capa2.length : 0;
+    const canTriggerObligatoria = this.storyModeActivated && !this.storyFinished && metaArc?.capa3
+      && (this.storyCardsPlayed >= totalCapa2Available)
+      && this.turno >= 20; // ← Obligatorio: Capa 3 solo aparece en el turno final
+
+    if (canTriggerObligatoria) {
+      this.storyObligatoriaActive = true;
+      const c3 = metaArc.capa3;
+      const cardObligatoria = {
+        id: "historia_obligatoria",
+        palo: { nombre: "HISTORIA", icono: "⚡", color: "#e0245e" },
+        titulo: c3.titulo,
+        texto: c3.texto,
+        narrativaExito: "Tu tweet sacudió los cimientos del feed. El arco de este personaje llega a su desenlace definitivo.",
+        narrativaFallo: "El peso de la revelación te expuso al juicio despiadado del timeline.",
+        eng: c3.stats?.eng || 85,
+        hate: c3.stats?.hate || 20,
+        cred: c3.stats?.cred || 30,
+        chanceOverride: c3.stats?.chance || 70,
+        isHistoria: true,
+        isHistoriaObligatoria: true,
+        fecha: c3.fecha || "2026",
+        contradiccion_id: c3.contradiccion_id || null,
+        replies: c3.replies || []
+      };
+
+      // Cartas 2 y 3 inhabilitadas/tachadas
+      const disabledCard1 = {
+        id: "disabled_card",
+        palo: { nombre: "ANULADA", icono: "🚫", color: "#64748b" },
+        titulo: "Opción bloqueada por trama",
+        texto: "La tensión de los acontecimientos te impide distraerte en publicaciones casuales.",
+        disabled: true
+      };
+      const disabledCard2 = {
+        id: "disabled_card",
+        palo: { nombre: "ANULADA", icono: "🚫", color: "#64748b" },
+        titulo: "Opción bloqueada por trama",
+        texto: "No hay vuelta atrás. Debes afrontar el desenlace de esta historia.",
+        disabled: true
+      };
+
+      drawn.push(cardObligatoria, disabledCard1, disabledCard2);
+      this.cachedCards = drawn;
+      return drawn;
+    }
+
+    // ─── CHECK CAPA 2: GARANTIZAR 1 CARTA DE HISTORIA EN CADA TIRADA ───
+    // Turnos de entrada: Carta 1 disponible desde T8-9, Carta 2 desde T12, etc.
+    let storyCardToInsert = null;
+    if (this.storyModeActivated && !this.storyFinished && metaArc?.capa2 && metaArc.capa2.length > 0) {
+      const nextStoryIdx = Math.min(this.storyCurrentIndex, metaArc.capa2.length - 1);
+      const c2 = metaArc.capa2[nextStoryIdx];
+
+      const minTurnGates = [8, 12, 15, 17];
+      const minTurnForThisCard = minTurnGates[Math.min(nextStoryIdx, minTurnGates.length - 1)];
+
+      // Chequeo estricto por ID único (para que nunca colisione con títulos de tweets comunes)
+      const storyId = c2?.id || c2?.titulo;
+      const alreadyPlayedThisStoryCard = this.playedStoryCardIds.has(storyId);
+
+      if (c2 && !alreadyPlayedThisStoryCard && this.turno >= minTurnForThisCard) {
+        storyCardToInsert = {
+          id: "historia",
+          storyId: storyId,
+          palo: { nombre: "HISTORIA", icono: "💓", color: "#1d9bf0" },
+          titulo: c2.titulo,
+          texto: c2.texto,
+          narrativaExito: "Publicaste un tweet clave en la trama. Cada vez más miradas se posan sobre lo que sabés.",
+          narrativaFallo: "Tus palabras generaron sospechas y atrajeron comentarios agresivos al timeline.",
+          eng: c2.stats?.eng || 65,
+          hate: c2.stats?.hate || 12,
+          cred: c2.stats?.cred || 15,
+          chanceOverride: c2.stats?.chance || 60,
+          isHistoria: true,
+          isHistoriaObligatoria: false,
+          fecha: c2.fecha || null,
+          contradiccion_id: c2.contradiccion_id || null,
+          replies: c2.replies || []
+        };
+        handKeys.add(c2.titulo);
+      }
+    }
+
+    // Inmersión temática escalonada: T12-T15 (~45% clima enrarecido) y T16+ (100% estallido en historia, 20% si no)
+    const FASE_TWEETS_BY_PHASE = {
+      1: [
+        { tipo: "pelea", titulo: "Discusión por el auto importado", texto: "Siguen jodiendo con el auto importado en el TL. En este país te comprás algo lindo y ya te inventan causas." },
+        { tipo: "meme", titulo: "Meme de la patente y el garage", texto: "Meme del chabón tapando la patente con cinta aisladora cuando viene la AFIP." },
+        { tipo: "tema", titulo: "Hablemos de las LLC en Delaware", texto: "Curioso cómo todos los influencers terminan radicando sociedades fantasmas en el mismo estado de USA." },
+        { tipo: "bait", titulo: "Bait sobre los streamers y el dinero fácil", texto: "Decir que los streamers lavan guita es una falta de respeto a los que lavan guita de verdad." },
+        { tipo: "hilo", titulo: "Hilo: El origen de la flota de lujo", texto: "Abro hilo con las fotos del auto importado en los eventos y quiénes se subieron realmente." },
+        { tipo: "pelea", titulo: "Cruce por la fiesta en Nordelta", texto: "Mucho sponsor gamer pero el catering del cumpleaños lo pagó un testaferro con cheques voladores." },
+        { tipo: "meme", titulo: "Meme del contrato en servilleta", texto: "Meme de 'Tranqui bro, el mes que viene entra la inversión extranjera' mientras te pagan en billetes termosellados." },
+        { tipo: "tema", titulo: "El misterio de los sponsors fantasma", texto: "Tres marcas de bebidas energizantes que no existen en ningún supermercado bancando streams enteros. Raro es poco." },
+        { tipo: "bait", titulo: "Bait sobre los viajes a Miami en primera", texto: "Si a los 22 años viajás 4 veces por año en business con un canal de 40k subs, no sos streamer, sos cadete." },
+        { tipo: "hilo", titulo: "Hilo: Las fotos borradas en la quinta", texto: "Recopilación de historias de Instagram que borraron a los diez minutos de la quinta de Olivos." },
+        { tipo: "pelea", titulo: "Tiroteo por el departamento en Madero", texto: "¿De verdad nos quieren hacer creer que alquilan piso en Puerto Madero vendiendo mousepads?" },
+        { tipo: "tema", titulo: "Auditorías relámpago en el timeline", texto: "La AFIP empezó a mandar intimaciones a creadores de contenido y varios ya pusieron candado a la cuenta." }
+      ],
+      2: [
+        { tipo: "pelea", titulo: "Cruces por el hackeo al exchange", texto: "¡Liberen los fondos manga de chorros! La gente no puede sacar los ahorros de su vida." },
+        { tipo: "meme", titulo: "Meme del corralito cripto", texto: "Meme de 'Los fondos están SAFU' mientras la wallet oficial está drenada a cero." },
+        { tipo: "tema", titulo: "El colapso de las wallets locales", texto: "Si metés tus ahorros en un exchange local sin auditoría seria, después no llores estafa piramidal." },
+        { tipo: "bait", titulo: "Bait de la liquidez fantasma", texto: "Los exchanges no quiebran por hackers, quiebran cuando los dueños se escapan a Miami." },
+        { tipo: "hilo", titulo: "Hilo: El rastro on-chain del hackeo", texto: "Seguí la ruta de los 2 millones de USDT hackeados y todas las transferencias van al mismo pool." },
+        { tipo: "pelea", titulo: "Reclamo furioso en oficinas del centro", texto: "Hay 200 personas golpeando las persianas del exchange en microcentro. La policía ya valló la cuadra." },
+        { tipo: "meme", titulo: "Meme de la hardware wallet vacía", texto: "Meme de 'Not your keys, not your coins' mirando una ledger que marca exactamente 0.00000000 BTC." },
+        { tipo: "tema", titulo: "La filtración del grupo de Telegram", texto: "Se filtraron los chats de los fundadores del exchange riéndose de los usuarios mientras pausaban los retiros." },
+        { tipo: "bait", titulo: "Bait sobre los gurúes de futuros", texto: "Ayer te vendían curso de apalancamiento x100 y hoy tienen la bio en blanco y los comentarios cerrados." },
+        { tipo: "hilo", titulo: "Hilo: Los puentes clandestinos a Monero", texto: "Cómo mezclaron los fondos robados en Tornado Cash y pools descentralizados en menos de 40 minutos." },
+        { tipo: "pelea", titulo: "Guerra entre analistas y promotores", texto: "Ustedes cobraron 5 mil dólares por promocionar una plataforma que sabían que era insolvente desde enero." },
+        { tipo: "tema", titulo: "Comisión investigadora en el Congreso", texto: "Piden interpelar a la Comisión Nacional de Valores por la falta de controles sobre plataformas cripto." }
+      ],
+      3: [
+        { tipo: "pelea", titulo: "Furia por el allanamiento del Secretario", texto: "Cayeron los fiscales al ministerio. Están sacando cajas de papeles mientras todos se lavan las manos." },
+        { tipo: "meme", titulo: "Meme de las viviendas sin terminar", texto: "Meme de las 200 casas populares que terminaron siendo pasto alto y un cartel de chapa oxidada." },
+        { tipo: "tema", titulo: "El vínculo entre el poder y los palcos", texto: "Dirigentes, secretarios y famosos compartiendo café en los palcos mientras la causa quema." },
+        { tipo: "bait", titulo: "Bait sobre la impunidad política", texto: "El secretario ya tiene pasaje sacado y ustedes se siguen peleando por banderas políticas en el feed." },
+        { tipo: "hilo", titulo: "Hilo: Comando Fierro y la lista filtrada", texto: "Detalle de los nombres que aparecieron en la base de datos de Comando Fierro antes de que la borren." },
+        { tipo: "pelea", titulo: "Batalla en el móvil de televisión", texto: "Empujones e insultos entre militantes y periodistas en la puerta de los tribunales de Comodoro Py." },
+        { tipo: "meme", titulo: "Meme del disco rígido al agua", texto: "Meme de los asesores ministeriales tirando computadoras por la ventana cinco minutos antes de la orden del juez." },
+        { tipo: "tema", titulo: "Los fondos desviados de las cooperativas", texto: "Partidas presupuestarias millonarias destinadas a urbanización que terminaron en cuentas no declaradas." },
+        { tipo: "bait", titulo: "Bait sobre el pacto de silencio", texto: "Nadie habla del subsecretario porque si cae él, caen tres ministros y dos intendentes del conurbano." },
+        { tipo: "hilo", titulo: "Hilo: La ruta de las empresas fantasma", texto: "Mapeo completo de las 14 constructoras creadas el mismo día con el mismo domicilio fiscal trucho." },
+        { tipo: "pelea", titulo: "Denuncia penal contra los intermediarios", texto: "Presentaron pruebas contra los gestores que cobraban coimas del 30% para adjudicar obras públicas." },
+        { tipo: "tema", titulo: "Cámaras de seguridad incautadas", texto: "La justicia secuestró los videos del estacionamiento oficial donde se ven bolsos cargados a medianoche." }
+      ],
+      4: [
+        { tipo: "pelea", titulo: "Discusión retrospectiva del escándalo", texto: "A dos años de la causa de las viviendas, los mismos de siempre siguen cobrando del Estado." },
+        { tipo: "meme", titulo: "Meme de la memoria selectiva", texto: "Meme de 'Acá no pasó nada' con la foto del predio abandonado de fondo." },
+        { tipo: "tema", titulo: "Las secuelas de la filtración masiva", texto: "Pasó el tiempo, se cerraron cuentas, pero el archivo de lo que pasó en 2024 no se borra." },
+        { tipo: "bait", titulo: "Bait sobre los arrepentidos de turno", texto: "Todos los que defendían a capa y espada al ministerio ahora borraron los tweets de esa época." },
+        { tipo: "hilo", titulo: "Hilo: Cómo terminó la causa dos años después", texto: "Resumen de procesados, prófugos y contratos que quedaron en la nada tras el escándalo." },
+        { tipo: "pelea", titulo: "Reproches por el sobreseimiento express", texto: "Cerraron la causa principal por prescripción un viernes feriado a última hora. Dan asco." },
+        { tipo: "meme", titulo: "Meme del nuevo emprendimiento", texto: "Meme del ex funcionario procesado que ahora da charlas motivacionales sobre resiliencia en Punta del Este." },
+        { tipo: "tema", titulo: "El documental independiente en YouTube", texto: "Un canal de investigación subió el informe completo de la trama y ya tiene un millón de vistas en 48hs." },
+        { tipo: "bait", titulo: "Bait sobre la hipocresía colectiva", texto: "Se indignaban todos en 2024 y hoy siguen likeando a los mismos personajes como si no hubiera pasado nada." },
+        { tipo: "hilo", titulo: "Hilo: Dónde están hoy los implicados", texto: "El seguimiento definitivo de cada uno de los involucrados: quiénes se fueron del país y quiénes volvieron." },
+        { tipo: "pelea", titulo: "Cruce con el vocero arrepentido", texto: "Ahora escribe libros haciéndose el crítico, pero cuando cobraba la pauta ministerial no abría la boca." },
+        { tipo: "tema", titulo: "La herencia digital de la crisis", texto: "Cuentas con cientos de miles de seguidores que quedaron congeladas en el tiempo tras las denuncias." }
+      ]
+    };
+
+    const currentFase = metaArc?.fase || 2;
+    const phaseList = FASE_TWEETS_BY_PHASE[currentFase] || FASE_TWEETS_BY_PHASE[2];
+
+    const targetNonStoryCards = storyCardToInsert ? 2 : 3;
+
+    // Completar el resto de la mano con cartas
+    while(drawn.length < targetNonStoryCards && remaining.length > 0){
       const total=remaining.reduce((s,c)=>s+c.weight,0);
       let r=Math.random()*total, idx=remaining.length-1;
       for(let j=0;j<remaining.length;j++){if(r<remaining[j].weight){idx=j;break;}r-=remaining[j].weight;}
       const meta=remaining.splice(idx,1)[0];
-      const content = makeCardContent(meta.id, this.arquetipo.id, this.playedTweetKeys, handKeys);
+      let content = makeCardContent(meta.id, this.arquetipo.id, this.playedTweetKeys, handKeys);
+
+      // Inmersión escalonada:
+      // - Si historia activa y turno >= 16: 100% contextual
+      // - Si historia activa y turno >= 12: ~45% contextual (clima enrarecido)
+      // - Si no activó historia y turno >= 16: ~20% ambiental
+      const shouldThematize = this.storyModeActivated
+        ? (this.turno >= 16 || (this.turno >= 12 && Math.random() < 0.45))
+        : (this.turno >= 16 && Math.random() < 0.20);
+
+      if (shouldThematize && phaseList.length > 0) {
+        // Anti-repetición estricto: descartar los ya jugados en la partida y los ya presentes en la mano actual
+        const availableThemes = phaseList.filter(t => !this.playedTweetKeys.has(t.titulo) && !handKeys.has(t.titulo));
+        if (availableThemes.length > 0) {
+          const themeItem = availableThemes[rng(availableThemes.length)];
+          content.titulo = themeItem.titulo;
+          content.texto = themeItem.texto;
+          content.isThematicT16 = true;
+        }
+      }
+      if (content.titulo) handKeys.add(content.titulo);
+
       drawn.push({ id:meta.id, palo:CARD_PALOS[meta.id], ...content });
     }
     const fallbacks=["meme","tema","pelea","hilo","bait"]; let fbIdx=0;
-    while(drawn.length<3){
+    while(drawn.length < targetNonStoryCards){
       const fbId=fallbacks[fbIdx++%fallbacks.length];
-      const content = makeCardContent(fbId, this.arquetipo.id, this.playedTweetKeys, handKeys);
+      let content = makeCardContent(fbId, this.arquetipo.id, this.playedTweetKeys, handKeys);
+
+      const shouldThematize = this.storyModeActivated
+        ? (this.turno >= 16 || (this.turno >= 12 && Math.random() < 0.45))
+        : (this.turno >= 16 && Math.random() < 0.20);
+
+      if (shouldThematize && phaseList.length > 0) {
+        // Anti-repetición estricto: descartar los ya jugados en la partida y los ya presentes en la mano actual
+        const availableThemes = phaseList.filter(t => !this.playedTweetKeys.has(t.titulo) && !handKeys.has(t.titulo));
+        if (availableThemes.length > 0) {
+          const themeItem = availableThemes[rng(availableThemes.length)];
+          content.titulo = themeItem.titulo;
+          content.texto = themeItem.texto;
+          content.isThematicT16 = true;
+        }
+      }
+      if (content.titulo) handKeys.add(content.titulo);
+
       drawn.push({ id:fbId, palo:CARD_PALOS[fbId], ...content });
     }
+
+    // Insertar la carta de historia en una posición aleatoria (0, 1 o 2) para que no sea predecible
+    if (storyCardToInsert) {
+      const randomSlot = rng(drawn.length + 1);
+      drawn.splice(randomSlot, 0, storyCardToInsert);
+    }
+
     this.cachedCards=drawn; return drawn;
   }
 
@@ -6026,7 +7455,7 @@ class GameEngine {
       patrocinio: 65,
       descanso: 62
     };
-    let c = bases[card.id] || 50;
+    let c = card.chanceOverride || bases[card.id] || 50;
 
     // Modificadores de género (dificultad asimétrica)
     if (this.genero === "mujer") c -= 3;
@@ -6056,7 +7485,7 @@ class GameEngine {
         this.dinero -= b.costo;
         if (b.fx.segsPct) this.seguidores = Math.floor(this.seguidores * (1 + b.fx.segsPct));
         if (b.fx.eng) this.engagement += b.fx.eng;
-        if (b.fx.odio) this.odio = Math.min(100, this.odio + b.fx.odio);
+        if (b.fx.odio) this.odio = Math.max(0, Math.min(100, this.odio + b.fx.odio));
         this.boosterCD[b.id] = b.cooldown;
         boosterUsed = b;
       }
@@ -6076,6 +7505,10 @@ class GameEngine {
 
     if(ok){
       engGain = Math.floor(card.eng * mult);
+      // Balance A: Podcaster - fragmentos de entrevistas y debates generan engagement extra (+40)
+      if (this.arquetipo?.id === "podcaster" && (card.id === "quote" || card.id === "tema" || card.id === "live")) {
+        engGain += 40;
+      }
       
       if (card.id === "patrocinio") {
         const boostPct = boosterUsed?.fx.segsPct || 0;
@@ -6086,6 +7519,10 @@ class GameEngine {
         const basePct = 0.04 + Math.random() * 0.04;
         const boostPct = boosterUsed?.fx.segsPct || 0;
         segsGain = Math.floor(this.seguidores * (basePct + boostPct) + (220 * mult));
+        // Balance A: Cuenta de Humor - memes virales traccionan +12% de seguidores base
+        if (this.arquetipo?.id === "humor" && card.id === "meme") {
+          segsGain = Math.floor(segsGain * 1.12);
+        }
       }
 
       this.credibilidad = Math.min(100, this.credibilidad + (card.id === "hilo" ? 8 : 3));
@@ -6123,8 +7560,14 @@ class GameEngine {
       }
 
     } else {
-      hateGain = Math.floor(card.hate * mult);
-      segsGain = card.id === "descanso" ? 0 : -Math.floor(this.seguidores * 0.04 * mult);
+      if (card.isHistoriaObligatoria) {
+        // Protección dramática en clímax T20: la revelación genera debate tenso pero no castiga al jugador con un ratio devastador
+        segsGain = -Math.floor(this.seguidores * 0.01 * mult);
+        hateGain = Math.min(12, Math.floor((card.hate || 20) * 0.4));
+      } else {
+        hateGain = Math.floor(card.hate * mult);
+        segsGain = card.id === "descanso" ? 0 : -Math.floor(this.seguidores * 0.04 * mult);
+      }
       if(card.id === "descanso") {
         if(this.rachaViralActive) {
           this.rachaViralDescansoUsed = true;
@@ -6163,11 +7606,31 @@ class GameEngine {
 
     this.engagement = Math.max(0, this.engagement + engGain);
     this.seguidores = Math.max(100, this.seguidores + segsGain);
-    this.dinero += dinGain;
-
     if(card.id === "pelea"){ this.streakPeleas++; this.streakHilos = 0; }
     else if(card.id === "hilo"){ this.streakHilos++; this.streakPeleas = 0; }
     else { this.streakPeleas = 0; this.streakHilos = 0; }
+
+    // ── METAHISTORIA: REGISTRAR AVANCE DE CAPAS ─────────────────
+    if (card.isHistoria) {
+      this.storyLastPlayedCard = card;
+      if (card.storyId) {
+        this.playedStoryCardIds.add(card.storyId);
+      }
+      if (card.isHistoriaObligatoria) {
+        this.storyFinished = true;
+        this.storyObligatoriaActive = false;
+      } else {
+        this.storyCardsPlayed++;
+        this.storyCurrentIndex++;
+        // Recompensa / incentivo por desentrañar pistas de Capa 2 (apoyo de la comunidad / interés del público)
+        const storyRewardDin = 500;
+        this.dinero += storyRewardDin;
+        dinGain += storyRewardDin;
+        this.credibilidad = Math.min(100, this.credibilidad + 8);
+      }
+    } else {
+      this.storyLastPlayedCard = null;
+    }
 
     // ── CANCELLATION EVENT & 3 STRIKES (Solo si la tirada de riesgo falla) ──
     const RISK_CARDS = ["pelea", "politica", "quote", "bait"];
@@ -6248,7 +7711,8 @@ class GameEngine {
 
     // ── Rich gameLog for decision tree ──
     const CARD_ICONS = { meme:"🎭", tema:"📝", pelea:"⚔️", hilo:"🧵", quote:"💬",
-      live:"📡", temaDelDia:"🔥", politica:"🗳️", bait:"🎣", patrocinio:"💰", descanso:"😴" };
+      live:"📡", temaDelDia:"🔥", politica:"🗳️", bait:"🎣", patrocinio:"💰", descanso:"😴",
+      historia:"💓", historia_obligatoria:"⚡" };
     const chosenSlot = _handSnapshot.findIndex(c => c.titulo === card.titulo);
     const alternatives = _handSnapshot
       .filter(c => c.titulo !== card.titulo)
@@ -6359,6 +7823,11 @@ class GameEngine {
   advanceTurn() {
     if(this.gameOver) return;
 
+    // Balance C: Dificultad Alta (Opinólogo, Militante) - desgaste psicológico por hostilidad extrema persistente
+    if (this.arquetipo?.dificultad === "alta" && this.odio >= 65) {
+      this.saludMental = Math.max(0, this.saludMental - 3);
+    }
+
     if (this.dinero < 0) this.debtTurnos++; else this.debtTurnos = 0;
     if (this.debtTurnos >= 5) {
       this.gameOver = true; this.final = FINALE_DEUDA; return;
@@ -6412,6 +7881,21 @@ class GameEngine {
   }
 
   _evaluateFinal() {
+    // ─── FINAL NARRATIVO DE METAHISTORIA ────────────────────────
+    if (this.storyFinished) {
+      const genderedArch = getGenderedArchetype(this.arquetipo, this.genero);
+      const metaEndingTitle = `HISTORIA DE ${genderedArch.toUpperCase()} DESBLOQUEADA`;
+      const metaEndingNarrativa = `Completaste el arco narrativo de ${genderedArch}. Ahora sabés un pedacito más de lo que pasó realmente.\n\n💡 Podés revisar todos los tweets y pistas de esta partida haciendo clic en el Árbol de Decisiones: cada turno tiene el tweet que publicaste y las replies del hilo.`;
+
+      return {
+        id: `metahistoria_${this.arquetipo.id}`,
+        titulo: metaEndingTitle,
+        icon: "🗝️",
+        sub: `Metahistoria completada con éxito.`,
+        narrativa: metaEndingNarrativa
+      };
+    }
+
     let chosen = null;
     for (const f of FINALES) {
       if (f.evaluar && f.evaluar(this)) {
@@ -6482,6 +7966,7 @@ class UIEngine {
     this._setupCancellationModal();
     this._setupHateModal();
     this._setupViralModal();
+    this._setupStoryUnlockModal();
     this._setupStrike2Modal();
     this._setupCancGameOverModal();
     this._setupMobileBoostersModal();
@@ -6489,7 +7974,70 @@ class UIEngine {
     this._setupShortcutsModal();
     this._setupGlobalKeyboardShortcuts();
     this._setupFullscreenControls();
+    this._setupAudioControls();
     if(window.twemoji) window.twemoji.parse(document.body);
+  }
+
+  _setupAudioControls() {
+    snd.initMusic();
+    const toggleMusic = document.getElementById("toggle-music");
+    const sliderMusic = document.getElementById("slider-music-vol");
+    const toggleSfx = document.getElementById("toggle-sfx");
+    const sliderSfx = document.getElementById("slider-sfx-vol");
+
+    if (toggleMusic) {
+      toggleMusic.checked = snd.musicEnabled;
+      toggleMusic.onchange = (e) => {
+        snd.setMusicEnabled(e.target.checked);
+      };
+    }
+    if (sliderMusic) {
+      sliderMusic.value = Math.round(snd.musicVolume * 100);
+      sliderMusic.oninput = (e) => {
+        snd.setMusicVolume(parseFloat(e.target.value) / 100);
+      };
+    }
+    if (toggleSfx) {
+      toggleSfx.checked = snd.sfxEnabled;
+      toggleSfx.onchange = (e) => {
+        snd.setSfxEnabled(e.target.checked);
+      };
+    }
+    if (sliderSfx) {
+      sliderSfx.value = Math.round(snd.sfxVolume * 100);
+      sliderSfx.oninput = (e) => {
+        snd.setSfxVolume(parseFloat(e.target.value) / 100);
+      };
+    }
+
+    // ── MODAL POP-UP DE AUDIO ──
+    const audioModal = document.getElementById("audio-modal-overlay");
+    const btnOpenAudio = document.getElementById("btn-open-audio-modal");
+    const btnCloseAudio = document.getElementById("btn-close-audio-modal");
+    const btnAudioOk = document.getElementById("btn-audio-modal-ok");
+
+    const openAudioModal = () => {
+      if (audioModal) audioModal.classList.add("active");
+    };
+    const closeAudioModal = () => {
+      if (audioModal) audioModal.classList.remove("active");
+    };
+
+    if (btnOpenAudio) btnOpenAudio.onclick = () => { snd.click(); openAudioModal(); };
+    if (btnCloseAudio) btnCloseAudio.onclick = () => { closeAudioModal(); };
+    if (btnAudioOk) btnAudioOk.onclick = () => { snd.click(); closeAudioModal(); };
+
+    if (audioModal) {
+      audioModal.addEventListener("click", (ev) => {
+        if (ev.target === audioModal) closeAudioModal();
+      });
+    }
+
+    window.addEventListener("keydown", (ev) => {
+      if (ev.key === "Escape" && audioModal && audioModal.classList.contains("active")) {
+        closeAudioModal();
+      }
+    });
   }
 
 
@@ -6531,6 +8079,51 @@ class UIEngine {
         if (isConfirm) {
           ev.preventDefault();
           document.getElementById("btn-canc-next")?.click();
+          return;
+        }
+      }
+
+      // ── Cancellation Game-Over Modal: Aceptar con Espacio ───────────────
+      const cancGameOverModal = document.getElementById("canc-gameover-modal-overlay");
+      if (cancGameOverModal && cancGameOverModal.classList.contains("active")) {
+        if (isConfirm) {
+          ev.preventDefault();
+          document.getElementById("btn-cgo-ok")?.click();
+          return;
+        }
+      }
+
+      // ── Repeat Archetype Modal: Aceptar con Espacio ─────────────────────
+      const repeatArchModal = document.getElementById("repeat-archetype-modal-overlay");
+      if (repeatArchModal && repeatArchModal.classList.contains("active")) {
+        if (isConfirm) {
+          ev.preventDefault();
+          document.getElementById("btn-repeat-arch-ok")?.click();
+          return;
+        }
+      }
+
+      // ── Story Unlock Modal: Siguiente o Finalizar con Espacio ───────────
+      const storyUnlockModal = document.getElementById("story-unlock-modal-overlay");
+      if (storyUnlockModal && storyUnlockModal.classList.contains("active")) {
+        if (isConfirm) {
+          ev.preventDefault();
+          const sNext = document.getElementById("btn-story-next");
+          if (sNext && sNext.style.display !== "none") {
+            sNext.click();
+          } else {
+            document.getElementById("btn-story-unlock-ok")?.click();
+          }
+          return;
+        }
+      }
+
+      // ── Audio Modal: Cerrar con Espacio / Enter ─────────────────────────
+      const audioModal = document.getElementById("audio-modal-overlay");
+      if (audioModal && audioModal.classList.contains("active")) {
+        if (isConfirm) {
+          ev.preventDefault();
+          document.getElementById("btn-audio-modal-ok")?.click();
           return;
         }
       }
@@ -7092,6 +8685,63 @@ class UIEngine {
     overlay.classList.add("active");
   }
 
+  _setupStoryUnlockModal() {
+    this.storySlide = 1;
+    this.storyMax = 3;
+    const overlay = document.getElementById("story-unlock-modal-overlay");
+    if (!overlay) return;
+
+    const updateStory = () => {
+      overlay.querySelectorAll(".tutorial-slide").forEach((s, i) => s.classList.toggle("active", i + 1 === this.storySlide));
+      overlay.querySelectorAll("#story-dots .dot").forEach((d, i) => d.classList.toggle("active", i + 1 === this.storySlide));
+      const prevBtn = document.getElementById("btn-story-prev");
+      const nextBtn = document.getElementById("btn-story-next");
+      const nav = document.getElementById("story-modal-nav");
+      if (prevBtn) prevBtn.style.visibility = this.storySlide > 1 ? "visible" : "hidden";
+      if (nextBtn) nextBtn.style.display = this.storySlide === this.storyMax ? "none" : "inline-flex";
+      if (nav) nav.style.display = this.storySlide === this.storyMax ? "none" : "flex";
+    };
+
+    document.getElementById("btn-story-next")?.addEventListener("click", () => {
+      snd.click();
+      if (this.storySlide < this.storyMax) {
+        this.storySlide++;
+        updateStory();
+      }
+    });
+
+    document.getElementById("btn-story-prev")?.addEventListener("click", () => {
+      snd.click();
+      if (this.storySlide > 1) {
+        this.storySlide--;
+        updateStory();
+      }
+    });
+
+    document.getElementById("btn-story-unlock-ok")?.addEventListener("click", () => {
+      snd.click();
+      overlay.classList.remove("active");
+      this.eng.storyModeActivated = true;
+    });
+  }
+
+  _openStoryUnlockModal() {
+    this.storySlide = 1;
+    const overlay = document.getElementById("story-unlock-modal-overlay");
+    if (!overlay) return;
+    overlay.querySelectorAll(".tutorial-slide").forEach((s, i) => s.classList.toggle("active", i === 0));
+    overlay.querySelectorAll("#story-dots .dot").forEach((d, i) => d.classList.toggle("active", i === 0));
+    const prevBtn = document.getElementById("btn-story-prev");
+    const nextBtn = document.getElementById("btn-story-next");
+    const nav = document.getElementById("story-modal-nav");
+    if (prevBtn) prevBtn.style.visibility = "hidden";
+    if (nextBtn) nextBtn.style.display = "inline-flex";
+    if (nav) nav.style.display = "flex";
+
+    snd.dramaticBraam();
+    overlay.classList.add("active");
+  }
+
   _setupFullscreenControls() {
     const toggleFullscreen = () => {
       snd.click();
@@ -7208,10 +8858,72 @@ class UIEngine {
     }
   }
 
+  _detectUserLanguage() {
+    try {
+      const saved = localStorage.getItem("twitero_preferred_lang");
+      if (saved) return saved;
+
+      const navLang = (navigator.languages && navigator.languages[0]) || navigator.language || "";
+      const langCode = navLang.toLowerCase().split("-")[0];
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+
+      // Detección Japón
+      if (langCode === "ja" || tz.includes("Tokyo") || tz.includes("Japan")) {
+        return "ja";
+      }
+
+      // Países de habla hispana
+      const spanishLangs = ["es"];
+      const spanishTzKeywords = [
+        "Argentina", "Buenos_Aires", "Cordoba", "Santiago", "Montevideo", "Asuncion",
+        "Lima", "Bogota", "Caracas", "La_Paz", "Mexico", "Cancun", "Merida", "Monterrey",
+        "Guatemala", "Costa_Rica", "Panama", "El_Salvador", "Tegucigalpa", "Managua",
+        "Madrid", "Ceuta", "Canary", "Havana", "Santo_Domingo", "Puerto_Rico", "Guayaquil", "Quito"
+      ];
+
+      if (spanishLangs.includes(langCode) || spanishTzKeywords.some(k => tz.includes(k))) {
+        return "es";
+      }
+
+      // Por defecto para el resto del mundo no-hispano: inglés
+      return "en";
+    } catch (e) {
+      return "es";
+    }
+  }
+
   _setupLanguageDropdown() {
     const btn = document.getElementById("lang-dropdown-btn");
     const menu = document.getElementById("lang-dropdown-menu");
     if (!btn || !menu) return;
+
+    // Detectar idioma inicial
+    const currentLang = this._detectUserLanguage();
+    const langData = {
+      es: { flag: "🇪🇸", name: "Español" },
+      en: { flag: "🇬🇧", name: "English" },
+      ja: { flag: "🇯🇵", name: "日本語" }
+    };
+
+    const updateBtn = (code) => {
+      const item = langData[code] || langData.es;
+      btn.innerHTML = `<span class="lang-flag">${item.flag}</span><span class="lang-name">${item.name}</span><span class="lang-arrow">▾</span>`;
+      if (window.twemoji) {
+        window.twemoji.parse(btn);
+      }
+    };
+
+    if (window.twemoji) {
+      window.twemoji.parse(menu);
+    }
+
+    if (currentLang && langData[currentLang]) {
+      updateBtn(currentLang);
+      menu.querySelectorAll(".lang-opt").forEach(opt => {
+        const isSelected = opt.dataset.lang === currentLang;
+        opt.classList.toggle("active", isSelected);
+      });
+    }
 
     btn.onclick = (e) => {
       e.stopPropagation();
@@ -7229,8 +8941,16 @@ class UIEngine {
         snd.click();
         const lang = opt.dataset.lang;
         menu.classList.remove("active");
-        if (lang === "es") return;
-        this._showAlert("IDIOMA EN DESARROLLO", `El soporte para ${lang==="en"?"Inglés (🇬🇧 English)":"Japonés (🇯🇵 日本語)"} estará disponible en una próxima actualización.`, "🌐 LOCALIZACIÓN");
+        if (lang === "es") {
+          try { localStorage.setItem("twitero_preferred_lang", "es"); } catch(_) {}
+          updateBtn("es");
+          menu.querySelectorAll(".lang-opt").forEach(o => o.classList.toggle("active", o.dataset.lang === "es"));
+          return;
+        }
+        try { localStorage.setItem("twitero_preferred_lang", lang); } catch(_) {}
+        updateBtn(lang);
+        menu.querySelectorAll(".lang-opt").forEach(o => o.classList.toggle("active", o.dataset.lang === lang));
+        this._showAlert("IDIOMA EN DESARROLLO", `El soporte para ${lang==="en"?"Inglés (🇬🇧 English)":"Japonés (🇯🇵 日本語)"} estará disponible en una próxima actualización. Actualmente los textos se mostrarán en Español.`, "🌐 LOCALIZACIÓN");
       };
     });
   }
@@ -7410,13 +9130,62 @@ class UIEngine {
         this.sel.pers=c.dataset.id;
         const handleInput = document.getElementById("user-handle-input");
         const customHandle = handleInput ? handleInput.value.trim() : null;
-        this.eng.init(this.sel.genero, this.sel.arch, this.sel.pers, customHandle);
-        this.showScreen("screen-game");
-        this._updateStatsOnly();
-        this._onTutorialClose = () => {
-          this._renderFullTurn();
+        
+        // ── CHECK ARQUETIPO REPETIDO (PERSISTENCIA LOCALSTORAGE) ──
+        const playedStorageKey = "twitero_played_archetypes";
+        let playedArchs = [];
+        try {
+          playedArchs = JSON.parse(localStorage.getItem(playedStorageKey) || "[]");
+        } catch(err) {}
+
+        const isRepeat = playedArchs.includes(this.sel.arch);
+        if (!isRepeat) {
+          playedArchs.push(this.sel.arch);
+          try { localStorage.setItem(playedStorageKey, JSON.stringify(playedArchs)); } catch(err) {}
+        }
+
+        const proceedToGame = () => {
+          this.eng.init(this.sel.genero, this.sel.arch, this.sel.pers, customHandle);
+          this.showScreen("screen-game");
+          this._updateStatsOnly();
+
+          // Sincronizar Fase de metahistoria y música Lo-Fi adaptativa
+          const archKey = getArchKey(this.sel.arch);
+          const metaArc = typeof METAHISTORY_DATA !== 'undefined' ? METAHISTORY_DATA[archKey] : null;
+          const archPhase = metaArc?.fase || 1;
+          snd.setPhase(archPhase);
+          snd.startMusic();
+
+          const phaseBadge = document.getElementById("audio-phase-indicator");
+          if (phaseBadge) phaseBadge.textContent = `FASE ${archPhase}`;
+
+          this._onTutorialClose = () => {
+            this._renderFullTurn();
+          };
+          this._startTutorial();
         };
-        this._startTutorial();
+
+        if (isRepeat) {
+          const repOverlay = document.getElementById("repeat-archetype-modal-overlay");
+          const archObj = ARCHETYPES.find(a => a.id === this.sel.arch);
+          const genderedArch = getGenderedArchetype(archObj, this.sel.genero);
+          const titleEl = document.getElementById("repeat-arch-title");
+          const iconEl = document.getElementById("repeat-arch-icon");
+          const okBtn = document.getElementById("btn-repeat-arch-ok");
+
+          if (titleEl) titleEl.textContent = `HISTORIA DE ${genderedArch.toUpperCase()}`;
+          if (iconEl) iconEl.textContent = archObj?.icono || "🎭";
+          if (repOverlay) repOverlay.classList.add("active");
+
+          const handleRepClose = () => {
+            snd.click();
+            if (repOverlay) repOverlay.classList.remove("active");
+            proceedToGame();
+          };
+          if (okBtn) okBtn.onclick = handleRepClose;
+        } else {
+          proceedToGame();
+        }
       };
     });
   }
@@ -7743,13 +9512,31 @@ class UIEngine {
     this.currentCards=cards;
     const e=this.eng;
     const booster=this.preparedBoosterId?BOOSTERS.find(b=>b.id===this.preparedBoosterId):null;
+    const boosterMultiplier = booster?.fx?.mult ? `${booster.fx.mult}x` : "1.0x";
 
     container.innerHTML=cards.map((c,idx)=>{
       const palo = c.paloOverride || c.palo || CARD_PALOS[c.id] || { nombre:"TWEET", icono:"💬", color:"#1d9bf0" };
       const chance = this.eng._successChance(c, booster);
       const chanceColor = chance >= 70 ? "var(--green)" : chance >= 50 ? "var(--amber)" : "var(--red)";
-      const boosterMultiplier = booster?.fx.mult ? `${booster.fx.mult}x` : "1.0x";
-      const conceptDesc = CARD_CONCEPT_DESCS[c.id] || "Publicación estratégica en el feed.";
+      let conceptDesc = CARD_CONCEPT_DESCS[c.id] || "Publicación estratégica en el feed.";
+      if (c.isHistoria) {
+        const archKey = getArchKey(e.arquetipo?.id);
+        const STORY_HEADLINES = {
+          gamer: "Autos caros y una LLC de Delaware",
+          podcaster: "La modelo y su amigo misterioso",
+          influencer: "Sesión de fotos con una nave importada",
+          techie: "Hackearon el exchange",
+          humor: "Corralito digital cripto",
+          conspiranoico: "Comando Fierro en las sombras",
+          periodista: "Allanamiento judicial y sociedad fantasma",
+          futbolero: "Murmullos en los palcos de la AFA",
+          onlyfans: "El paseo secreto en el auto de lujo",
+          cryptobro: "La wallet expuesta del político",
+          militante: "Las casas que nunca se hicieron",
+          opinologo: "La verdad oculta dos años después"
+        };
+        conceptDesc = c.desc || STORY_HEADLINES[archKey] || "Revelación clave de la trama en el timeline.";
+      }
 
       // Badge visual de carta nueva
       const isNew = !e.seenCardTypes.has(c.id);
@@ -7757,21 +9544,25 @@ class UIEngine {
 
       const wrapClass = this.cardsAlreadyFlipped ? "card-flip-wrap flipped" : "card-flip-wrap";
 
+      const isDisabled = !!c.disabled;
+      const cardClass = isDisabled ? "truco-card story-disabled-card" : "truco-card";
+      const cursorStyle = isDisabled ? "cursor:not-allowed;" : "cursor:pointer;";
+
       return `
       <div class="${wrapClass}" id="card-wrap-${idx}">
         <div class="card-flip-inner">
           <div class="card-face card-back">
             <div class="card-back-minimal">
-              <img src="favicon.jpg" class="card-back-logo" alt="Twitero" />
-              <div class="card-back-label">TWITERO</div>
+              <img src="favicon.jpg" class="card-back-logo" alt="Tuitero" />
+              <div class="card-back-label">TUITERO</div>
             </div>
           </div>
           <div class="card-face card-front">
-            <div class="truco-card" style="border-top-color:${palo.color}; cursor:pointer;" data-idx="${idx}">
+            <div class="${cardClass}" style="border-top-color:${palo.color}; ${cursorStyle}" data-idx="${idx}">
               <div class="card-suit-tag" style="color:${palo.color};">
                 <span class="card-suit-dot" style="background:${palo.color};"></span>
                 ${palo.nombre.toUpperCase()}
-                ${isNew ? `<span class="card-new-badge">✨ NUEVA</span>` : `<span class="card-key-badge">[${idx + 1}]</span>`}
+                ${isNew && !isDisabled ? `<span class="card-new-badge">✨ NUEVA</span>` : `<span class="card-key-badge">[${idx + 1}]</span>`}
               </div>
               <div class="card-palo">${palo.icono}</div>
               <div class="card-title">${c.titulo}</div>
@@ -7784,7 +9575,9 @@ class UIEngine {
                 </div>
               </div>
 
-              <button class="card-play-btn" data-idx="${idx}">TUITEAR AHORA ▶</button>
+              <button class="card-play-btn" data-idx="${idx}" ${isDisabled ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''}>
+                ${isDisabled ? 'BLOQUEADA ✕' : 'TUITEAR AHORA ▶'}
+              </button>
             </div>
           </div>
         </div>
@@ -7816,6 +9609,7 @@ class UIEngine {
       cardEl.onclick=(e)=>{
         if(this.isResolvingAction) return;
         const idx=parseInt(cardEl.dataset.idx);
+        if(cards[idx]?.disabled) return;
         this._playCardIdx(idx);
       };
     });
@@ -7825,6 +9619,7 @@ class UIEngine {
         e.stopPropagation();
         if(this.isResolvingAction) return;
         const idx=parseInt(btn.dataset.idx);
+        if(cards[idx]?.disabled) return;
         this._playCardIdx(idx);
       };
     });
@@ -8051,6 +9846,55 @@ class UIEngine {
     this._showNarrativePanel(simulatedCard, outcomeRes, "⚡ IMPACTO DE TU ELECCIÓN EN EL TIMELINE", opt.resultado);
   }
 
+  _getTweetDate(fase = 1, turno = 1, cardFecha = null) {
+    if (cardFecha) {
+      return cardFecha.replace(/([A-Z][a-z]{2})/g, (m) => m.toLowerCase() + (m.endsWith('.') ? '' : '.'));
+    }
+    const meses = ["ene.", "feb.", "mar.", "abr.", "may.", "jun.", "jul.", "ago.", "sep.", "oct.", "nov.", "dic."];
+    let d, m, y;
+    if (turno >= 20 && fase < 4) {
+      return `14 mar. 2026`;
+    }
+    if (fase === 1) {
+      y = 2024; m = 1;
+      d = Math.min(29, 9 + turno);
+    } else if (fase === 2) {
+      y = 2024;
+      const dayOffset = (turno - 1) * 2;
+      if (15 + dayOffset <= 30) {
+        m = 3;
+        d = 15 + dayOffset;
+      } else {
+        m = 4;
+        d = Math.min(31, 15 + dayOffset - 30);
+      }
+    } else if (fase === 3) {
+      y = 2024;
+      const dayOffset = (turno - 1) * 2;
+      if (15 + dayOffset <= 31) {
+        m = 6;
+        d = 15 + dayOffset;
+      } else {
+        m = 7;
+        d = Math.min(31, 15 + dayOffset - 31);
+      }
+    } else {
+      y = 2026;
+      const dayOffset = (turno - 1) * 4;
+      if (10 + dayOffset <= 31) {
+        m = 0;
+        d = 10 + dayOffset;
+      } else if (10 + dayOffset <= 59) {
+        m = 1;
+        d = 10 + dayOffset - 31;
+      } else {
+        m = 2;
+        d = Math.min(31, 10 + dayOffset - 59);
+      }
+    }
+    return `${d} ${meses[m]} ${y}`;
+  }
+
   _showNarrativePanel(card, res, customOutcomeTitle=null, consequenceText=null) {
     const panel=document.getElementById("narrative-panel");
     if(!panel) return;
@@ -8116,7 +9960,9 @@ class UIEngine {
     const currentAvatar = e.getAvatar();
     const genderedArch = getGenderedArchetype(e.arquetipo, e.genero);
     const verifiedBadgeHtml = isVerified ? `<span class="tweet-verified-badge" title="Cuenta Verificada">☑️</span>` : '';
-    const outcomeTitle = customOutcomeTitle || (isSuccess ? "🎯 TWEET VIRAL — EXCELENTE ENGAGEMENT EN EL TIMELINE" : "💥 RATIO HISTÓRICO — EL TIMELINE SE TE VINO ENCIMA");
+    const outcomeTitle = card.isHistoria
+      ? "🔍 PISTA NARRATIVA DESCUBIERTA"
+      : (customOutcomeTitle || (isSuccess ? "🎯 TWEET VIRAL — EXCELENTE ENGAGEMENT EN EL TIMELINE" : "💥 RATIO HISTÓRICO — EL TIMELINE SE TE VINO ENCIMA"));
 
     // Pool of authentic community tweets scrolling in the timeline
     const communityTweets = [
@@ -8152,6 +9998,11 @@ class UIEngine {
       </div>
     `).join("");
 
+    // Fecha auténtica estilo Twitter (timestamp progresivo y coherente)
+    const archKeyForDate = getArchKey(e.arquetipo.id);
+    const metaArcForDate = typeof METAHISTORY_DATA !== 'undefined' ? METAHISTORY_DATA[archKeyForDate] : null;
+    const tweetDateFormatted = this._getTweetDate(metaArcForDate?.fase || 1, e.turno, card.fecha);
+
     panel.innerHTML = `
       <!-- TIMELINE FEED SCROLLER (Community stream scrolling up) -->
       <div class="timeline-feed-container" id="timeline-feed-container">
@@ -8174,15 +10025,23 @@ class UIEngine {
               ${verifiedBadgeHtml}
               <span class="tweet-handle">${e.handle}</span>
               <span class="tweet-dot">·</span>
-              <span class="tweet-time">Turno ${String(e.turno).padStart(2,"0")}</span>
+              <span class="tweet-date-stamp" style="color:#64748b; font-size:0.75rem; font-weight:400; letter-spacing:0.2px;">${tweetDateFormatted}</span>
             </div>
             <div class="tweet-body-text" id="target-tweet-body">${tweetContent}</div>
+            
+            <!-- BARRA DE MÉTRICAS CON SOPORTE PARA REPLY LATIENTE DE HISTORIA -->
             <div class="tweet-metrics-bar ${!isSuccess?'is-ratio':''}" id="tweet-metrics-bar" style="display:none;">
-              <div class="t-metric metric-reply metric-hidden" id="metric-reply"><span class="m-icon">💬</span> <span class="m-val">${formatMetric(replies)}</span></div>
+              <div class="t-metric metric-reply metric-hidden" id="metric-reply">
+                <span class="m-icon" id="reply-m-icon">💬</span>
+                <span class="m-val" id="reply-m-val">${formatMetric(replies)}</span>
+              </div>
               <div class="t-metric metric-rt metric-hidden" id="metric-rt"><span class="m-icon">🔁</span> <span class="m-val">${formatMetric(rts)}</span></div>
               <div class="t-metric metric-like metric-hidden" id="metric-like"><span class="m-icon">❤️</span> <span class="m-val">${formatMetric(likes)}</span></div>
               <div class="t-metric metric-view metric-hidden" id="metric-view"><span class="m-icon">👁️</span> <span class="m-val">${formatMetric(views)}</span></div>
             </div>
+
+            <!-- HILO DE REPLIES DE HISTORIA CRUZADA -->
+            <div class="tweet-story-replies" id="tweet-story-replies" style="display:none;"></div>
           </div>
         </div>
 
@@ -8248,6 +10107,9 @@ class UIEngine {
 
       // Dry clunk sound when feed locks onto player's tweet
       snd.clunk();
+      if (card.isHistoria && snd.storyClueCue) {
+        setTimeout(() => snd.storyClueCue(), 60);
+      }
 
       // Smooth switch: hide feed stream, reveal target tweet box
       if (feedContainer) feedContainer.style.display = "none";
@@ -8277,7 +10139,7 @@ class UIEngine {
         panel.style.borderTopColor = "var(--green)";
       }
 
-      // ── SEQUENTIAL DING DING DING METRICS (110ms apart) ──
+      // ── SEQUENTIAL DING DING DING METRICS (110ms apart — EXACTO v17) ──
       const metricList = [
         { el: mReply, index: 0 },
         { el: mRt,    index: 1 },
@@ -8299,6 +10161,123 @@ class UIEngine {
           }
         }, 150 + idx * 110);
       });
+
+      // ── METAHISTORIA: GESTIÓN DE REPLY LATIENTE & REPLIES CRUZADAS ──
+      const archKey = getArchKey(e.arquetipo.id);
+      const metaArc = typeof METAHISTORY_DATA !== 'undefined' ? METAHISTORY_DATA[archKey] : null;
+
+      // Disparador del modo historia en Turnos 5-8 si aún no está activado
+      // (rango ampliado para que eventos en T6 no bloqueen el disparo)
+      const isTriggerTurn = (e.turno >= 5 && e.turno <= 8);
+      const canTriggerHeartbeat = isTriggerTurn && !e.storyModeActivated && !e.storyFinished && metaArc?.activador;
+
+      if (canTriggerHeartbeat) {
+        // Habilitar reply latiente en el resultado
+        setTimeout(() => {
+          if (!mReply) return;
+          mReply.classList.add("metric-reply-heartbeat");
+          const replyIcon = document.getElementById("reply-m-icon");
+          if (replyIcon) replyIcon.classList.add("reply-pulsing-icon");
+
+          // Ritmo inicial (60 BPM)
+          document.documentElement.style.setProperty("--story-pulse-dur", "1.0s");
+
+          // Bucle de audio de latido
+          let heartbeatTimer = null;
+          const runPulse = () => {
+            if (!panel.classList.contains("active")) {
+              if (heartbeatTimer) clearInterval(heartbeatTimer);
+              return;
+            }
+            snd.heartbeatPulse(55, 0.28, 60);
+          };
+          runPulse();
+          heartbeatTimer = setInterval(runPulse, 1000);
+
+          // Click en el reply latiente
+          mReply.onclick = (ev) => {
+            ev.stopPropagation();
+            if (heartbeatTimer) clearInterval(heartbeatTimer);
+
+            // 1. Desplegar el reply sospechoso de contexto
+            const repliesBox = document.getElementById("tweet-story-replies");
+            if (repliesBox && metaArc.activador.replySospechosa) {
+              const rep = metaArc.activador.replySospechosa;
+              repliesBox.style.display = "flex";
+              repliesBox.innerHTML = `
+                <div class="story-reply-card">
+                  <div class="story-reply-avatar">🕵️</div>
+                  <div class="story-reply-content">
+                    <div class="story-reply-header">
+                      <span class="story-reply-author">${rep.autor}</span>
+                      <span class="story-reply-handle">${rep.handle}</span>
+                    </div>
+                    <div class="story-reply-text">${rep.texto}</div>
+                  </div>
+                </div>
+              `;
+            }
+
+            // 2. Dos segundos y medio después: Impacto dramático (BRAAM) y apertura de modal en 3 slides
+            // Damos tiempo para que el jugador lea la reply antes del modal
+            setTimeout(() => {
+              this._openStoryUnlockModal();
+            }, 2500);
+          };
+        }, 750);
+      } else if (e.storyModeActivated && card.isHistoria && card.replies && card.replies.length > 0) {
+        // Carta de historia Capa 2 jugada:
+        // No forzamos las replies — el jugador tiene que clickear el 💬 latiente para verlas
+        setTimeout(() => {
+          // Latido acelerado según cantidad de tweets de historia jugados
+          const storyStep = Math.min(6, e.storyCardsPlayed + 1);
+          const currentBpm = 60 + storyStep * 11; // 60 -> 71 -> 82 -> 93 -> 104 -> 115 BPM
+          const currentVol = 0.25 + storyStep * 0.11;
+          const durSec = (60 / currentBpm).toFixed(2);
+          document.documentElement.style.setProperty("--story-pulse-dur", `${durSec}s`);
+
+          if (mReply) {
+            mReply.classList.add("metric-reply-heartbeat");
+            const replyIcon = document.getElementById("reply-m-icon");
+            if (replyIcon) replyIcon.classList.add("reply-pulsing-icon");
+          }
+
+          let storyPulseTimer = null;
+          const runStoryPulse = () => {
+            if (!panel.classList.contains("active")) {
+              if (storyPulseTimer) clearInterval(storyPulseTimer);
+              return;
+            }
+            snd.heartbeatPulse(55, currentVol, currentBpm);
+          };
+          runStoryPulse();
+          storyPulseTimer = setInterval(runStoryPulse, (60 / currentBpm) * 1000);
+
+          // Click en el reply latiente de Capa 2: revelar las replies cruzadas
+          if (mReply) {
+            mReply.onclick = (ev) => {
+              ev.stopPropagation();
+              if (storyPulseTimer) clearInterval(storyPulseTimer);
+              const repliesBox = document.getElementById("tweet-story-replies");
+              if (repliesBox) {
+                repliesBox.style.display = "flex";
+                repliesBox.innerHTML = card.replies.map(r => `
+                  <div class="story-reply-card">
+                    <div class="story-reply-avatar">💬</div>
+                    <div class="story-reply-content">
+                      <div class="story-reply-header">
+                        <span class="story-reply-author">${r.autor}</span>
+                        <span class="story-reply-handle">${r.handle}</span>
+                      </div>
+                      <div class="story-reply-text">${r.texto}</div>
+                    </div>
+                  </div>
+                `).join("");
+              }
+            };
+          }
+        }, 750);
+      }
 
       // Show accept button after all metrics
       setTimeout(() => {
@@ -8434,6 +10413,7 @@ class UIEngine {
 
   _showEnd1() {
     this.showScreen("screen-end1");
+    snd.stopMusic();
     snd.fanfare();
     const f=this.eng.final, e=this.eng;
     const genderedArch = getGenderedArchetype(e.arquetipo, e.genero);
@@ -8449,15 +10429,24 @@ class UIEngine {
       <div class="end-stat-col"><span class="lbl">SALUD MENTAL</span><span class="val c-green">${e.saludMental}%</span></div>
     `;
 
-    // ── REPLAYABILITY HOOK: UNLOCKED FINALES COLLECTION ──
+    // ── REPLAYABILITY HOOK: UNLOCKED FINALES COLLECTION (26 FINALES: 14 BASE + 12 HISTORIAS) ──
     try {
-      const storageKey = "twitero_unlocked_finales_v17";
+      const storageKey = "twitero_unlocked_finales_v18";
       let unlocked = JSON.parse(localStorage.getItem(storageKey) || "[]");
-      if (f.titulo && !unlocked.includes(f.titulo)) {
-        unlocked.push(f.titulo);
+      // Migrar progreso previo si aún no existe en v18
+      if (unlocked.length === 0) {
+        const oldUnlocked = JSON.parse(localStorage.getItem("twitero_unlocked_finales_v17") || "[]");
+        if (oldUnlocked.length > 0) {
+          unlocked = [...oldUnlocked];
+        }
+      }
+      // Clave normalizada: los arcos de historia se identifican por arquetipo para no duplicar por género
+      const finaleKey = e.storyFinished ? `historia_${getArchKey(e.arquetipo?.id)}` : (f.id || f.titulo);
+      if (finaleKey && !unlocked.includes(finaleKey)) {
+        unlocked.push(finaleKey);
         localStorage.setItem(storageKey, JSON.stringify(unlocked));
       }
-      const totalFinales = 14;
+      const totalFinales = 26;
       const count = Math.min(totalFinales, Math.max(1, unlocked.length));
       const pct = Math.round((count / totalFinales) * 100);
       const countEl = document.getElementById("collection-count-text");
@@ -8466,11 +10455,28 @@ class UIEngine {
       if (barFill) barFill.style.width = `${pct}%`;
     } catch(err) {}
 
+    // ── BANNER NARRATIVO DE FIN DE JUEGO (SOLO SI COMPLETÓ LA HISTORIA) ──
+    const storyBanner = document.getElementById("end1-story-banner");
+    if (storyBanner) {
+      if (e.storyFinished) {
+        storyBanner.style.display = "block";
+        storyBanner.innerHTML = `
+          <div class="story-banner-text">
+            Completaste el arco narrativo de <strong>${genderedArch}</strong>. Ahora sabés un pedacito más de lo que pasó realmente.
+            <br><br>
+            💡 Podés revisar todos los tweets y pistas de esta partida haciendo clic en el <strong>Árbol de Decisiones</strong>: cada turno tiene el tweet que publicaste y las replies del hilo.
+          </div>
+        `;
+      } else {
+        storyBanner.style.display = "none";
+      }
+    }
+
     const btnShare=document.getElementById("btn-end1-share");
     if(btnShare){
       btnShare.onclick=()=>{
         snd.click();
-        const tweetText = `Jugué a Twitero como ${genderedArch} ${e.personalidad.nombre} (${e.handle}) y alcancé el final "${f.titulo}" con ${e.seguidores.toLocaleString()} seguidores y $${e.dinero.toLocaleString()} 🏆. ¿Podés superarme? Jugá a Twitero acá: https://bit.ly/playtwitero`;
+        const tweetText = `Jugué a Tuitero como ${genderedArch} ${e.personalidad.nombre} (${e.handle}) y alcancé el final "${f.titulo}" con ${e.seguidores.toLocaleString()} seguidores y $${e.dinero.toLocaleString()} 🏆. ¿Podés superarme? Jugá a Tuitero acá: https://bit.ly/playtwitero`;
         const modal = document.getElementById("share-modal-overlay");
         const textarea = document.getElementById("modal-share-textarea");
         if(textarea) textarea.value = tweetText;
@@ -8592,7 +10598,7 @@ class UIEngine {
     if (btnEnd2Share) {
       btnEnd2Share.onclick = () => {
         snd.click();
-        const tweetText = `Jugué a Twitero como ${genderedArch} ${e.personalidad.nombre} (${e.handle}) y alcancé el final "${f.titulo}" con ${e.seguidores.toLocaleString()} seguidores y $${e.dinero.toLocaleString()} 🏆. ¿Podés superarme? Jugá a Twitero acá: https://bit.ly/playtwitero`;
+        const tweetText = `Jugué a Tuitero como ${genderedArch} ${e.personalidad.nombre} (${e.handle}) y alcancé el final "${f.titulo}" con ${e.seguidores.toLocaleString()} seguidores y $${e.dinero.toLocaleString()} 🏆. ¿Podés superarme? Jugá a Tuitero acá: https://bit.ly/playtwitero`;
         const modal = document.getElementById("share-modal-overlay");
         const textarea = document.getElementById("modal-share-textarea");
         if(textarea) textarea.value = tweetText;
@@ -8853,10 +10859,10 @@ class UIEngine {
           </svg>
         </div>
         <div id="tree-tooltip" style="display:none;position:fixed;z-index:9200;
-          background:#0b1120;border:1px solid rgba(29,155,240,0.4);border-radius:8px;
-          padding:12px 14px;font-size:12px;color:#fff;min-width:240px;max-width:300px;
-          box-shadow:0 12px 40px rgba(0,0,0,0.85);pointer-events:none;line-height:1.5;
-          backdrop-filter:blur(8px);font-family:'Plus Jakarta Sans', sans-serif;"></div>
+          background:#0b1120;border:1px solid rgba(29,155,240,0.5);border-radius:10px;
+          padding:14px 16px;font-size:13px;color:#fff;min-width:280px;max-width:380px;
+          box-shadow:0 14px 45px rgba(0,0,0,0.9);pointer-events:none;line-height:1.55;
+          backdrop-filter:blur(10px);font-family:'Plus Jakarta Sans', sans-serif;"></div>
       </div>`;
 
     overlay.style.display = "flex";
@@ -8874,29 +10880,29 @@ class UIEngine {
         const isViral = td.chosen.viral;
         const tweetText = td.chosen.text || td.chosen.title || "";
         tooltip.innerHTML = `
-          <div style="color:${C.trunk};font-weight:800;font-size:12px;margin-bottom:4px;">
+          <div style="color:${C.trunk};font-weight:800;font-size:13px;margin-bottom:6px;">
             ${td.chosen.icon || "💬"} ${td.chosen.title || "Carta"} &nbsp;
-            <span style="color:#64748B;font-size:10px;">(Turno ${log[idx].t})</span>
+            <span style="color:#64748B;font-size:11px;">(Turno ${log[idx].t})</span>
           </div>
-          ${tweetText ? `<div style="font-family:'Plus Jakarta Sans', sans-serif;font-size:11px;color:#e2e8f0;background:rgba(255,255,255,0.06);border-left:2px solid ${C.trunk};padding:6px 8px;margin:6px 0;border-radius:3px;line-height:1.35;">"${tweetText}"</div>` : ""}
-          <div style="color:${td.chosen.ok ? (isViral ? C.pipViral : C.pipOk) : C.pipFail};font-weight:700;">
+          ${tweetText ? `<div style="font-family:'Plus Jakarta Sans', sans-serif;font-size:13.5px;color:#f1f5f9;background:rgba(255,255,255,0.08);border-left:3px solid ${C.trunk};padding:9px 12px;margin:8px 0;border-radius:4px;line-height:1.45;font-weight:500;">"${tweetText}"</div>` : ""}
+          <div style="color:${td.chosen.ok ? (isViral ? C.pipViral : C.pipOk) : C.pipFail};font-weight:700;font-size:12px;">
             ${td.chosen.ok ? (isViral ? "✨ IMPACTO VIRAL" : "✅ TWEET EXITOSO") : "❌ RATIO EN EL TIMELINE"}
-            &nbsp;<span style="color:#8b98a9;font-size:10px;font-family:'Space Mono', monospace;">[D${td.chosen.roll}/≤${td.chosen.chance}%]</span>
+            &nbsp;<span style="color:#8b98a9;font-size:11px;font-family:'Space Mono', monospace;">[D${td.chosen.roll}/≤${td.chosen.chance}%]</span>
           </div>
-          <hr style="border-color:rgba(255,255,255,0.08);margin:6px 0;">
-          <div style="font-weight:600;">👥 ${td.delta.segs >= 0 ? "+" : ""}${(td.delta.segs||0).toLocaleString()} seguidores</div>
-          <div>⚡ ${td.delta.eng >= 0 ? "+" : ""}${td.delta.eng||0} engagement</div>
-          ${td.delta.hate ? `<div style="color:${C.pipFail};">💀 +${td.delta.hate} odio generado</div>` : ""}
-          ${td.chosen.booster ? `<div style="color:${C.trunk};">🚀 Booster: ${td.chosen.booster}</div>` : ""}
-          <hr style="border-color:rgba(255,255,255,0.08);margin:6px 0;">
-          <div style="color:#64748B;font-size:10px;text-transform:uppercase;">Balance al cierre de turno:</div>
-          <div style="font-family:'Space Mono', monospace;font-size:11px;">👥 ${(snap.segs||0).toLocaleString()} &nbsp;·&nbsp; 💰 $${(snap.dinero||0).toLocaleString()} &nbsp;·&nbsp; ❤️ ${snap.salud||0}%</div>`;
+          <hr style="border-color:rgba(255,255,255,0.1);margin:8px 0;">
+          <div style="font-weight:600;font-size:12px;">👥 ${td.delta.segs >= 0 ? "+" : ""}${(td.delta.segs||0).toLocaleString()} seguidores</div>
+          <div style="font-size:12px;">⚡ ${td.delta.eng >= 0 ? "+" : ""}${td.delta.eng||0} engagement</div>
+          ${td.delta.hate ? `<div style="color:${C.pipFail};font-size:12px;">💀 +${td.delta.hate} odio generado</div>` : ""}
+          ${td.chosen.booster ? `<div style="color:${C.trunk};font-size:12px;">🚀 Booster: ${td.chosen.booster}</div>` : ""}
+          <hr style="border-color:rgba(255,255,255,0.1);margin:8px 0;">
+          <div style="color:#64748B;font-size:10.5px;text-transform:uppercase;">Balance al cierre de turno:</div>
+          <div style="font-family:'Space Mono', monospace;font-size:11.5px;">👥 ${(snap.segs||0).toLocaleString()} &nbsp;·&nbsp; 💰 $${(snap.dinero||0).toLocaleString()} &nbsp;·&nbsp; ❤️ ${snap.salud||0}%</div>`;
         tooltip.style.display = "block";
       });
       node.addEventListener("mousemove", ev => {
         const r = overlay.getBoundingClientRect();
-        tooltip.style.left = Math.min(ev.clientX + 16, r.right - 310) + "px";
-        tooltip.style.top  = Math.min(ev.clientY + 8,  r.bottom - 210) + "px";
+        tooltip.style.left = Math.min(ev.clientX + 16, r.right - 390) + "px";
+        tooltip.style.top  = Math.min(ev.clientY + 8,  r.bottom - 260) + "px";
       });
       node.addEventListener("mouseleave", () => { tooltip.style.display = "none"; });
     });
@@ -8959,7 +10965,7 @@ class UIEngine {
         oc.toBlob(pngBlob => {
           if (!pngBlob) { btn.textContent = "❌ Error"; btn.disabled = false; return; }
           const textSummary =
-            `Twitero — ${handleText} (${genderedArch})\n` +
+            `Tuitero — ${handleText} (${genderedArch})\n` +
             `Final: ${f.titulo}\n` +
             `👥 ${e.seguidores.toLocaleString()} · 💰 $${e.dinero.toLocaleString()} · ❤️ ${e.saludMental}%\n` +
             `${cols} turnos jugados en el timeline`;

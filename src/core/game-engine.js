@@ -511,7 +511,7 @@ const FINALES = [
     evaluar:(e)=>e.seguidores>=80000
   },
   {
-    id:"nicho", titulo:"EL TWITTERO DE NICHO", icon:"🎙️", sub:"Carrera regular pero honesta en redes.",
+    id:"nicho", titulo:"EL TUITERO DE NICHO", icon:"🎙️", sub:"Carrera regular pero honesta en redes.",
     narrativas:[
       "20 turnos en la plataforma. Construiste una comunidad modesta y seguís tuiteando con dignidad.",
       "No sos viral, pero tus seguidores te leen y responden de verdad. Eso no lo tiene cualquier cuenta masiva.",
@@ -667,12 +667,19 @@ class GameEngine {
     this.algorithmEffect = null;
     this.mediosTriggered = false;
     this.famosoTriggered = false;
-    this.algorithmTriggered = false;
-    this.rachaViralTriggered = false;
-    this.rachaViralActive = false;
-    this.rachaViralCount = 0;
     this.rachaViralDone = false;
     this.rachaViralDescansoUsed = false;
+
+    // ─── METAHISTORIA NARRATIVA ─────────────────────────────────
+    this.storyModeActivated = false;     // Si el jugador abrió el reply latiente
+    this.storyPendingTrigger = false;    // Si en el turno actual hay reply latiente disponible
+    this.storyTriggerTurn = 5;           // Se dispara en turno 5 o 6
+    this.storyCardsPlayed = 0;           // Contador de cartas Capa 2 jugadas
+    this.storyObligatoriaActive = false; // Si la carta Capa 3 obligatoria está activa
+    this.storyCurrentIndex = 0;          // Índice secuencial de cartas de historia
+    this.storyFinished = false;          // Si completó la Capa 3
+    this.storyLastPlayedCard = null;     // Última carta de historia jugada para mostrar replies
+    this.playedStoryCardIds = new Set(); // IDs únicos de cartas de historia jugadas
   }
 
   init(genero, archId, persId, customHandle=null) {
@@ -943,21 +950,220 @@ class GameEngine {
     if(this.cachedCards?.length===3) return this.cachedCards;
     const pool=this._cardPool(), drawn=[], remaining=[...pool];
     const handKeys = new Set();
+    const archKey = getArchKey(this.arquetipo.id);
+    const metaArc = typeof METAHISTORY_DATA !== 'undefined' ? METAHISTORY_DATA[archKey] : null;
 
-    while(drawn.length<3&&remaining.length>0){
+    // ─── CHECK CAPA 3: HISTORIA OBLIGATORIA ─────────────────────
+    // Solo se activa en el turno 20 exacto y si ya se jugaron todas las Capa 2 disponibles
+    const totalCapa2Available = metaArc?.capa2 ? metaArc.capa2.length : 0;
+    const canTriggerObligatoria = this.storyModeActivated && !this.storyFinished && metaArc?.capa3
+      && (this.storyCardsPlayed >= totalCapa2Available)
+      && this.turno >= 20; // ← Obligatorio: Capa 3 solo aparece en el turno final
+
+    if (canTriggerObligatoria) {
+      this.storyObligatoriaActive = true;
+      const c3 = metaArc.capa3;
+      const cardObligatoria = {
+        id: "historia_obligatoria",
+        palo: { nombre: "HISTORIA", icono: "⚡", color: "#e0245e" },
+        titulo: c3.titulo,
+        texto: c3.texto,
+        narrativaExito: "Tu tweet sacudió los cimientos del feed. El arco de este personaje llega a su desenlace definitivo.",
+        narrativaFallo: "El peso de la revelación te expuso al juicio despiadado del timeline.",
+        eng: c3.stats?.eng || 85,
+        hate: c3.stats?.hate || 20,
+        cred: c3.stats?.cred || 30,
+        chanceOverride: c3.stats?.chance || 70,
+        isHistoria: true,
+        isHistoriaObligatoria: true,
+        fecha: c3.fecha || "2026",
+        contradiccion_id: c3.contradiccion_id || null,
+        replies: c3.replies || []
+      };
+
+      // Cartas 2 y 3 inhabilitadas/tachadas
+      const disabledCard1 = {
+        id: "disabled_card",
+        palo: { nombre: "ANULADA", icono: "🚫", color: "#64748b" },
+        titulo: "Opción bloqueada por trama",
+        texto: "La tensión de los acontecimientos te impide distraerte en publicaciones casuales.",
+        disabled: true
+      };
+      const disabledCard2 = {
+        id: "disabled_card",
+        palo: { nombre: "ANULADA", icono: "🚫", color: "#64748b" },
+        titulo: "Opción bloqueada por trama",
+        texto: "No hay vuelta atrás. Debes afrontar el desenlace de esta historia.",
+        disabled: true
+      };
+
+      drawn.push(cardObligatoria, disabledCard1, disabledCard2);
+      this.cachedCards = drawn;
+      return drawn;
+    }
+
+    // ─── CHECK CAPA 2: GARANTIZAR 1 CARTA DE HISTORIA EN CADA TIRADA ───
+    // Turnos de entrada: Carta 1 disponible desde T8-9, Carta 2 desde T12, etc.
+    let storyCardToInsert = null;
+    if (this.storyModeActivated && !this.storyFinished && metaArc?.capa2 && metaArc.capa2.length > 0) {
+      const nextStoryIdx = Math.min(this.storyCurrentIndex, metaArc.capa2.length - 1);
+      const c2 = metaArc.capa2[nextStoryIdx];
+
+      const minTurnGates = [8, 12, 15, 17];
+      const minTurnForThisCard = minTurnGates[Math.min(nextStoryIdx, minTurnGates.length - 1)];
+
+      // Chequeo estricto por ID único (para que nunca colisione con títulos de tweets comunes)
+      const storyId = c2?.id || c2?.titulo;
+      const alreadyPlayedThisStoryCard = this.playedStoryCardIds.has(storyId);
+
+      if (c2 && !alreadyPlayedThisStoryCard && this.turno >= minTurnForThisCard) {
+        storyCardToInsert = {
+          id: "historia",
+          storyId: storyId,
+          palo: { nombre: "HISTORIA", icono: "💓", color: "#1d9bf0" },
+          titulo: c2.titulo,
+          texto: c2.texto,
+          narrativaExito: "Publicaste un tweet clave en la trama. Cada vez más miradas se posan sobre lo que sabés.",
+          narrativaFallo: "Tus palabras generaron sospechas y atrajeron comentarios agresivos al timeline.",
+          eng: c2.stats?.eng || 65,
+          hate: c2.stats?.hate || 12,
+          cred: c2.stats?.cred || 15,
+          chanceOverride: c2.stats?.chance || 60,
+          isHistoria: true,
+          isHistoriaObligatoria: false,
+          fecha: c2.fecha || null,
+          contradiccion_id: c2.contradiccion_id || null,
+          replies: c2.replies || []
+        };
+        handKeys.add(c2.titulo);
+      }
+    }
+
+    // Inmersión temática escalonada: T12-T15 (~45% clima enrarecido) y T16+ (100% estallido en historia, 20% si no)
+    const FASE_TWEETS_BY_PHASE = {
+      1: [
+        { tipo: "pelea", titulo: "Discusión por el auto importado", texto: "Siguen jodiendo con el auto importado en el TL. En este país te comprás algo lindo y ya te inventan causas." },
+        { tipo: "meme", titulo: "Meme de la patente y el garage", texto: "Meme del chabón tapando la patente con cinta aisladora cuando viene la AFIP." },
+        { tipo: "tema", titulo: "Hablemos de las LLC en Delaware", texto: "Curioso cómo todos los influencers terminan radicando sociedades fantasmas en el mismo estado de USA." },
+        { tipo: "bait", titulo: "Bait sobre los streamers y el dinero fácil", texto: "Decir que los streamers lavan guita es una falta de respeto a los que lavan guita de verdad." },
+        { tipo: "hilo", titulo: "Hilo: El origen de la flota de lujo", texto: "Abro hilo con las fotos del auto importado en los eventos y quiénes se subieron realmente." },
+        { tipo: "pelea", titulo: "Cruce por la fiesta en Nordelta", texto: "Mucho sponsor gamer pero el catering del cumpleaños lo pagó un testaferro con cheques voladores." },
+        { tipo: "meme", titulo: "Meme del contrato en servilleta", texto: "Meme de 'Tranqui bro, el mes que viene entra la inversión extranjera' mientras te pagan en billetes termosellados." },
+        { tipo: "tema", titulo: "El misterio de los sponsors fantasma", texto: "Tres marcas de bebidas energizantes que no existen en ningún supermercado bancando streams enteros. Raro es poco." },
+        { tipo: "bait", titulo: "Bait sobre los viajes a Miami en primera", texto: "Si a los 22 años viajás 4 veces por año en business con un canal de 40k subs, no sos streamer, sos cadete." },
+        { tipo: "hilo", titulo: "Hilo: Las fotos borradas en la quinta", texto: "Recopilación de historias de Instagram que borraron a los diez minutos de la quinta de Olivos." },
+        { tipo: "pelea", titulo: "Tiroteo por el departamento en Madero", texto: "¿De verdad nos quieren hacer creer que alquilan piso en Puerto Madero vendiendo mousepads?" },
+        { tipo: "tema", titulo: "Auditorías relámpago en el timeline", texto: "La AFIP empezó a mandar intimaciones a creadores de contenido y varios ya pusieron candado a la cuenta." }
+      ],
+      2: [
+        { tipo: "pelea", titulo: "Cruces por el hackeo al exchange", texto: "¡Liberen los fondos manga de chorros! La gente no puede sacar los ahorros de su vida." },
+        { tipo: "meme", titulo: "Meme del corralito cripto", texto: "Meme de 'Los fondos están SAFU' mientras la wallet oficial está drenada a cero." },
+        { tipo: "tema", titulo: "El colapso de las wallets locales", texto: "Si metés tus ahorros en un exchange local sin auditoría seria, después no llores estafa piramidal." },
+        { tipo: "bait", titulo: "Bait de la liquidez fantasma", texto: "Los exchanges no quiebran por hackers, quiebran cuando los dueños se escapan a Miami." },
+        { tipo: "hilo", titulo: "Hilo: El rastro on-chain del hackeo", texto: "Seguí la ruta de los 2 millones de USDT hackeados y todas las transferencias van al mismo pool." },
+        { tipo: "pelea", titulo: "Reclamo furioso en oficinas del centro", texto: "Hay 200 personas golpeando las persianas del exchange en microcentro. La policía ya valló la cuadra." },
+        { tipo: "meme", titulo: "Meme de la hardware wallet vacía", texto: "Meme de 'Not your keys, not your coins' mirando una ledger que marca exactamente 0.00000000 BTC." },
+        { tipo: "tema", titulo: "La filtración del grupo de Telegram", texto: "Se filtraron los chats de los fundadores del exchange riéndose de los usuarios mientras pausaban los retiros." },
+        { tipo: "bait", titulo: "Bait sobre los gurúes de futuros", texto: "Ayer te vendían curso de apalancamiento x100 y hoy tienen la bio en blanco y los comentarios cerrados." },
+        { tipo: "hilo", titulo: "Hilo: Los puentes clandestinos a Monero", texto: "Cómo mezclaron los fondos robados en Tornado Cash y pools descentralizados en menos de 40 minutos." },
+        { tipo: "pelea", titulo: "Guerra entre analistas y promotores", texto: "Ustedes cobraron 5 mil dólares por promocionar una plataforma que sabían que era insolvente desde enero." },
+        { tipo: "tema", titulo: "Comisión investigadora en el Congreso", texto: "Piden interpelar a la Comisión Nacional de Valores por la falta de controles sobre plataformas cripto." }
+      ],
+      3: [
+        { tipo: "pelea", titulo: "Furia por el allanamiento del Secretario", texto: "Cayeron los fiscales al ministerio. Están sacando cajas de papeles mientras todos se lavan las manos." },
+        { tipo: "meme", titulo: "Meme de las viviendas sin terminar", texto: "Meme de las 200 casas populares que terminaron siendo pasto alto y un cartel de chapa oxidada." },
+        { tipo: "tema", titulo: "El vínculo entre el poder y los palcos", texto: "Dirigentes, secretarios y famosos compartiendo café en los palcos mientras la causa quema." },
+        { tipo: "bait", titulo: "Bait sobre la impunidad política", texto: "El secretario ya tiene pasaje sacado y ustedes se siguen peleando por banderas políticas en el feed." },
+        { tipo: "hilo", titulo: "Hilo: Comando Fierro y la lista filtrada", texto: "Detalle de los nombres que aparecieron en la base de datos de Comando Fierro antes de que la borren." },
+        { tipo: "pelea", titulo: "Batalla en el móvil de televisión", texto: "Empujones e insultos entre militantes y periodistas en la puerta de los tribunales de Comodoro Py." },
+        { tipo: "meme", titulo: "Meme del disco rígido al agua", texto: "Meme de los asesores ministeriales tirando computadoras por la ventana cinco minutos antes de la orden del juez." },
+        { tipo: "tema", titulo: "Los fondos desviados de las cooperativas", texto: "Partidas presupuestarias millonarias destinadas a urbanización que terminaron en cuentas no declaradas." },
+        { tipo: "bait", titulo: "Bait sobre el pacto de silencio", texto: "Nadie habla del subsecretario porque si cae él, caen tres ministros y dos intendentes del conurbano." },
+        { tipo: "hilo", titulo: "Hilo: La ruta de las empresas fantasma", texto: "Mapeo completo de las 14 constructoras creadas el mismo día con el mismo domicilio fiscal trucho." },
+        { tipo: "pelea", titulo: "Denuncia penal contra los intermediarios", texto: "Presentaron pruebas contra los gestores que cobraban coimas del 30% para adjudicar obras públicas." },
+        { tipo: "tema", titulo: "Cámaras de seguridad incautadas", texto: "La justicia secuestró los videos del estacionamiento oficial donde se ven bolsos cargados a medianoche." }
+      ],
+      4: [
+        { tipo: "pelea", titulo: "Discusión retrospectiva del escándalo", texto: "A dos años de la causa de las viviendas, los mismos de siempre siguen cobrando del Estado." },
+        { tipo: "meme", titulo: "Meme de la memoria selectiva", texto: "Meme de 'Acá no pasó nada' con la foto del predio abandonado de fondo." },
+        { tipo: "tema", titulo: "Las secuelas de la filtración masiva", texto: "Pasó el tiempo, se cerraron cuentas, pero el archivo de lo que pasó en 2024 no se borra." },
+        { tipo: "bait", titulo: "Bait sobre los arrepentidos de turno", texto: "Todos los que defendían a capa y espada al ministerio ahora borraron los tweets de esa época." },
+        { tipo: "hilo", titulo: "Hilo: Cómo terminó la causa dos años después", texto: "Resumen de procesados, prófugos y contratos que quedaron en la nada tras el escándalo." },
+        { tipo: "pelea", titulo: "Reproches por el sobreseimiento express", texto: "Cerraron la causa principal por prescripción un viernes feriado a última hora. Dan asco." },
+        { tipo: "meme", titulo: "Meme del nuevo emprendimiento", texto: "Meme del ex funcionario procesado que ahora da charlas motivacionales sobre resiliencia en Punta del Este." },
+        { tipo: "tema", titulo: "El documental independiente en YouTube", texto: "Un canal de investigación subió el informe completo de la trama y ya tiene un millón de vistas en 48hs." },
+        { tipo: "bait", titulo: "Bait sobre la hipocresía colectiva", texto: "Se indignaban todos en 2024 y hoy siguen likeando a los mismos personajes como si no hubiera pasado nada." },
+        { tipo: "hilo", titulo: "Hilo: Dónde están hoy los implicados", texto: "El seguimiento definitivo de cada uno de los involucrados: quiénes se fueron del país y quiénes volvieron." },
+        { tipo: "pelea", titulo: "Cruce con el vocero arrepentido", texto: "Ahora escribe libros haciéndose el crítico, pero cuando cobraba la pauta ministerial no abría la boca." },
+        { tipo: "tema", titulo: "La herencia digital de la crisis", texto: "Cuentas con cientos de miles de seguidores que quedaron congeladas en el tiempo tras las denuncias." }
+      ]
+    };
+
+    const currentFase = metaArc?.fase || 2;
+    const phaseList = FASE_TWEETS_BY_PHASE[currentFase] || FASE_TWEETS_BY_PHASE[2];
+
+    const targetNonStoryCards = storyCardToInsert ? 2 : 3;
+
+    // Completar el resto de la mano con cartas
+    while(drawn.length < targetNonStoryCards && remaining.length > 0){
       const total=remaining.reduce((s,c)=>s+c.weight,0);
       let r=Math.random()*total, idx=remaining.length-1;
       for(let j=0;j<remaining.length;j++){if(r<remaining[j].weight){idx=j;break;}r-=remaining[j].weight;}
       const meta=remaining.splice(idx,1)[0];
-      const content = makeCardContent(meta.id, this.arquetipo.id, this.playedTweetKeys, handKeys);
+      let content = makeCardContent(meta.id, this.arquetipo.id, this.playedTweetKeys, handKeys);
+
+      // Inmersión escalonada:
+      // - Si historia activa y turno >= 16: 100% contextual
+      // - Si historia activa y turno >= 12: ~45% contextual (clima enrarecido)
+      // - Si no activó historia y turno >= 16: ~20% ambiental
+      const shouldThematize = this.storyModeActivated
+        ? (this.turno >= 16 || (this.turno >= 12 && Math.random() < 0.45))
+        : (this.turno >= 16 && Math.random() < 0.20);
+
+      if (shouldThematize && phaseList.length > 0) {
+        // Anti-repetición estricto: descartar los ya jugados en la partida y los ya presentes en la mano actual
+        const availableThemes = phaseList.filter(t => !this.playedTweetKeys.has(t.titulo) && !handKeys.has(t.titulo));
+        if (availableThemes.length > 0) {
+          const themeItem = availableThemes[rng(availableThemes.length)];
+          content.titulo = themeItem.titulo;
+          content.texto = themeItem.texto;
+          content.isThematicT16 = true;
+        }
+      }
+      if (content.titulo) handKeys.add(content.titulo);
+
       drawn.push({ id:meta.id, palo:CARD_PALOS[meta.id], ...content });
     }
     const fallbacks=["meme","tema","pelea","hilo","bait"]; let fbIdx=0;
-    while(drawn.length<3){
+    while(drawn.length < targetNonStoryCards){
       const fbId=fallbacks[fbIdx++%fallbacks.length];
-      const content = makeCardContent(fbId, this.arquetipo.id, this.playedTweetKeys, handKeys);
+      let content = makeCardContent(fbId, this.arquetipo.id, this.playedTweetKeys, handKeys);
+
+      const shouldThematize = this.storyModeActivated
+        ? (this.turno >= 16 || (this.turno >= 12 && Math.random() < 0.45))
+        : (this.turno >= 16 && Math.random() < 0.20);
+
+      if (shouldThematize && phaseList.length > 0) {
+        // Anti-repetición estricto: descartar los ya jugados en la partida y los ya presentes en la mano actual
+        const availableThemes = phaseList.filter(t => !this.playedTweetKeys.has(t.titulo) && !handKeys.has(t.titulo));
+        if (availableThemes.length > 0) {
+          const themeItem = availableThemes[rng(availableThemes.length)];
+          content.titulo = themeItem.titulo;
+          content.texto = themeItem.texto;
+          content.isThematicT16 = true;
+        }
+      }
+      if (content.titulo) handKeys.add(content.titulo);
+
       drawn.push({ id:fbId, palo:CARD_PALOS[fbId], ...content });
     }
+
+    // Insertar la carta de historia en una posición aleatoria (0, 1 o 2) para que no sea predecible
+    if (storyCardToInsert) {
+      const randomSlot = rng(drawn.length + 1);
+      drawn.splice(randomSlot, 0, storyCardToInsert);
+    }
+
     this.cachedCards=drawn; return drawn;
   }
 
@@ -975,7 +1181,7 @@ class GameEngine {
       patrocinio: 65,
       descanso: 62
     };
-    let c = bases[card.id] || 50;
+    let c = card.chanceOverride || bases[card.id] || 50;
 
     // Modificadores de género (dificultad asimétrica)
     if (this.genero === "mujer") c -= 3;
@@ -1005,7 +1211,7 @@ class GameEngine {
         this.dinero -= b.costo;
         if (b.fx.segsPct) this.seguidores = Math.floor(this.seguidores * (1 + b.fx.segsPct));
         if (b.fx.eng) this.engagement += b.fx.eng;
-        if (b.fx.odio) this.odio = Math.min(100, this.odio + b.fx.odio);
+        if (b.fx.odio) this.odio = Math.max(0, Math.min(100, this.odio + b.fx.odio));
         this.boosterCD[b.id] = b.cooldown;
         boosterUsed = b;
       }
@@ -1025,6 +1231,10 @@ class GameEngine {
 
     if(ok){
       engGain = Math.floor(card.eng * mult);
+      // Balance A: Podcaster - fragmentos de entrevistas y debates generan engagement extra (+40)
+      if (this.arquetipo?.id === "podcaster" && (card.id === "quote" || card.id === "tema" || card.id === "live")) {
+        engGain += 40;
+      }
       
       if (card.id === "patrocinio") {
         const boostPct = boosterUsed?.fx.segsPct || 0;
@@ -1035,6 +1245,10 @@ class GameEngine {
         const basePct = 0.04 + Math.random() * 0.04;
         const boostPct = boosterUsed?.fx.segsPct || 0;
         segsGain = Math.floor(this.seguidores * (basePct + boostPct) + (220 * mult));
+        // Balance A: Cuenta de Humor - memes virales traccionan +12% de seguidores base
+        if (this.arquetipo?.id === "humor" && card.id === "meme") {
+          segsGain = Math.floor(segsGain * 1.12);
+        }
       }
 
       this.credibilidad = Math.min(100, this.credibilidad + (card.id === "hilo" ? 8 : 3));
@@ -1072,8 +1286,14 @@ class GameEngine {
       }
 
     } else {
-      hateGain = Math.floor(card.hate * mult);
-      segsGain = card.id === "descanso" ? 0 : -Math.floor(this.seguidores * 0.04 * mult);
+      if (card.isHistoriaObligatoria) {
+        // Protección dramática en clímax T20: la revelación genera debate tenso pero no castiga al jugador con un ratio devastador
+        segsGain = -Math.floor(this.seguidores * 0.01 * mult);
+        hateGain = Math.min(12, Math.floor((card.hate || 20) * 0.4));
+      } else {
+        hateGain = Math.floor(card.hate * mult);
+        segsGain = card.id === "descanso" ? 0 : -Math.floor(this.seguidores * 0.04 * mult);
+      }
       if(card.id === "descanso") {
         if(this.rachaViralActive) {
           this.rachaViralDescansoUsed = true;
@@ -1112,11 +1332,31 @@ class GameEngine {
 
     this.engagement = Math.max(0, this.engagement + engGain);
     this.seguidores = Math.max(100, this.seguidores + segsGain);
-    this.dinero += dinGain;
-
     if(card.id === "pelea"){ this.streakPeleas++; this.streakHilos = 0; }
     else if(card.id === "hilo"){ this.streakHilos++; this.streakPeleas = 0; }
     else { this.streakPeleas = 0; this.streakHilos = 0; }
+
+    // ── METAHISTORIA: REGISTRAR AVANCE DE CAPAS ─────────────────
+    if (card.isHistoria) {
+      this.storyLastPlayedCard = card;
+      if (card.storyId) {
+        this.playedStoryCardIds.add(card.storyId);
+      }
+      if (card.isHistoriaObligatoria) {
+        this.storyFinished = true;
+        this.storyObligatoriaActive = false;
+      } else {
+        this.storyCardsPlayed++;
+        this.storyCurrentIndex++;
+        // Recompensa / incentivo por desentrañar pistas de Capa 2 (apoyo de la comunidad / interés del público)
+        const storyRewardDin = 500;
+        this.dinero += storyRewardDin;
+        dinGain += storyRewardDin;
+        this.credibilidad = Math.min(100, this.credibilidad + 8);
+      }
+    } else {
+      this.storyLastPlayedCard = null;
+    }
 
     // ── CANCELLATION EVENT & 3 STRIKES (Solo si la tirada de riesgo falla) ──
     const RISK_CARDS = ["pelea", "politica", "quote", "bait"];
@@ -1197,7 +1437,8 @@ class GameEngine {
 
     // ── Rich gameLog for decision tree ──
     const CARD_ICONS = { meme:"🎭", tema:"📝", pelea:"⚔️", hilo:"🧵", quote:"💬",
-      live:"📡", temaDelDia:"🔥", politica:"🗳️", bait:"🎣", patrocinio:"💰", descanso:"😴" };
+      live:"📡", temaDelDia:"🔥", politica:"🗳️", bait:"🎣", patrocinio:"💰", descanso:"😴",
+      historia:"💓", historia_obligatoria:"⚡" };
     const chosenSlot = _handSnapshot.findIndex(c => c.titulo === card.titulo);
     const alternatives = _handSnapshot
       .filter(c => c.titulo !== card.titulo)
@@ -1308,6 +1549,11 @@ class GameEngine {
   advanceTurn() {
     if(this.gameOver) return;
 
+    // Balance C: Dificultad Alta (Opinólogo, Militante) - desgaste psicológico por hostilidad extrema persistente
+    if (this.arquetipo?.dificultad === "alta" && this.odio >= 65) {
+      this.saludMental = Math.max(0, this.saludMental - 3);
+    }
+
     if (this.dinero < 0) this.debtTurnos++; else this.debtTurnos = 0;
     if (this.debtTurnos >= 5) {
       this.gameOver = true; this.final = FINALE_DEUDA; return;
@@ -1361,6 +1607,21 @@ class GameEngine {
   }
 
   _evaluateFinal() {
+    // ─── FINAL NARRATIVO DE METAHISTORIA ────────────────────────
+    if (this.storyFinished) {
+      const genderedArch = getGenderedArchetype(this.arquetipo, this.genero);
+      const metaEndingTitle = `HISTORIA DE ${genderedArch.toUpperCase()} DESBLOQUEADA`;
+      const metaEndingNarrativa = `Completaste el arco narrativo de ${genderedArch}. Ahora sabés un pedacito más de lo que pasó realmente.\n\n💡 Podés revisar todos los tweets y pistas de esta partida haciendo clic en el Árbol de Decisiones: cada turno tiene el tweet que publicaste y las replies del hilo.`;
+
+      return {
+        id: `metahistoria_${this.arquetipo.id}`,
+        titulo: metaEndingTitle,
+        icon: "🗝️",
+        sub: `Metahistoria completada con éxito.`,
+        narrativa: metaEndingNarrativa
+      };
+    }
+
     let chosen = null;
     for (const f of FINALES) {
       if (f.evaluar && f.evaluar(this)) {

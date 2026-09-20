@@ -7,5 +7,6 @@ const BOOSTERS = [
   { id:"ghost",     icono:"✍️", nombre:"Contratar CM",         costo:1500, cooldown:2, desc:"+60 eng · +14% éxito · Multiplicador 1.35x", fx:{ eng:60, mult:1.35, chanceBonus:14 } },
   { id:"shoutout",  icono:"🤝", nombre:"Arrobar a un famoso",   costo:1800, cooldown:2, desc:"+25% segs · +60 eng · Multiplicador 1.5x",   fx:{ segsPct:0.25, eng:60, mult:1.50, chanceBonus:8 } },
   { id:"bots",      icono:"🤖", nombre:"Usar Bots",            costo:3000, cooldown:3, desc:"+40% segs · +10 odio · Multiplicador 1.8x",  fx:{ segsPct:0.40, odio:10, mult:1.80, chanceBonus:6 } },
+  { id:"agencia_pr",icono:"🏢", nombre:"Agencia de PR & Influencers", costo:3500, cooldown:3, desc:"-20 odio · +22% segs · +65 eng · Multiplicador 1.5x", fx:{ odio:-20, segsPct:0.22, eng:65, mult:1.50, chanceBonus:10 } },
   { id:"trollfarm", icono:"🧌", nombre:"Granja de Trolls",     costo:4500, cooldown:4, desc:"+120 eng · +15 odio · Multiplicador 2.0x",   fx:{ eng:120, odio:15, mult:2.00, chanceBonus:10 } }
 ];
