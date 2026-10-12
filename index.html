@@ -2,6 +2,9 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tuitero — Simulador de Redes Sociales</title>
 
@@ -27,15 +30,17 @@
 
   <!-- Twitter / X Card -->
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@kohantoys">
+  <meta name="twitter:creator" content="@kohantoys">
   <meta name="twitter:url" content="https://twitero.vercel.app/">
-  <meta name="twitter:title" content="Tuitero — Simulador de Redes Sociales">
-  <meta name="twitter:description" content="Elegí tu arquetipo, manejá tu timeline y sobreviví a la cultura de la cancelación en 20 turnos.">
+  <meta name="twitter:title" content="Tuitero — ¿Podés sobrevivir a la cancelación?">
+  <meta name="twitter:description" content="Elegí tu arquetipo, desafiá al algoritmo de X, hacé viral tus tweets y sobreviví 20 turnos sin que te quemen. Creado por @kohantoys.">
   <meta name="twitter:image" content="og-image.jpg">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Space+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=20.0">
   <script src="https://cdn.jsdelivr.net/npm/@twemoji/api@14.1.0/dist/twemoji.min.js"></script>
 </head>
 <body>
@@ -59,14 +64,12 @@
           <div class="lang-opt active" data-lang="es">
             <span class="lang-opt-left"><span class="lang-flag">🇪🇸</span> Español</span>
           </div>
-          <div class="lang-opt locked" data-lang="en">
+          <div class="lang-opt" data-lang="en">
             <span class="lang-opt-left"><span class="lang-flag">🇬🇧</span> English</span>
-            <span class="lang-lock">🔒</span>
-          </div>
-          <div class="lang-opt locked" data-lang="ja">
+            </div>
+          <div class="lang-opt" data-lang="ja">
             <span class="lang-opt-left"><span class="lang-flag">🇯🇵</span> 日本語</span>
-            <span class="lang-lock">🔒</span>
-          </div>
+            </div>
         </div>
       </div>
 
@@ -76,7 +79,7 @@
 
     <!-- POSTER IMAGE (CLEAN NEO-INDUSTRIAL TUITERO BANNER) -->
     <div class="splash-hero-poster">
-      <img src="splash.jpg" alt="Tuitero">
+      <img id="splash-hero-img" src="splash.jpg" alt="Tuitero">
     </div>
 
     <!-- CLEAN SPLASH BODY WITH CENTERED CTA -->
@@ -376,43 +379,72 @@
   </div>
 </div>
 
-<!-- ══ FIN 1 (RESULTADO MODERNO TIPO ROGUELIKE // BALATRO / HADES) ══ -->
+<!-- ══ FIN 1 (RESULTADO MINIMALISTA, SOBRIO Y ELEGANTE) ══ -->
 <div id="screen-end1" class="screen">
   <div class="end-shell end-shell-clean">
-    <div class="end-game-badge">🏆 FINAL DEL JUEGO 🏆</div>
+    <!-- 1. BADGE DE ESTADO -->
+    <div class="end-game-badge" id="end1-status-badge">🏆 FINAL DEL JUEGO 🏆</div>
+
+    <!-- 2. HÉROE CON TÍTULO Y SUBTÍTULO -->
     <div class="end-hero-card">
       <div class="end-trophy-badge" id="end1-icon">🃏</div>
       <div class="end-hero-title" id="end1-title">RESULTADO FINAL</div>
       <div class="end-hero-sub" id="end1-sub">Fin de partida</div>
     </div>
 
-    <!-- TIRA HORIZONTAL DE TELEMETRÍA -->
-    <div class="end-stats-strip" id="end1-stats"></div>
-
-    <!-- GANCHO DE REJUGABILIDAD (COLECCIÓN DE FINALES) -->
-    <div class="end-collection-badge" id="end1-collection-badge">
-      <div class="collection-header">
-        <span class="collection-title">🏆 COLECCIÓN DE FINALES</span>
-        <span class="collection-count" id="collection-count-text">1 / 26 DESCUBIERTOS</span>
+    <!-- 3. DESGLOSE DE 3 METAS: SEGUIDORES, DINERO E HISTORIA -->
+    <div class="end-triple-goals-card" id="end1-triple-goals">
+      <!-- Meta 1: Seguidores -->
+      <div class="goal-row-item">
+        <div class="goal-row-header">
+          <span class="goal-title" id="end1-goal-segs-title">👥 SEGUIDORES (Meta: 80.000)</span>
+          <span class="goal-badge badge-fail" id="end1-goal-segs-badge">❌ INSUFICIENTE</span>
+        </div>
+        <div class="goal-track">
+          <div class="goal-fill" id="end1-goal-segs-fill" style="width: 0%;"></div>
+        </div>
+        <div class="goal-subtext" id="end1-goal-segs-sub">0 / 80.000 (0%) · Te faltaron 80.000</div>
       </div>
-      <div class="collection-bar-track">
-        <div class="collection-bar-fill" id="collection-bar-fill" style="width: 7%;"></div>
+
+      <!-- Meta 2: Dinero -->
+      <div class="goal-row-item">
+        <div class="goal-row-header">
+          <span class="goal-title" id="end1-goal-cash-title">💰 DINERO (Meta: $10.000)</span>
+          <span class="goal-badge badge-fail" id="end1-goal-cash-badge">❌ INSUFICIENTE</span>
+        </div>
+        <div class="goal-track">
+          <div class="goal-fill" id="end1-goal-cash-fill" style="width: 0%;"></div>
+        </div>
+        <div class="goal-subtext" id="end1-goal-cash-sub">$0 / $10.000 (0%) · Te faltaron $10.000</div>
+      </div>
+
+      <!-- Meta 3: Historia -->
+      <div class="goal-row-item">
+        <div class="goal-row-header">
+          <span class="goal-title" id="end1-goal-story-title">🗝️ HISTORIA (Causa del Ministerio)</span>
+          <span class="goal-badge badge-warn" id="end1-goal-story-badge">⚠️ NO RESUELTA</span>
+        </div>
+        <div class="goal-track">
+          <div class="goal-fill" id="end1-goal-story-fill" style="width: 0%;"></div>
+        </div>
+        <div class="goal-subtext" id="end1-goal-story-sub">No descubriste el misterio detrás de escena.</div>
       </div>
     </div>
 
-    <!-- BANNER NARRATIVO (solo si modo historia activado) -->
-    <div class="end-story-banner" id="end1-story-banner" style="display:none;"></div>
+    <!-- 4. TIRA HORIZONTAL DE TELEMETRÍA (4 MÉTRICAS CLAVE) -->
+    <div class="end-stats-strip" id="end1-stats"></div>
 
-    <!-- JERARQUÍA DE ACCIONES (GRAN BOTÓN + GRILLA 2x2 + CAFECITO) -->
+    <!-- 5. ACCIONES DIRECTAS Y FOOTER LIMPIO -->
     <div class="end-actions-master">
       <button class="btn btn-primary-replay" id="btn-end1-restart">▶ JUGAR DE NUEVO <span class="key-hint-pill">␣ ESPACIO</span></button>
-      <div class="end-actions-grid-2x2">
-        <button class="btn-end-grid-item" id="btn-end1-ranking">🏆 Ranking</button>
-        <button class="btn-end-grid-item" id="btn-end1-tree">🌳 Árbol de Decisiones</button>
-        <button class="btn-end-grid-item" id="btn-end1-share">🐦 Compartir en X</button>
-        <button class="btn-end-grid-item" id="btn-next-end">📊 Evolución en Turnos</button>
+      <div class="end-actions-trio">
+        <button class="btn-end-trio-item" id="btn-end1-share">🐦 Compartir en X</button>
+        <button class="btn-end-trio-item" id="btn-end1-tree">🌳 Árbol</button>
+        <button class="btn-end-trio-item" id="btn-end1-copy-report">📋 Copiar Reporte</button>
       </div>
-      <div class="end-cafecito-wrap">
+      <div class="end-footer-wrap">
+        <a href="https://x.com/kohantoys" target="_blank" class="footer-author-link">Creado por @kohantoys</a>
+        <span class="footer-dot">·</span>
         <a href="https://cafecito.app/kohan" target="_blank" class="btn-cafecito-end" id="btn-cafecito-link">☕ Invitame un Cafecito</a>
       </div>
     </div>
@@ -461,7 +493,25 @@
   </div>
 </div>
 
-  <!-- ══ SHARE MODAL OVERLAY (BIT.LY/PLAYTWITERO) ════════════ -->
+  <!-- ══ STORY EPILOGUE MODAL (MODAL ROJO DE HISTORIA) ════════════ -->
+<div class="tutorial-modal-overlay" id="story-epilogue-modal-overlay">
+  <div class="tutorial-modal-box" style="border: 2px solid #e0245e; box-shadow: 0 0 50px rgba(224, 36, 94, 0.45); max-width: 480px; text-align: left;">
+    <div class="tutorial-modal-header" style="border-bottom-color: rgba(224, 36, 94, 0.3);">
+      <span class="spec-label" style="color:#ff5489; font-size:0.8rem; letter-spacing:2px;" id="story-epilogue-badge">⚡ CASO RESUELTO // PRÓXIMO EPISODIO</span>
+      <button class="tutorial-modal-close" id="btn-close-story-epilogue">✕</button>
+    </div>
+    <div style="padding: 16px 0;">
+      <div style="font-size: 2.2rem; text-align: center; margin-bottom: 8px;">📁</div>
+      <h3 style="text-align: center; color: #ff5489; font-size: 1.15rem; margin-bottom: 12px;" id="story-epilogue-title">Arco Narrativo Completado</h3>
+      <p id="story-epilogue-text" style="font-size: 0.92rem; line-height: 1.6; color: #e2e8f0; margin-bottom: 20px; font-family: var(--font-body);"></p>
+      <button class="btn btn-danger" id="btn-story-epilogue-ok" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #e0245e, #be123c); font-weight: 700; font-family: var(--font-mono); font-size: 0.95rem; cursor: pointer;">
+        <span id="story-epilogue-btn-text">ACEPTAR</span> <span class="key-hint-pill">␣ ESPACIO</span> ▶
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SHARE MODAL OVERLAY (BIT.LY/PLAYTWITERO) ════════════ -->
 <div class="share-modal-overlay" id="share-modal-overlay">
   <div class="share-modal-box">
     <div class="share-modal-header">
@@ -470,7 +520,7 @@
     </div>
     <textarea id="modal-share-textarea" class="share-modal-textarea" readonly></textarea>
     <div class="share-modal-actions">
-      <button class="btn-modal-copy" id="btn-modal-copy-tweet">📋 Copiar Tweet</button>
+      <button class="btn-modal-copy" id="btn-modal-copy-tweet" style="width: 100%; padding: 12px; font-weight: 700; font-family: var(--font-mono); font-size: 0.95rem;">📋 Copiar Tweet</button>
     </div>
   </div>
 </div>
@@ -680,14 +730,12 @@
       <div class="tutorial-slide" id="story-slide-2">
         <div style="text-align:center; font-size:2.8rem; margin-bottom:8px;">💬</div>
         <h3 style="text-align:center; color:#ff5489;">Prestá atención al contexto</h3>
-        <p>Prestá atención al contexto y a los <strong>replies latientes</strong>.</p>
-        <p>Cada carta de historia esconde respuestas de otros usuarios que revelan qué está pasando realmente.</p>
+        <p>Prestá atención al contexto y a los <strong>replies latientes</strong>. Cada carta de historia esconde respuestas de otros usuarios que revelan qué está pasando realmente.</p>
       </div>
       <div class="tutorial-slide" id="story-slide-3">
         <div style="text-align:center; font-size:2.8rem; margin-bottom:8px;">🎭</div>
         <h3 style="text-align:center; color:#ff5489;">La historia es colectiva</h3>
-        <p>Para entender la historia entera, tenés que <strong>jugar con otros personajes</strong>.</p>
-        <p>Cada arquetipo vive una parte de la verdad y tiene su propio punto de vista.</p>
+        <p>Para entender la historia entera, tenés que <strong>jugar con otros personajes</strong>. Cada arquetipo vive una parte de la verdad y tiene su propio punto de vista.</p>
         <button class="btn btn-danger" id="btn-story-unlock-ok" style="width:100%; margin-top:14px; background:linear-gradient(135deg,#e0245e,#be123c);">
           SEGUIR JUGANDO <span class="key-hint-pill">␣ ESPACIO</span> ▶
         </button>
@@ -901,6 +949,6 @@
 </div>
 
 </div><!-- #app -->
-<script src="js/bundle.js"></script>
+<script src="js/bundle.js?v=20.0"></script>
 </body>
 </html>

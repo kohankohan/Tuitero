@@ -317,10 +317,33 @@ class SoundEngine {
     this.musicEnabled = localStorage.getItem("twitero_music_enabled") !== "false";
     this.musicVolume = parseFloat(localStorage.getItem("twitero_music_vol") || "0.35");
     this.sfxEnabled = localStorage.getItem("twitero_sfx_enabled") !== "false";
-    this.sfxVolume = parseFloat(localStorage.getItem("twitero_sfx_vol") || "0.8");
     this.currentPhase = 1;
     this._musicStep = 0;
     this._musicTimer = null;
+
+    // Pausar música automáticamente cuando la pantalla del celular se apaga o la pestaña se oculta
+    if (typeof document !== "undefined" && !this._visibilityBound) {
+      this._visibilityBound = true;
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+          if (this._musicPlaying) {
+            this._wasMusicPlaying = true;
+            this.stopMusic();
+          }
+          if (this.ctx && this.ctx.state === "running") {
+            try { this.ctx.suspend(); } catch(_) {}
+          }
+        } else {
+          if (this.ctx && this.ctx.state === "suspended") {
+            try { this.ctx.resume(); } catch(_) {}
+          }
+          if (this._wasMusicPlaying && this.musicEnabled) {
+            this._wasMusicPlaying = false;
+            this.startMusic();
+          }
+        }
+      });
+    }
   }
 
   setPhase(fase) {
