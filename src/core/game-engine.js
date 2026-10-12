@@ -185,7 +185,9 @@ const FINALE_GENDER_TITLES = {
 
   // Derrota
   "cancelacion_3strikes": { hombre: "CANCELADO POR 3 STRIKES", mujer: "CANCELADA POR 3 STRIKES", diverso: "CANCELADE POR 3 STRIKES" },
-  "cancelacion_zonaroja": { hombre: "CANCELADO POR HOSTILIDAD EXTREMA", mujer: "CANCELADA POR HOSTILIDAD EXTREMA", diverso: "CANCELADE POR HOSTILIDAD EXTREMA" }
+  "finale_cancelacion_3strikes": { hombre: "CANCELADO POR 3 STRIKES", mujer: "CANCELADA POR 3 STRIKES", diverso: "CANCELADE POR 3 STRIKES" },
+  "cancelacion_zonaroja": { hombre: "CANCELADO POR HOSTILIDAD EXTREMA", mujer: "CANCELADA POR HOSTILIDAD EXTREMA", diverso: "CANCELADE POR HOSTILIDAD EXTREMA" },
+  "finale_cancelacion_zonaroja": { hombre: "CANCELADO POR HOSTILIDAD EXTREMA", mujer: "CANCELADA POR HOSTILIDAD EXTREMA", diverso: "CANCELADE POR HOSTILIDAD EXTREMA" }
 };
 
 function getGenderedFinale(finale, genero) {
@@ -521,10 +523,10 @@ const FINALES = [
   }
 ];
 
-const FINALE_DEUDA   = { titulo:"BANCARROTA FINANCIERA", icon:"💸", sub:"Game Over por deuda acumulada.",    narrativa:"Tuviste saldo negativo 5 turnos seguidos. Las deudas te forzaron a cerrar la cuenta." };
-const FINALE_BURNOUT = { titulo:"BURNOUT DIGITAL",       icon:"🧠", sub:"Game Over por colapso emocional.", narrativa:"Tu salud mental llegó a cero. Necesitás un descanso real lejos de las redes." };
-const FINALE_CANCELACION_3STRIKES = { id:"cancelacion_3strikes", titulo:"CANCELADO DEFINITIVAMENTE", icon:"☠️", sub:"Game Over — 3 Strikes de Cancelación.", narrativa:"El timeline no perdona tres veces. Acumulaste 3 crisis de cancelación graves en tu carrera digital. Marcas, medios y seguidores te soltaron la mano. Tu cuenta quedó en el olvido eterno." };
-const FINALE_CANCELACION_ZONAROJA  = { id:"cancelacion_zonaroja", titulo:"HOSTILIDAD EXTREMA DEL FEED", icon:"🔥", sub:"Game Over — Zona Roja de Odio Prolongada.", narrativa:"Mantuviste un nivel de odio letal (80%+) durante 3 turnos consecutivos. La toxicidad acumulada volvió inhabitable tu timeline. Cuentas masivas te bloquearon en cadena y la plataforma te sepultó en el ostracismo digital." };
+const FINALE_DEUDA   = { id:"finale_deuda", titulo:"BANCARROTA FINANCIERA", icon:"💸", sub:"Game Over por deuda acumulada.",    narrativa:"Tuviste saldo negativo 5 turnos seguidos. Las deudas te forzaron a cerrar la cuenta." };
+const FINALE_BURNOUT = { id:"finale_burnout", titulo:"BURNOUT DIGITAL",       icon:"🧠", sub:"Game Over por colapso emocional.", narrativa:"Tu salud mental llegó a cero. Necesitás un descanso real lejos de las redes." };
+const FINALE_CANCELACION_3STRIKES = { id:"finale_cancelacion_3strikes", titulo:"CANCELADO DEFINITIVAMENTE", icon:"☠️", sub:"Game Over — 3 Strikes de Cancelación.", narrativa:"El timeline no perdona tres veces. Acumulaste 3 crisis de cancelación graves en tu carrera digital. Marcas, medios y seguidores te soltaron la mano. Tu cuenta quedó en el olvido eterno." };
+const FINALE_CANCELACION_ZONAROJA  = { id:"finale_cancelacion_zonaroja", titulo:"HOSTILIDAD EXTREMA DEL FEED", icon:"🔥", sub:"Game Over — Zona Roja de Odio Prolongada.", narrativa:"Mantuviste un nivel de odio letal (80%+) durante 3 turnos consecutivos. La toxicidad acumulada volvió inhabitable tu timeline. Cuentas masivas te bloquearon en cadena y la plataforma te sepultó en el ostracismo digital." };
 
 const RANKING_STORAGE_KEY = "twitero_hall_of_fame_v15";
 
@@ -965,6 +967,7 @@ class GameEngine {
       const c3 = metaArc.capa3;
       const cardObligatoria = {
         id: "historia_obligatoria",
+        storyId: c3.id,
         palo: { nombre: "HISTORIA", icono: "⚡", color: "#e0245e" },
         titulo: c3.titulo,
         texto: c3.texto,
@@ -1121,13 +1124,22 @@ class GameEngine {
         : (this.turno >= 16 && Math.random() < 0.20);
 
       if (shouldThematize && phaseList.length > 0) {
-        // Anti-repetición estricto: descartar los ya jugados en la partida y los ya presentes en la mano actual
-        const availableThemes = phaseList.filter(t => !this.playedTweetKeys.has(t.titulo) && !handKeys.has(t.titulo));
-        if (availableThemes.length > 0) {
-          const themeItem = availableThemes[rng(availableThemes.length)];
+        // Anti-repetición estricto: priorizar temáticos que coincidan con el tipo sorteado
+        const matchingThemes = phaseList.filter(t => t.tipo === meta.id && !this.playedTweetKeys.has(t.titulo) && !handKeys.has(t.titulo));
+        let themeItem = null;
+        if (matchingThemes.length > 0) {
+          themeItem = matchingThemes[rng(matchingThemes.length)];
+        } else {
+          const avail = phaseList.filter(t => !this.playedTweetKeys.has(t.titulo) && !handKeys.has(t.titulo));
+          if (avail.length > 0) themeItem = avail[rng(avail.length)];
+        }
+        if (themeItem) {
           content.titulo = themeItem.titulo;
           content.texto = themeItem.texto;
           content.isThematicT16 = true;
+          if (themeItem.tipo && CARD_PALOS[themeItem.tipo]) {
+            meta.id = themeItem.tipo;
+          }
         }
       }
       if (content.titulo) handKeys.add(content.titulo);
@@ -1143,19 +1155,28 @@ class GameEngine {
         ? (this.turno >= 16 || (this.turno >= 12 && Math.random() < 0.45))
         : (this.turno >= 16 && Math.random() < 0.20);
 
+      let resolvedFbId = fbId;
       if (shouldThematize && phaseList.length > 0) {
-        // Anti-repetición estricto: descartar los ya jugados en la partida y los ya presentes en la mano actual
-        const availableThemes = phaseList.filter(t => !this.playedTweetKeys.has(t.titulo) && !handKeys.has(t.titulo));
-        if (availableThemes.length > 0) {
-          const themeItem = availableThemes[rng(availableThemes.length)];
+        const matchingThemes = phaseList.filter(t => t.tipo === fbId && !this.playedTweetKeys.has(t.titulo) && !handKeys.has(t.titulo));
+        let themeItem = null;
+        if (matchingThemes.length > 0) {
+          themeItem = matchingThemes[rng(matchingThemes.length)];
+        } else {
+          const avail = phaseList.filter(t => !this.playedTweetKeys.has(t.titulo) && !handKeys.has(t.titulo));
+          if (avail.length > 0) themeItem = avail[rng(avail.length)];
+        }
+        if (themeItem) {
           content.titulo = themeItem.titulo;
           content.texto = themeItem.texto;
           content.isThematicT16 = true;
+          if (themeItem.tipo && CARD_PALOS[themeItem.tipo]) {
+            resolvedFbId = themeItem.tipo;
+          }
         }
       }
       if (content.titulo) handKeys.add(content.titulo);
 
-      drawn.push({ id:fbId, palo:CARD_PALOS[fbId], ...content });
+      drawn.push({ id:resolvedFbId, palo:CARD_PALOS[resolvedFbId], ...content });
     }
 
     // Insertar la carta de historia en una posición aleatoria (0, 1 o 2) para que no sea predecible
@@ -1168,37 +1189,39 @@ class GameEngine {
   }
 
   _successChance(card, booster) {
+    // Balance Propuesta B: curva calibrada
     const bases = {
-      meme: 58,
-      tema: card.isPropio ? 62 : 38,
-      pelea: 48,
-      hilo: 54,
-      quote: 48,
-      live: 45,
-      temaDelDia: 52,
-      politica: 40,
-      bait: 52,
-      patrocinio: 65,
-      descanso: 62
+      meme: 50,
+      tema: card.isPropio ? 54 : 30,
+      pelea: 40,
+      hilo: 47,
+      quote: 40,
+      live: 37,
+      temaDelDia: 44,
+      politica: 32,
+      bait: 44,
+      patrocinio: 58,
+      descanso: 52
     };
-    let c = card.chanceOverride || bases[card.id] || 50;
+    let c = card.chanceOverride || bases[card.id] || 42;
 
-    // Modificadores de género (dificultad asimétrica)
+    // Modificadores de género (asimetría equilibrada)
     if (this.genero === "mujer") c -= 3;
-    else if (this.genero === "diverso") c -= 7;
+    else if (this.genero === "diverso") c -= 4; // Aliviado de -7 a -4
 
     if (!this.arquetipo.deb.some(d=>card.id.startsWith(d)||d.startsWith(card.id.slice(0,4)))) c += 4;
     if (this.personalidad.afines.some(a=>a===card.id)) c += 5;
     if (this.comboRisk) c += 6;
-    if (this.streakExitos >= 3) c += 5;
-    if (card.id === "quote" && this.lastCard?.id === "meme" && this.lastCardOk) c += 8;
-    if (card.id === "pelea" && this.lastCard?.id === "live" && this.lastCardOk) c += 8;
+    if (this.streakExitos >= 3) c += 4;
+    if (card.id === "quote" && this.lastCard?.id === "meme" && this.lastCardOk) c += 7;
+    if (card.id === "pelea" && this.lastCard?.id === "live" && this.lastCardOk) c += 7;
     if (booster?.fx.chanceBonus) c += booster.fx.chanceBonus;
-    if (this.engagement > 200) c += 4;
-    if (this.arquetipo?.id === "cryptobro" && (card.id === "tema" || card.id === "temaDelDia")) c += 8;
-    if (this.saludMental < 30) c -= 8; // Burnout warning: baja salud mental afecta rendimiento
+    if (this.engagement > 200) c += 3;
+    if (this.arquetipo?.id === "cryptobro" && (card.id === "tema" || card.id === "temaDelDia")) c += 7;
+    if (this.saludMental < 40) c -= 8; // Burnout warning
+    if (this.saludMental < 20) c -= 6; // Crisis severa de salud mental
 
-    return Math.min(Math.max(c, 25), 85);
+    return Math.min(Math.max(c, 18), 78);
   }
 
   playCard(card, boosterId=null) {
@@ -1238,7 +1261,8 @@ class GameEngine {
       
       if (card.id === "patrocinio") {
         const boostPct = boosterUsed?.fx.segsPct || 0;
-        segsGain = Math.floor(this.seguidores * (0.01 + boostPct * 0.15) + (100 * mult));
+        segsGain = Math.floor(this.seguidores * (0.01 + boostPct * 0.15) + (80 * mult));
+        dinGain += Math.floor(800 * mult); // Patrocinio aporta liquidez directa
       } else if (card.id === "descanso") {
         segsGain = 0;
       } else {
@@ -1277,11 +1301,11 @@ class GameEngine {
         }
         if(this.lastCard?.id === "descanso") {
           // Spam de descanso consecutivo: penalización por inactividad prolongada
-          this.saludMental = Math.max(0, this.saludMental - 10);
+          this.saludMental = Math.max(0, this.saludMental - 12);
         } else {
-          this.odio = Math.max(0, this.odio - 10);
-          this.saludMental = Math.min(100, this.saludMental + 15);
-          this.amor = Math.min(100, this.amor + 5);
+          this.odio = Math.max(0, this.odio - 6);
+          this.saludMental = Math.min(100, this.saludMental + 8);
+          this.amor = Math.min(100, this.amor + 3);
         }
       }
 
@@ -1292,17 +1316,17 @@ class GameEngine {
         hateGain = Math.min(12, Math.floor((card.hate || 20) * 0.4));
       } else {
         hateGain = Math.floor(card.hate * mult);
-        segsGain = card.id === "descanso" ? 0 : -Math.floor(this.seguidores * 0.04 * mult);
+        segsGain = card.id === "descanso" ? 0 : -Math.floor(this.seguidores * 0.055 * mult);
       }
       if(card.id === "descanso") {
         if(this.rachaViralActive) {
           this.rachaViralDescansoUsed = true;
         }
         if(this.lastCard?.id === "descanso") {
-          this.saludMental = Math.max(0, this.saludMental - 10);
+          this.saludMental = Math.max(0, this.saludMental - 15);
         } else {
-          this.odio = Math.max(0, this.odio - 4);
-          this.saludMental = Math.min(100, this.saludMental + 5);
+          this.odio = Math.max(0, this.odio - 2);
+          this.saludMental = Math.min(100, this.saludMental + 2);
         }
       } else if(Math.random() * 100 < card.odioP) {
         this.odio = Math.min(100, this.odio + Math.floor(6 * mult));
@@ -1324,9 +1348,9 @@ class GameEngine {
         this.odio = Math.min(100, this.odio + Math.floor(6 * mult));
       } else {
         engGain = Math.floor(20 * mult);
-        segsGain = -Math.floor(this.seguidores * 0.03 * mult);
-        this.odio = Math.min(100, this.odio + Math.floor(10 * mult));
-        this.saludMental = Math.max(0, this.saludMental - 5);
+        segsGain = -Math.floor(this.seguidores * 0.035 * mult);
+        this.odio = Math.min(100, this.odio + Math.floor(15 * mult));
+        this.saludMental = Math.max(0, this.saludMental - 8);
       }
     }
 
@@ -1358,19 +1382,27 @@ class GameEngine {
       this.storyLastPlayedCard = null;
     }
 
-    // ── CANCELLATION EVENT & 3 STRIKES (Solo si la tirada de riesgo falla) ──
+    // ── CANCELLATION EVENT & 3 STRIKES ──
+    // Disparadores: cartas de riesgo alto que fallan, O cualquier carta que falla con odio elevado
     const RISK_CARDS = ["pelea", "politica", "quote", "bait"];
+    const highHateRisk = !ok && this.odio >= 55 && !RISK_CARDS.includes(card.id);
     let cancellationEvent = null;
-    if(!ok && RISK_CARDS.includes(card.id)) {
+    if(!ok && (RISK_CARDS.includes(card.id) || highHateRisk)) {
       const isTroll = this.personalidad.id === "troll";
-      let riskPct = isTroll ? 32 : 22; // base 22%, troll 32%
+      let riskPct;
+      if (RISK_CARDS.includes(card.id)) {
+        riskPct = isTroll ? 30 : 20; // Base normal para cartas de alto riesgo
+      } else {
+        // Carta cualquiera que falla con odio elevado
+        riskPct = this.odio >= 80 ? 18 : this.odio >= 70 ? 12 : 7;
+      }
       if (this.genero === "mujer") riskPct += 5;
-      else if (this.genero === "diverso") riskPct += 12;
-      if (this.arquetipo.dificultad === "alta") riskPct += 12; // Arquetipos difíciles: peligro de cancelación latente
-      else if (this.arquetipo.dificultad === "baja") riskPct -= 6; // Arquetipos casuales: cancelación protegida
-      if(this.lastCard?.id === "descanso") riskPct -= 20;
+      else if (this.genero === "diverso") riskPct += 6;
+      if (this.arquetipo.dificultad === "alta") riskPct += 8;
+      else if (this.arquetipo.dificultad === "baja") riskPct -= 6;
+      if(this.lastCard?.id === "descanso") riskPct -= 18;
       if(this.odio >= 65) riskPct += 10;
-      riskPct = Math.max(5, Math.min(85, riskPct));
+      riskPct = Math.max(3, Math.min(85, riskPct));
 
       if(Math.random() * 100 < riskPct) {
         this.strikesCancelacion++;
@@ -1549,9 +1581,30 @@ class GameEngine {
   advanceTurn() {
     if(this.gameOver) return;
 
-    // Balance C: Dificultad Alta (Opinólogo, Militante) - desgaste psicológico por hostilidad extrema persistente
-    if (this.arquetipo?.dificultad === "alta" && this.odio >= 65) {
-      this.saludMental = Math.max(0, this.saludMental - 3);
+    // Propuesta B: Costo fijo de mantenimiento ($120/turno)
+    this.dinero -= 120;
+
+    // Propuesta B: Drenaje pasivo de Salud Mental (-2%/turno)
+    this.saludMental = Math.max(0, this.saludMental - 2);
+
+    // Desgaste psicológico en dificultad alta bajo odio
+    if (this.arquetipo?.dificultad === "alta" && this.odio >= 60) {
+      this.saludMental = Math.max(0, this.saludMental - 4);
+    }
+
+    // Desgaste sostenido por hostilidad digital (odio >= 65)
+    if (this.odio >= 65) {
+      this.saludMental = Math.max(0, this.saludMental - (rng(3) + 1));
+    }
+
+    // Tensión de cancelación pasiva en ambiente tóxico (odio >= 80)
+    if (this.odio >= 80 && !this.gameOver && this.strikesCancelacion < 3) {
+      if (Math.random() < 0.05) {
+        this.strikesCancelacion++;
+        this.odio = Math.min(100, this.odio + 10);
+        this.saludMental = Math.max(0, this.saludMental - 8);
+        this.seguidores = Math.max(100, Math.floor(this.seguidores * 0.95));
+      }
     }
 
     if (this.dinero < 0) this.debtTurnos++; else this.debtTurnos = 0;

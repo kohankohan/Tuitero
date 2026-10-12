@@ -57,7 +57,7 @@ const METAHISTORY_DATA = {
         fase: 1,
         fecha: "24 Feb 2024",
         titulo: "Papeles del juzgado",
-        texto: "me llegó una notificación de una fiscalía pidiendo declarar por la titularidad del auto, no entiendo nada de términos legales así que le dije a mi viejo que se encargue él",
+        texto: "me cayó un papel de una fiscalía para declarar por el auto kjjj no entiendo un choto de leyes se lo tiré a mi viejo en la mesa que lo resuelva él yo prendo a las 20hs",
         replies: [
           { autor: "Seguidor de Twitch", handle: "@pibe_stream", texto: "Cuidado rey, asesorate con un boga propio y no firmes nada a ciegas" }
         ],
@@ -70,7 +70,7 @@ const METAHISTORY_DATA = {
       fase: 4,
       fecha: "14 Mar 2026",
       titulo: "Reglas del juego",
-      texto: "dos años después y la gente sigue insistiendo con lo mismo de mi viejo. él se banca todo solo, como siempre. son las reglas del juego, no shockea",
+      texto: "dos años después y en el chat siguen jodiendo con la causa de mi viejo. él se banca todo solo como siempre, son las reglas del juego. prendo stream en 15",
       replies: [
         { autor: "Seguidor de Twitch", handle: "@pibe_stream", texto: "prendé stream rey, la gente habla porque tiene boca nomás" }
       ],
@@ -98,7 +98,7 @@ const METAHISTORY_DATA = {
         fase: 1,
         fecha: "15 Feb 2024",
         titulo: "El chisme del café",
-        texto: "en el café con @lifestyle_arg terminamos hablando más del auto de @gamer_stream que del episodio en sí, la gente ama un auto caro más que el contenido",
+        texto: "merendando con @lifestyle_arg y terminamos hablando 2 horas del auto del pibe de stream y de dónde saca la guita. este país no te deja aburrirte nunca",
         replies: [
           { autor: "Influencer Lifestyle", handle: "@lifestyle_arg", texto: "Es que te juro que no puedo dejar de pensar en esa nave, la energía que maneja" }
         ],
@@ -133,7 +133,7 @@ const METAHISTORY_DATA = {
       fase: 4,
       fecha: "22 Abr 2026",
       titulo: "200 episodios",
-      texto: "200 episodios cumplidos esta semana. quién me iba a decir cuando arrancamos grabando en mi living",
+      texto: "200 episodios. cuando arrancamos en el garage no imaginé que íbamos a terminar con una causa penal en la mesa y 4 horas de audio que ningún canal se anima a poner al aire",
       replies: [
         { autor: "Oyente Frecuente", handle: "@radio_fan", texto: "felicitaciones chabón, te sigo desde que grababas con el auricular del celu" }
       ],
@@ -196,7 +196,7 @@ const METAHISTORY_DATA = {
       fase: 4,
       fecha: "19 May 2026",
       titulo: "Nueva rutina matutina",
-      texto: "nueva rutina matutina que me cambió la vida por completo, se las cuento en el video de hoy 🙏✨",
+      texto: "dos años después de todo ese circo judicial y la mala vibra en los portales, acá estamos: renovada, en paz y facturando el triple. la abundancia no se negocia amores 🙏✨",
       replies: [
         { autor: "Seguidora Fiel", handle: "@lucia_style", texto: "amé el matcha que recomendaste, pasá el link de la taza!" }
       ],
@@ -259,7 +259,7 @@ const METAHISTORY_DATA = {
       fase: 4,
       fecha: "08 Jun 2026",
       titulo: "Serie A cerrada",
-      texto: "cerramos la serie A más grande del año para el sector, día histórico para todo el equipo 🚀",
+      texto: "dos años del exploit al exchange donde lloraban todos en el feed. nosotros codeando en silencio y hoy cerramos la Serie A más grande de la región 🚀 stay humble, keep building",
       replies: [
         { autor: "Venture Capital", handle: "@latam_vc", texto: "Orgullo ver crecer este proyecto desde el día cero. A romperla!" }
       ],
@@ -322,7 +322,7 @@ const METAHISTORY_DATA = {
       fase: 4,
       fecha: "29 May 2026",
       titulo: "El tweet viejo",
-      texto: "cada tanto alguien me tagea en el chiste viejo. ya no me da risa como antes, la vida te va cambiando el sentido del humor",
+      texto: "cada tanto algún desocupado me reflota el chiste del auto del ministro. me comí dos denuncias penales por ese remate chabón, qué épocas hermosas",
       replies: [
         { autor: "Seguidor de Standup", handle: "@standup_fan", texto: "creciste un montón chabón, se nota en los monólogos nuevos" }
       ],
@@ -386,7 +386,7 @@ const METAHISTORY_DATA = {
       fase: 4,
       fecha: "11 Jul 2026",
       titulo: "El anuncio en el Congreso",
-      texto: "lo que están por anunciar esta semana en el Congreso va a confirmar TODO lo que vengo diciendo hace meses",
+      texto: "SE ACUERDAN CUANDO ME TRATABAN DE LOCO POR LO DE DELAWARE Y LOS TERRENOS? lean el dictamen del Congreso de hoy. uno por uno van a caer. no era teoría, era información clasificada",
       replies: [
         { autor: "Creyente Fiel", handle: "@ojo_abierto", texto: "estamos listos, abran los ojos que se les cae la careta a todos" }
       ],
@@ -414,7 +414,7 @@ const METAHISTORY_DATA = {
         fase: 3,
         fecha: "28 Jul 2024",
         titulo: "Persiguiendo la fuente",
-        texto: "estoy persiguiendo a una fuente clave de esta historia con mucha energía aunque la fuente se niega a hablar conmigo. la verdad no se esconde sola",
+        texto: "tres llamadas en espera y una fuente clave que me clava el visto. no importa cuántas puertas cierren, los balances bancarios de la sociedad fantasma ya los tengo en el mail",
         replies: [
           { autor: "Creadora OnlyFans", handle: "@vip_content", texto: "Dejá de acosarme por mensaje directo flaco, no tengo nada que ver con tus políticos" }
         ],
@@ -478,7 +478,7 @@ const METAHISTORY_DATA = {
         fase: 3,
         fecha: "24 Jul 2024",
         titulo: "El auto frente al ministerio",
-        texto: "ESE auto importado que subieron hace unos meses, de esos que hay solo dos en el país, es EL MISMO que vi estacionado afuera de la casa de un funcionario, no me cabe duda",
+        texto: "ESE auto importado que subió el streamer es EL MISMO que vi estacionado en la puerta del ministerio cuando fui a hacer un trámite. no me chamuyen, en este país se conocen todos",
         replies: [
           { autor: "Periodista de Investigación", handle: "@periodista_indie", texto: "¿Te acordás la fecha exacta y la calle? Te hablé al privado, es urgente" }
         ],
@@ -528,7 +528,7 @@ const METAHISTORY_DATA = {
       id: "onlyfans_act",
       fecha: "18 Jul 2024",
       titulo: "El rumor y las suscripciones",
-      texto: "no voy a confirmar ni negar de quién es el auto en el que me vieron subir 👀 (los que saben, saben) [link a mi perfil]",
+      texto: "no voy a confirmar ni desmentir de quién era el importado en el que me fui de Nordelta 👀 los que están en mi VIP ya vieron las fotos sin censura. link fijado amores",
       replySospechosa: {
         autor: "Hater del TL",
         handle: "@moralista_x",
@@ -541,7 +541,7 @@ const METAHISTORY_DATA = {
         fase: 3,
         fecha: "29 Jul 2024",
         titulo: "Basta de acoso",
-        texto: "a ver, en serio: dejen de mandarme DMs a las 4am preguntando dónde vivo 'para hablar'. no está bueno, basta",
+        texto: "a ver pajeros de traje: dejen de mandarme mensajes a las 4am desde cuentas verificadas preguntando si acepto sobres en negro. paguen la suscripción o los doxeo a todos",
         replies: [
           { autor: "Suscriptora VIP", handle: "@mica_love", texto: "Bloqueá a esos enfermos reina, están todos obsesionados con vos" }
         ],
@@ -576,7 +576,7 @@ const METAHISTORY_DATA = {
       fase: 4,
       fecha: "20 Oct 2026",
       titulo: "Café de especialidad",
-      texto: "probé el café de especialidad más rico de la ciudad esta semana, review completo ya está arriba ☕",
+      texto: "dos años de ese bardo ridículo donde me quisieron meter y acá sigo, tomando café de especialidad y con los DMs llenos de los mismos que me criticaban en público. besitos 💅☕",
       replies: [
         { autor: "Coffee Lover", handle: "@flat_white_fan", texto: "pasá la dirección que ese tostado etíope se ve tremendo" }
       ],

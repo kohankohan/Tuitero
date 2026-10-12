@@ -5,6 +5,8526 @@
    ═══════════════════════════════════════════════════════ */
 
 
+/* ?? M?DULO: src/i18n/i18n.js ?? */
+/**
+ * Tuitero v19 — Motor Central de Internacionalización (i18n)
+ * Soporta Español (es), Inglés (en) y Japonés (ja) con interpolación de variables
+ * y sistema reactivo de actualización.
+ */
+
+class I18nEngine {
+  constructor() {
+    this.currentLang = this._getInitialLanguage();
+    this.dictionaries = {
+      es: {},
+      en: {},
+      ja: {}
+    };
+    this.listeners = [];
+  }
+
+  _getInitialLanguage() {
+    try {
+      const saved = localStorage.getItem("twitero_preferred_lang");
+      if (saved && ["es", "en", "ja"].includes(saved)) return saved;
+
+      const navLang = (navigator.languages && navigator.languages[0]) || navigator.language || "";
+      const code = navLang.toLowerCase().split("-")[0];
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+
+      if (code === "ja" || tz.includes("Tokyo") || tz.includes("Japan")) return "ja";
+
+      const spanishTzKeywords = [
+        "Argentina", "Buenos_Aires", "Cordoba", "Santiago", "Montevideo", "Asuncion",
+        "Lima", "Bogota", "Caracas", "La_Paz", "Mexico", "Cancun", "Merida", "Monterrey",
+        "Guatemala", "Costa_Rica", "Panama", "El_Salvador", "Tegucigalpa", "Managua",
+        "Madrid", "Ceuta", "Canary", "Havana", "Santo_Domingo", "Puerto_Rico", "Guayaquil", "Quito"
+      ];
+      if (code === "es" || spanishTzKeywords.some(k => tz.includes(k))) return "es";
+
+      return "en";
+    } catch (_) {
+      return "es";
+    }
+  }
+
+  registerDictionary(lang, data) {
+    if (!this.dictionaries[lang]) this.dictionaries[lang] = {};
+    Object.assign(this.dictionaries[lang], data);
+  }
+
+  getLanguage() {
+    return this.currentLang;
+  }
+
+  setLanguage(lang) {
+    if (!["es", "en", "ja"].includes(lang)) return;
+    this.currentLang = lang;
+    try {
+      localStorage.setItem("twitero_preferred_lang", lang);
+    } catch (_) {}
+    this.notify();
+  }
+
+  onLanguageChange(cb) {
+    if (typeof cb === "function") this.listeners.push(cb);
+  }
+
+  notify() {
+    this.listeners.forEach(cb => {
+      try { cb(this.currentLang); } catch (e) { console.error("i18n listener error:", e); }
+    });
+  }
+
+  /**
+   * Obtiene la traducción para una clave con notación de punto ("splash.start")
+   * Soporta interpolación {nombre} y fallback al español.
+   */
+  t(keyPath, params = null, defaultVal = null) {
+    const resolve = (dict, path) => {
+      if (!dict) return null;
+      const parts = path.split(".");
+      let cur = dict;
+      for (const part of parts) {
+        if (cur && typeof cur === "object" && part in cur) {
+          cur = cur[part];
+        } else {
+          return null;
+        }
+      }
+      return typeof cur === "string" ? cur : null;
+    };
+
+    let str = resolve(this.dictionaries[this.currentLang], keyPath);
+    if (!str && this.currentLang !== "es") {
+      str = resolve(this.dictionaries.es, keyPath);
+    }
+    if (!str) {
+      return defaultVal != null ? defaultVal : null;
+    }
+
+    if (params && typeof params === "object") {
+      str = str.replace(/\{(\w+)\}/g, (match, p) => {
+        return params[p] !== undefined ? params[p] : match;
+      });
+    }
+
+    return str;
+  }
+}
+
+// Instancia global única de i18n
+const i18n = new I18nEngine();
+
+
+/* ?? M?DULO: content/i18n/translations-ui.js ?? */
+/**
+ * Tuitero v19 — Diccionario de Interfaz y Mecánicas (UI & Systems)
+ * Localizaciones: Español (ES), Inglés (EN), Japonés (JA)
+ */
+
+const UI_TRANSLATIONS = {
+  es: {
+    viral_win: {
+      title: "🔥 ¡RACHA VIRAL COMPLETADA!",
+      subtitle: "MOMENTO VIRAL ÉPICO",
+      head: "🌟 ¡3 DE 3 TWEETS EXITOSOS!",
+      body: "Dominaste el algoritmo con maestría absoluta. La comunidad te convirtió en el fenómeno indiscutido de toda la red.",
+      gained_label: "SEGUIDORES EXTRA GANADOS:",
+      footer: "Tu cuenta alcanza un nuevo techo histórico de visibilidad e influencia."
+    },
+    viral_loss: {
+      title: "💔 RACHA VIRAL QUEBRADA",
+      subtitle: "DESAFÍO VIRAL FALLIDO",
+      money_lost: "DINERO PERDIDO:",
+      penalty: "PENALIZACIÓN: +2 STRIKES",
+      status: "ESTADO DE CUENTA:",
+      suspended: "(SUSPENDIDA)",
+      danger: "(A 1 DEL GAME OVER)"
+    },
+    story_epilogue: {
+      badge: "⚡ CASO RESUELTO // PRÓXIMO EPISODIO",
+      title: "ARCO NARRATIVO COMPLETADO",
+      ok_btn: "ACEPTAR"
+    },
+    end_goals: {
+      followers_title: "👥 META DE SEGUIDORES (80.000)",
+      cash_title: "💰 META DE DINERO ($10.000)",
+      story_title: "🗝️ META DE HISTORIA (CAUSA JUDICIAL)",
+      status_met: "✅ CUMPLIDA",
+      status_insufficient: "❌ INSUFICIENTE",
+      status_story_done: "✅ RESUELTA",
+      status_story_missing: "⚠️ NO RESUELTA",
+      followers_missing: "Te faltaron {missing} seguidores para la meta.",
+      cash_missing: "Te faltaron ${missing} para la meta.",
+      story_missing: "No lograste desentrañar la causa a tiempo.",
+      story_done: "Desentrañaste la trama de corrupción ministerial.",
+      followers_met: "Superaste el umbral masivo de influencia.",
+      cash_met: "Aseguraste tu independencia financiera.",
+      survivor_badge: "⚠️ SUPERVIVIENTE // META INCOMPLETA",
+      victory_badge: "🏆 VICTORIA TOTAL // META CUMPLIDA",
+      defeat_badge: "💀 DERROTA // GAME OVER",
+      created_by: "Creado por",
+      btn_copy_report: "📋 Copiar Reporte (JSON)",
+      report_copied: "✓ ¡Reporte copiado!"
+    },
+    story_recs: {
+      title: "⚡ CASO RESUELTO // PRÓXIMO EPISODIO",
+      gamer: "La foto del auto importado en el garage de tu viejo destapó el escándalo de corrupción ministerial más grande de la década. Si querés ver cómo ese auto terminó en el asado clandestino con el 9 del club, probá con el Futbolero.",
+      futbolero: "Viste el auto sospechoso en la cancha y en el asado antes de que saliera en los diarios. Para entender cómo la prensa siguió la patente hasta las sociedades offshore de Delaware, jugá con el Periodista Indie.",
+      periodista: "Tu investigación sobre la LLC fantasma y las viviendas sin terminar en Dock Sud fue el gran destape de tu carrera. Para ver la desilusión de los que militaban esas casas bajo la lluvia, probá con el Militante Político.",
+      militante: "Te dolió en el alma descubrir que mientras militabas bajo la lluvia, los tuyos ya sabían que las 200 viviendas eran un curro. Para ver quién venía advirtiendo sobre las sociedades fantasma desde las sombras, jugá con el Conspiranoico.",
+      conspiranoico: "Denunciaste los terrenos de Delaware y te trataron de loco hasta que la justicia te dio la razón. Para ver cómo se lavaba esa liquidez en la City a través de un exchange local, probá con el Cryptobro.",
+      cryptobro: "Pusiste la firma por amor en una LLC que terminó congelando fondos en el Corralito Cripto y te dejó de fusible judicial. Para ver al programador que vio venir el colapso del sistema desde adentro, jugá con el Techie.",
+      techie: "Descifraste el manifiesto de Comando Fierro y viste el desvío de fondos públicos antes de levantar tu Serie A millonaria. Para ver al streamer que quedó en medio de la tormenta mediática, jugá con el Streamer Gamer.",
+      onlyfans: "Te cansaste de que los mismos funcionarios que te mandaban DMs a las 4am ahora nieguen todo en los canales de noticias. Para ver cómo las influencers careteaban la crisis con matcha y filtros en Nordelta, jugá con la Influencer.",
+      influencer: "Tapaste el dolor y las noticias de la causa judicial refugiándote en el positivismo y los canjes de Nordelta. Para ver cómo el timeline se descostilló de la risa con los memes de la crisis, jugá con la Cuenta de Humor.",
+      humor: "Tu meme sobre el auto y los hackers fue furor en todo el país, aunque con los años te haya dejado un sabor amargo. Para escuchar el debate largo y los testimonios fuera de micrófono, probá con el Podcaster.",
+      podcaster: "Grabaste el audio off-the-record en el garage que conectó los fondos del ministerio con el fideicomiso trucho, coronando tus 200 episodios con la primicia del año. Para ver al que convirtió todo el escándalo en un ensayo moral sobre el país, probá jugar con el Opinólogo.",
+      opinologo: "Cerraste el caso con tu frase célebre: todo empezó con la foto en el garage de un streamer. Para volver al punto de partida y vivir cómo se inició el fuego desde adentro, jugá con el Streamer Gamer.",
+      btn_play: "PROBAR {arch} ▶",
+      next_label: "SIGUIENTE PERSPECTIVA:"
+    },
+    splash: {
+      subtitle: "SIMULADOR DE REDES SOCIALES SATÍRICO",
+      tagline: "Ganá seguidores, monetizá tu contenido y sobreviví a las cancelaciones. Un solo tweet puede consagrarte o condenarte.",
+      start_btn: "COMENZAR PARTIDA ▶",
+      fame_btn: "🏆 SALÓN DE LA FAMA",
+      fullscreen: "⛶ PANTALLA COMPLETA",
+      credits: "Creado por @kohantoys"
+    },
+    setup: {
+      step: "PASO {current} DE {total}",
+      gender_title: "ELEGÍ TU IDENTIDAD DIGITAL",
+      gender_subtitle: "Definí el perfil con el que vas a disputar el algoritmo.",
+      back_btn: "← VOLVER AL INICIO",
+      male: "Hombre",
+      male_desc: "Pronombres masculinos.",
+      male_meta: "PRON: ÉL / HE",
+      female: "Mujer",
+      female_desc: "Pronombres femeninos.",
+      female_meta: "PRON: ELLA / SHE",
+      non_binary: "Diverso",
+      nb_desc: "Lenguaje neutro.",
+      nb_meta: "PRON: ELLE / THEY",
+      archetype_title: "ELEGÍ TU ARQUETIPO",
+      archetype_subtitle: "Cada arquetipo tiene su propio público, cartas exclusivas y nivel de riesgo.",
+      personality_title: "ELEGÍ TU PERSONALIDAD",
+      personality_subtitle: "Modifica el tono de tus respuestas y las reacciones de tu comunidad.",
+      handle_title: "TU NOMBRE DE USUARIO",
+      handle_subtitle: "Elegí el @ que va a figurar en el timeline de la red social.",
+      handle_placeholder: "tu_usuario",
+      dice_tooltip: "Generar handle aleatorio",
+      start_adventure: "COMENZAR AVENTURA EN EL TIMELINE ▶"
+    },
+    dashboard: {
+      turn: "TURNO",
+      turn_max: "/ 20",
+      followers: "SEGUIDORES",
+      money: "DINERO",
+      mental_health: "SALUD MENTAL",
+      hate: "ODIO",
+      credibility: "CREDIBILIDAD",
+      virality: "VIRALIDAD",
+      love: "AMOR",
+      engagement: "ENGAGEMENT",
+      boosters_btn: "⚡ BOOSTERS",
+      restart_btn: "↺ REINICIAR",
+      audio_btn: "🔊 AUDIO",
+      help_btn: "❓ AYUDA",
+      timeline_title: "🐦 TIMELINE DEL DÍA",
+      love_hate: "AMOR / ODIO",
+      view_profile: "📋 VER PERFIL COMPLETO",
+      shortcuts: "⌨️ ATAJOS DE TECLADO",
+      audio_opts: "🎧 OPCIONES DE AUDIO",
+      meta_goal: "META DE VICTORIA: 80K SEGUIDORES — {pct}%",
+      tooltips: {
+        followers: "SEGUIDORES: tu audiencia acumulada. Meta de victoria: 80.000.",
+        cash: "DINERO: tu saldo disponible para comprar Boosters. Si cae a negativo 5 turnos seguidos = Bancarrota.",
+        health: "SALUD MENTAL: bienestar digital. Si llega a 0%, colapso emocional y Game Over.",
+        hate: "ODIO: polarización acumulada. Si supera 80% por 3 turnos seguidos o sube al 100%, perdés.",
+        love: "AMOR: reputación positiva. Mayor amor = mayor alcance orgánico."
+      }
+    },
+    cards: {
+      choose_heading: "ELEGÍ TU JUGADA // 3 OPCIONES DISPONIBLES",
+      section_title: "TUITS DISPONIBLES",
+      section_sub: "SELECCIONÁ UNA CARTA PARA PUBLICAR ESTE TURNO",
+      tweet_now: "TUITEAR AHORA ▶",
+      blocked: "BLOQUEADA ✕",
+      success_prob: "PROB. ÉXITO:",
+      multiplier: "MULT:",
+      new_badge: "✨ NUEVA",
+      clue_badge: "🔍 PISTA",
+      danger_high: "PELIGRO ALTO",
+      danger_med: "PELIGRO MEDIO",
+      danger_low: "SEGURO",
+      story_locked: "🔒 BLOQUEADA POR HISTORIA",
+      palo_meme: "Meme",
+      palo_tema: "Tema Propio",
+      palo_pelea: "Pelea",
+      palo_hilo: "Hilo",
+      palo_quote: "Quote Polémico",
+      palo_live: "Live-tweet",
+      palo_temaDelDia: "Tema del Día",
+      palo_politica: "Política",
+      palo_bait: "Bait",
+      palo_patrocinio: "Patrocinado",
+      palo_descanso: "Desconexión",
+      palo_evento: "Evento Especial",
+      concept_meme: "Contenido rápido y ligero. Suma Engagement y Amor, reduce Odio orgánicamente.",
+      concept_tema: "Tweet sobre tu área de especialidad. Alta probabilidad de éxito y baja de Odio.",
+      concept_pelea: "Enfrentamiento directo en el TL. Gran Engagement pero alto riesgo de Odio.",
+      concept_hilo: "Análisis en profundidad. Construye Credibilidad y Amor en la comunidad.",
+      concept_quote: "Comentario picante a otra cuenta. Mezcla de debate y humor punzante.",
+      concept_live: "Comentario en tiempo real. Alta tracción de Viralidad si el timing es acertado.",
+      concept_temaDelDia: "Subirse a la tendencia #1. Gran alcance masivo con público heterogéneo.",
+      concept_politica: "Postura sobre la coyuntura. Genera fuerte polarización y Odio elevado.",
+      concept_bait: "Tweet polémico diseñado para generar respuestas masivas y alto Engagement artificial.",
+      concept_patrocinio: "Tuit pagado por una marca. Ingreso directo de dinero a costo de Credibilidad.",
+      concept_descanso: "Apagar el teléfono y despejar la mente. Reduce masivamente el Odio y recupera Salud Mental.",
+      concept_evento: "Elección estratégica de evento especial coyuntural."
+    },
+    shop: {
+      title: "TIENDA DE BOOSTERS",
+      subtitle: "Invertí tu dinero en ventajas algorítmicas y reducción de odio.",
+      section_title: "BOOSTERS DISPONIBLES",
+      section_sub: "ACTIVA UN BOOSTER PARA MULTIPLICAR EL EFECTO DE TU PRÓXIMO TWEET",
+      active_boosters: "BOOSTERS ACTIVOS",
+      ready: "LISTO",
+      cooldown: "ESPERA ({turns}T)",
+      buy: "COMPRAR",
+      owned: "ACTIVO",
+      need_money: "SIN FONDOS",
+      close: "CERRAR",
+      no_boosters: "SIN BOOSTERS DISPONIBLES CON EL SALDO ACTUAL",
+      no_booster_selected: "Ningún booster seleccionado (modo normal)",
+      booster_active: "⚡ {icon} {name} ACTIVO — Próximo tweet multiplicado {mult}x",
+      active_single: "ACTIVO",
+      cooldown_label: "Cooldown: {turns} turno{s}",
+      new_booster: "🚀 NUEVO BOOSTER DISPONIBLE",
+      ok: "[ ENTENDIDO ]"
+    },
+    narrative: {
+      feed_title: "TU FEED EN VIVO",
+      clunk_hint: "ESPACIO O CLIC PARA FRENAZO ▶",
+      story_clue_found: "🔍 PISTA NARRATIVA DESCUBIERTA",
+      viral_tweet: "🚀 TWEET VIRAL — ALGORITMO A FAVOR",
+      historic_ratio: "💀 RATIO HISTÓRICO — REPUDIO MASIVO",
+      normal_tweet: "💬 TWEET PUBLICADO",
+      continue_btn: "ACEPTAR Y CONTINUAR ▶",
+      metrics: {
+        replies: "Comentarios",
+        retweets: "Retweets",
+        likes: "Me gusta",
+        views: "Vistas"
+      },
+      roll_result: "🎲 RESULTADO DE LA TIRADA: <strong>D{roll}</strong> (Requerido: ≤ {chance}%)",
+      booster_applied: "📢 BOOSTER APLICADO: <strong>{name}</strong> ({mult}x impacto)",
+      followers_gain: "👥 SEGUIDORES: <strong style=\"color:var(--green)\">+{amount}</strong>",
+      followers_lost: "👥 PÉRDIDA DE SEGUIDORES: <strong style=\"color:var(--red)\">{amount}</strong>",
+      engagement_gain: "⚡ ENGAGEMENT: <strong style=\"color:var(--green)\">+{amount}</strong>",
+      cash_earned: "💰 DINERO COBRADO: <strong style=\"color:var(--amber)\">+${amount}</strong>",
+      hate_generated: "❤️‍🔥 ODIO GENERADO: <strong style=\"color:var(--red)\">+{amount}</strong>",
+      stance_registered: "⚡ POSTURA ESTRATÉGICA REGISTRADA",
+      strike_alert: "⚠️ STRIKE {strike}/3 — ALERTA DE CANCELACIÓN",
+      strike_fatal: "☠️ STRIKE 3/3 — CANCELACIÓN DEFINITIVA"
+    },
+    viral_modal: {
+      header: "⚡ EVENTO ESPECIAL: ¡TE VOLVISTE VIRAL!",
+      slide1_title: "PASO 1: LA OPORTUNIDAD EN EL FEED 🚀",
+      slide1_p1: "¡El algoritmo acaba de poner todos los ojos sobre tu cuenta! Tenés frente a vos un <strong>evento opcional de alta tensión de 3 turnos seguidos</strong>.",
+      slide1_p2: "Podés optar por <strong>aceptar el desafío viral</strong> o <strong>pasar de largo</strong> y continuar jugando de forma segura.",
+      slide2_title: "PASO 2: EL DESAFÍO Y LA RECOMPENSA 🎯",
+      slide2_p1: "Si aceptás, debés <strong>ganar 3 tweets consecutivos</strong> (acertar cartas exitosas durante los próximos 3 turnos).",
+      slide2_p2: "Durante la racha se repartirán temas de tu nicho específico. Al completar los 3 aciertos, ganarás un premio masivo de entre <strong>+50% y +100% de tus seguidores actuales</strong> (según tu arquetipo) más impulso de viralidad.",
+      slide3_title: "PASO 3: EL ALTO RIESGO ☠️",
+      slide3_p1: "⚠️ <strong>Peligro Severo:</strong> Si fallás <strong>un solo tweet</strong> de los 3, la racha se quiebra de forma desastrosa:",
+      consequences_title: "💀 CONSECUENCIAS DEL FRACASO:",
+      consequences_desc: "• Perdés entre <strong>30% y 40% de todo tu dinero</strong> acumulado.<br>• Recibís <strong>2 STRIKES DIRECTOS</strong> de moderación, quedando a solo 1 strike de la cancelación definitiva.",
+      accept_btn: "🔥 ACEPTAR DESAFÍO",
+      decline_btn: "🛡️ PASAR (MODO NORMAL)"
+    },
+    story_modal: {
+      header: "⚡ NUEVA TRAMA DESCUBIERTA",
+      slide1_title: "¡Encontraste una pista!",
+      slide1_p1: "¡Entraste en modo historia! Acabás de descubrir una pista que conecta a varios personajes detrás de escena.",
+      slide1_p2: "Prestá atención a lo que sucede en el feed.",
+      slide2_title: "Leé entre líneas",
+      slide2_p1: "Prestá atención al contexto y a los replies latientes. Cada carta de historia esconde respuestas de otros usuarios que revelan qué está pasando realmente.",
+      slide3_title: "La historia es colectiva",
+      slide3_p1: "Para entender la historia completa, tenés que jugar con otros personajes. Cada arquetipo vive una parte de la verdad y tiene su propio punto de vista.",
+      continue_btn: "SEGUIR JUGANDO",
+      next_btn: "SIGUIENTE ➡"
+    },
+    cancellation: {
+      title: "STRIKE DE CANCELACIÓN",
+      subtitle: "Has acumulado repudio crítico de la comunidad.",
+      active_strike: "STRIKE ACTIVO",
+      safe: "LIMPIO",
+      expulsion_warning: "Al tercer strike serás expulsado definitivamente de la plataforma.",
+      accept: "ENTENDIDO Y CONTINUAR ▶"
+    },
+    end: {
+      game_over: "FIN DE LA PARTIDA",
+      final_title: "RESULTADO FINAL",
+      replay: "▶ JUGAR DE NUEVO",
+      ranking: "🏆 Ranking",
+      tree: "🌳 Árbol de Decisiones",
+      share: "🐦 Compartir en X",
+      evolution: "📊 Evolución en Turnos",
+      copy_report: "📋 Copiar Reporte",
+      report_copied: "✓ ¡Reporte Copiado!",
+      cafecito: "☕ Invitame un Cafecito",
+      collection_title: "🏆 COLECCIÓN DE FINALES",
+      discovered: "{found} / {total} DESCUBIERTOS",
+      status_victory: "🏆 VICTORIA // META CUMPLIDA",
+      status_survivor: "⚠️ SUPERVIVENCIA // META NO ALCANZADA",
+      status_defeat: "💀 DERROTA // GAME OVER",
+      goal_label: "🎯 META DE VICTORIA: 80.000 SEGUIDORES",
+      verdict_success: "✨ ¡Alcanzaste el umbral de influencia masiva y conquistaste la red!",
+      verdict_missing: "⚠️ Te faltaron {missing} seguidores para consagrarte como Fenómeno Digital.",
+      verdict_defeat: "💥 Tu cuenta colapsó antes de alcanzar la meta de la red."
+    },
+    tutorial: {
+      header: "📖 CÓMO JUGAR // GUÍA DE SUPERVIVENCIA",
+      skip: "SALTAR TUTORIAL",
+      prev: "⬅ ATRÁS",
+      next: "SIGUIENTE ➡",
+      start: "COMENZAR ▶",
+      slide1_title: "PASO 1: TU OBJETIVO 🎯",
+      slide1_p1: "Sobreviví <strong>20 turnos</strong> ganando seguidores y monetizando tu fama. Para ganar y entrar al Salón de la Fama, superá los <strong>80.000 seguidores</strong> o acumulá más de <strong>$10.000</strong>.",
+      slide1_p2: "Cuidá tu <strong>Salud Mental</strong> (si llega a cero sufrís un burnout) y evitá acumular deudas o caer en la <strong>Cancelación</strong>.",
+      slide2_title: "PASO 2: EL TIMELINE 📱",
+      slide2_p1: "Cada turno robás 3 cartas. Tienen distintos niveles de riesgo, impacto y % de éxito. Un buen tuit suma <em>engagement</em> y plata. Si falla, perdés seguidores y aumenta tu nivel de Odio bruscamente.",
+      slide3_title: "PASO 3: LOS BOOSTERS 🚀",
+      slide3_p1: "Usá tu plata en <strong>Boosters</strong> antes de tuitear. Multiplican tus resultados, pero son caros y tienen tiempos de enfriamiento. ⚠️ Cuidado: si el tuit falla, el booster también amplificará las pérdidas.",
+      slide4_title: "PASO 4: LA CANCELACIÓN ☠️",
+      slide4_p1: "Atento al <strong>Odio</strong>. Entrar en peleas o política lo dispara. Si llega al <strong>100%</strong>, acumulás 3 strikes de cancelación o pasás 3 turnos seguidos en Zona Roja (>85%), te cancelan y perdés. Jugá <em>Día de Desconexión</em> para enfriarlo."
+    },
+    cancellation_modal: {
+      header: "⚖️ SISTEMA DE CANCELACIÓN // 3 PASOS",
+      slide1_title: "PASO 1: EL DISPARADOR DEL REPUDIO ⚠️",
+      slide1_p1: "Al jugar cartas polémicas de riesgo (<strong>Pelea, Política, Bait o Quote</strong>) y fracasar, o al tuitear con tu nivel de Odio elevado, la plataforma y la comunidad coordinan reportes masivos.",
+      slide1_p2: "Esto acumula una infracción grave: un <strong>Strike de Moderación</strong>.",
+      slide2_title: "PASO 2: LA REGLA DE LOS 3 STRIKES ☠️",
+      slide2_p1: "Tu cuenta cuenta con una tolerancia estricta de 3 faltas:",
+      strike1: "STRIKE 1: ADVERTENCIA",
+      strike2: "STRIKE 2: CRÍTICO",
+      strike3: "STRIKE 3: EXPULSIÓN",
+      slide2_p2: "Al llegar al <strong>tercer strike (3/3)</strong>, la plataforma suspende tu perfil de forma definitiva e inapelable (<strong>Game Over por Cancelación</strong>).",
+      slide3_title: "PASO 3: CÓMO PROTEGERTE Y SOBREVIVIR 🛡️",
+      slide3_p1: "• Priorizá cartas de <strong>Día de Desconexión</strong> para enfriar el timeline (-10% a -15% de Odio y recuperación de Salud Mental).",
+      slide3_p2: "• Compartí <strong>Memes</strong> o <strong>Hilos constructivos</strong> para recuperar Amor y bajar la polarización.",
+      slide3_p3: "• No juegues Pelea ni Baits cuando estés amonestado con 2 strikes.",
+      understood: "ENTENDIDO ▶"
+    },
+    hate_modal: {
+      header: "🔥 ODIO Y ZONA ROJA // 3 PASOS",
+      slide1_title: "PASO 1: LA ESCALADA DEL ODIO 📈",
+      slide1_p1: "Cada respuesta agresiva, fracaso de carta o choque dialéctico llena tu medidor de <strong>Odio</strong>. Al superar el <strong>65%</strong>, el timeline entra en estado de hostilidad abierta y las respuestas tóxicas se multiplican.",
+      slide2_title: "PASO 2: LA CUENTA REGRESIVA DE ZONA ROJA (≥80%) 🚨",
+      slide2_p1: "Si tu Odio alcanza o supera el <strong>80%</strong>, entrás en Zona Roja y se inicia una cuenta regresiva letal:",
+      turn1: "TURNO 1: ALERTA ROJA",
+      turn2: "TURNO 2: ÚLTIMA GRACIA",
+      turn3: "TURNO 3: CIERRE FORZADO",
+      slide2_p2: "Permanecer <strong>3 turnos consecutivos</strong> con Odio ≥80% resulta en expulsión inmediata por toxicidad extrema.",
+      slide3_title: "PASO 3: APAGAR EL INCENDIO 🧘",
+      slide3_p1: "• La herramienta más potente es el <strong>Día de Desconexión</strong>: reduce bruscamente el odio acumulado.",
+      slide3_p2: "• Publicar <strong>Memes</strong> amigables une al feed y reduce el Odio de forma orgánica.",
+      slide3_p3: "• Monitoreá tu <strong>Salud Mental</strong> para no caer en burnout en medio de la crisis.",
+      understood: "ENTENDIDO ▶"
+    },
+    rotate: {
+      title: "GIRÁ TU TELÉFONO",
+      desc: "Para la mejor experiencia recomendamos jugarlo en una PC o Mac, pero podés jugar en tu celular rotándolo a modo horizontal para ver todas las cartas, boosters y el timeline en su proporción óptima.",
+      pill: "🔄 ROTAR A HORIZONTAL"
+    },
+    profile: {
+      title: "PERFIL COMPLETO",
+      pronouns: "PRONOMBRES",
+      archetype_label: "ARQUETIPO",
+      personality_label: "PERSONALIDAD",
+      allied: "CARTAS AFINES",
+      weak: "CARTAS DÉBILES",
+      traits: "RASGOS",
+      synergy: "SINERGIA",
+      cancels: "CANCELACIONES",
+      win_condition: "CONDICIÓN DE VICTORIA"
+    },
+    pronouns: {
+      hombre: "Él",
+      mujer: "Ella",
+      diverso: "Elle"
+    },
+    tree: {
+      title: "ÁRBOL DE DECISIONES — RECORRIDO DE PARTIDA",
+      turns: "TURNOS",
+      chosen: "Elegido",
+      discarded: "Descartado",
+      success: "Éxito",
+      ratio: "Ratio",
+      copy_image: "📋 Copiar imagen",
+      close: "✕ Cerrar [Esc]",
+      turn_label: "Turno",
+      viral_impact: "✨ IMPACTO VIRAL",
+      tweet_success: "✅ TWEET EXITOSO",
+      tweet_ratio: "❌ RATIO EN EL TIMELINE",
+      followers: "seguidores",
+      engagement_label: "engagement",
+      hate_gen: "odio generado",
+      booster_label: "Booster:",
+      end_of_turn: "Balance al cierre de turno:",
+      stats_followers: "SEGUIDORES:",
+      stats_cash: "DINERO:",
+      stats_health: "SALUD:",
+      stats_final: "FINAL:",
+      discarded_turn: "OPCIÓN DESCARTADA · TURNO",
+      discarded_desc: "Esta carta formaba parte de tu mano y decidiste no jugarla."
+    },
+    mobile_timeline: {
+      title: "📱 TIMELINE DE LA PARTIDA",
+      sub: "{handle} · {count} TWEETS PUBLICADOS",
+      viral: "✨ VIRAL",
+      success: "✅ ÉXITO",
+      ratio: "❌ RATIO",
+      hate: "odio",
+      close_btn: "CERRAR TIMELINE ✕"
+    },
+    end2: {
+      chart_title: "EVOLUCIÓN EN EL TIMELINE ({turns} TURNOS)",
+      legend_followers: "SEGUIDORES",
+      legend_cash: "DINERO",
+      created_by: "Creado por",
+      tree_btn: "🌳 Ver Árbol",
+      share_btn: "🐦 Compartir en X",
+      ranking_btn: "🏆 Salón de la Fama",
+      copy_btn: "📋 Copy Report",
+      cafecito_btn: "☕ Invitar un Cafecito"
+    },
+    audio: {
+      title: "🎧 OPCIONES DE AUDIO",
+      music: "🎵 MÚSICA",
+      sfx: "🔔 EFECTOS DE SONIDO",
+      ok: "LISTO"
+    },
+    ranking: {
+      title: "🏆 SALÓN DE LA FAMA // LEADERBOARD",
+      daily: "📅 TOP 10 DE HOY (DIARIO)",
+      alltime: "🏆 TOP 10 HISTÓRICO (ALL-TIME)",
+      close: "CERRAR ✕"
+    },
+    ranking_prompt: {
+      title: "¡PARTIDA COMPLETADA!",
+      subtitle: "Ingresá tu @ para entrar al Salón de la Fama",
+      submit: "⚡ ENTRAR AL SALÓN",
+      skip: "Saltar"
+    },
+    mobile_boosters: {
+      title: "🚀 TIENDA DE BOOSTERS",
+      subtitle: "Tocá un booster para activarlo o desactivarlo para tu próximo tweet:",
+      no_booster: "Ningún booster seleccionado",
+      ready: "LISTO PARA TUITEAR ▶"
+    },
+    endings: {
+      villano: {
+        titulo: "EL VILLANO NECESARIO",
+        sub: "Te odiaron. Te bancaron igual.",
+        narrativa0: "Tu timeline es un campo de batalla y vos sos el último en pie.",
+        narrativa1: "Insultaron tu nombre en miles de quotes. Cada uno sumó un seguidor más.",
+        narrativa2: "Al final, todos hablan de vos. Y eso, en esta plataforma, es poder."
+      },
+      idolo_caido: {
+        titulo: "ÍDOLO CAÍDO",
+        sub: "La cima tiene poca estabilidad.",
+        narrativa0: "Tuviste el timeline en la palma de la mano. Después lo soltaste.",
+        narrativa1: "Las capturas de pantalla circulan. El contexto, nadie lo recuerda.",
+        narrativa2: "La fama se fue más rápido de lo que llegó. Eso también es parte del juego."
+      },
+      preferido: {
+        titulo: "EL FAVORITO DEL ALGORITMO",
+        sub: "El sistema te eligió.",
+        narrativa0: "No tuvieras que hacer demasiado. El algoritmo simplemente te empujó.",
+        narrativa1: "Tu contenido llegó a feeds que jamás habrías soñado.",
+        narrativa2: "La plataforma tiene sus preferidos. Esta vez fuiste vos."
+      },
+      comico: {
+        titulo: "EL CÓMICO DEL TL",
+        sub: "Te reíste de todo y el TL te rio con vos.",
+        narrativa0: "Cada tuit tuyo fue un meme en potencia.",
+        narrativa1: "Hasta los que te odiaban retwitteaban tus chistes.",
+        narrativa2: "El humor fue tu armadura. Y nunca se rompió."
+      },
+      autoridad: {
+        titulo: "LA AUTORIDAD DEL TEMA",
+        sub: "Cuando hablás, el timeline escucha.",
+        narrativa0: "No necesitás gritar. Tu nombre ya pesa.",
+        narrativa1: "Periodistas, marcas y cuentas rivales te citaron sin querer darte crédito.",
+        narrativa2: "Construiste credibilidad tweet a tweet. Eso no se cancela fácil."
+      },
+      triunfador: {
+        titulo: "FENÓMENO DIGITAL",
+        sub: "Rompiste el algoritmo. Y después rompiste internet.",
+        narrativa0: "Llegaste a trending sin buscarlo. Después lo buscaste y volviste a lograrlo.",
+        narrativa1: "Tu nombre apareció en medios que ni sabías que existían.",
+        narrativa2: "Ganaste el juego que casi nadie sabe que está jugando."
+      },
+      nicho: {
+        titulo: "REY/REINA DEL NICHO",
+        sub: "Pocos te siguen. Todos te respetan.",
+        narrativa0: "No necesitás masas. Tu comunidad es pequeña, leal y feroz.",
+        narrativa1: "Cada post tuyo es evento. No hay ruido, solo señal.",
+        narrativa2: "En un TL lleno de gritos, vos encontraste tu frecuencia."
+      },
+      combo_conspira_troll: {
+        titulo: "EL AGITADOR OSCURO",
+        sub: "Conspiraciones + trolleo = caos puro.",
+        narrativa0: "Cada hilo tuyo dejó más preguntas que respuestas. A propósito.",
+        narrativa1: "Te bloquearon en masa. Te crearon cuentas clon de homenaje.",
+        narrativa2: "Nadie sabe si creés en lo que decís. Eso es exactamente el plan."
+      },
+      combo_influencer_troll: {
+        titulo: "INFLUENCER DE LA POLÉMICA",
+        sub: "Likes de día, ratio de noche.",
+        narrativa0: "Tu feed es una montaña rusa emocional y a la gente le encanta.",
+        narrativa1: "Brands te escriben a los DMs. Activistas te denuncian. Todo en el mismo día.",
+        narrativa2: "Descubriste que la controversia monetiza mejor que la virtud."
+      },
+      combo_fut_troll: {
+        titulo: "EL HINCHA TÓXICO",
+        sub: "Tu equipo perdió. Ganaste el debate.",
+        narrativa0: "Nunca hablás del juego sin mencionar que los árbitros están arreglados.",
+        narrativa1: "Las Superficiales son tu arte marcial. Las usás con precisión quirúrgica.",
+        narrativa2: "Tu cuenta es un monumento al amor-odio más honesto del internet."
+      },
+      combo_militante_wholesome: {
+        titulo: "EL ACTIVISTA CON CORAZÓN",
+        sub: "Cambiar el mundo, pero con buena vibra.",
+        narrativa0: "Tus hilos sobre injusticia social terminan siempre en hilo de gatitos.",
+        narrativa1: "Sos el referente que la militancia necesitaba: consistente y humano.",
+        narrativa2: "Probaste que se puede luchar por algo sin volverse amargo en el proceso."
+      },
+      combo_gamer_troll: {
+        titulo: "EL GAMER INTOCABLE",
+        sub: "GGs only. Los demás no cuentan.",
+        narrativa0: "Tu opinión sobre mecánicas de juego destruyó estudios enteros. En el TL.",
+        narrativa1: "Te cancelaron tres veces. Volviste con un gif de victoria cada vez.",
+        narrativa2: "La cultura gamer te hizo inmune. O eso creés vos."
+      },
+      combo_tech_wholesome: {
+        titulo: "EL TECH-OPTIMISTA",
+        sub: "La tecnología nos va a salvar. Quizás.",
+        narrativa0: "Explicás sistemas complejos con analogías tan buenas que da vergüenza ajena.",
+        narrativa1: "Tu comunidad son ingenieros que finalmente se sienten humanos al leerte.",
+        narrativa2: "En un sector lleno de ego, elegiste la empatía. Y funciona."
+      },
+      combo_pod_wholesome: {
+        titulo: "EL PODCASTER DEL ALMA",
+        sub: "Long-form en un mundo de 280 caracteres.",
+        narrativa0: "Tus hilos son capítulos. Tu comunidad, oyentes fieles.",
+        narrativa1: "Te ofrecieron auspicios de marcas. Los rechazaste para mantener la voz.",
+        narrativa2: "Raro en este timeline: la gente te lee hasta el final."
+      },
+      combo_of_troll: {
+        titulo: "EL TROLL PREMIUM",
+        sub: "Cobrás por el caos.",
+        narrativa0: "Pasaste de cuenta gratuita a subscripción de pago. La gente paga por el drama.",
+        narrativa1: "Tus posts exclusivos son los más screenshotteados del TL. Gratis.",
+        narrativa2: "Monetizaste la indignación ajena mejor que cualquier medio tradicional."
+      },
+      combo_crypto_troll: {
+        titulo: "EL SHILLER IRREDENTO",
+        sub: "WAGMI. Todos menos vos.",
+        narrativa0: "Predicaste una altcoin a $0.001. Llegó a $0.0001. Dijiste que era esperada la corrección.",
+        narrativa1: "Tu comunidad perdió plata siguiéndote. Te sigue igual.",
+        narrativa2: "En crypto, la confianza vale más que los fundamentals. Lo explotaste al máximo."
+      },
+      combo_conspira_gracioso: {
+        titulo: "EL BUFÓN ILUMINADO",
+        sub: "Las conspiraciones más locas, contadas con humor.",
+        narrativa0: "No sabés si reírte o preocuparte. Eso es exactamente lo que buscabas.",
+        narrativa1: "Tus teorías son absurdas, pero la delivery es impecable.",
+        narrativa2: "Alguien tiene que reírse del apocalipsis. Decidiste ser vos."
+      },
+      combo_opi_troll: {
+        titulo: "EL PROVOCADOR DE OPINIÓN",
+        sub: "Hot takes calientes. Temperatura ambiente.",
+        narrativa0: "Tu columna de opinión diaria es lo más odiado y más leído del TL.",
+        narrativa1: "Tenés razón el 40% de las veces. Eso es suficiente para ser influyente.",
+        narrativa2: "La gente no te sigue por tus ideas. Te sigue para refutarte. Y eso cuenta."
+      },
+      combo_fut_info: {
+        titulo: "EL INSIDER DEL FÚTBOL",
+        sub: "Sabés el mercado de pases antes que los clubes.",
+        narrativa0: "Tu credibilidad de mercado es tan alta que los medios te citan sin confirmación.",
+        narrativa1: "Un pase que filtraste movió el precio de una acción deportiva.",
+        narrativa2: "En el fútbol digital, la información es el gol más valioso."
+      },
+      combo_of_gracioso: {
+        titulo: "EL COMEDIANTE DE SUSCRIPCIÓN",
+        sub: "Te pagan por reírse con vos.",
+        narrativa0: "Tu contenido pago es más gracioso que el gratuito. La gente lo sabe.",
+        narrativa1: "Convertiste el humor en producto. Sin perder la gracia en el proceso.",
+        narrativa2: "Ser funny es un talento. Cobrarlo, una habilidad. Tenés ambas."
+      },
+      combo_per_gracioso: {
+        titulo: "EL PERIODISTA IRÓNICO",
+        sub: "Noticias reales. Titular absurdo.",
+        narrativa0: "Reportás lo mismo que los grandes medios, pero nadie los cita a ellos.",
+        narrativa1: "Tu ironía es tan afilada que a veces la gente no sabe si es real.",
+        narrativa2: "El periodismo de datos con humor es tuyo. Lo inventaste sin querer."
+      },
+      combo_militante_gracioso: {
+        titulo: "EL MILITANTE CON MEMES",
+        sub: "La causa, pero en formato viral.",
+        narrativa0: "Bajaste la guardia ideológica de miles con un meme bien ejecutado.",
+        narrativa1: "Tu activismo es tan entretenido que hasta el bando contrario lo comparte.",
+        narrativa2: "Probaste que la risa puede ser una herramienta política devastadora."
+      },
+      combo_influencer_gracioso: {
+        titulo: "EL INFLUENCER AUTODESPIADADO",
+        sub: "El chiste sos vos. Y eso te hace rico.",
+        narrativa0: "Te reís de tus propios fails antes de que lo haga nadie.",
+        narrativa1: "Marcas te contratan por autenticidad. Les das caos controlado.",
+        narrativa2: "En un mundo de influencers perfectos, la imperfección es tu marca."
+      },
+      combo_conspira_info: {
+        titulo: "EL PERIODISTA DE LO OCULTO",
+        sub: "Investigás lo que nadie quiere que sepas.",
+        narrativa0: "Tus hilos de investigación duran días en trending.",
+        narrativa1: "Fuentes anónimas te escriben. Las verificás. Las publicás. El TL explota.",
+        narrativa2: "En la era de la desinformación, elegiste la peligrosa senda de los hechos."
+      },
+      combo_humor_troll: {
+        titulo: "EL REY DEL BARDO",
+        sub: "El insulto como arte. Vive de la polémica disfrazada de chiste.",
+        narrativa0: "Convertiste el bardo en tu disciplina artística. Nadie sabe dónde termina el chiste y dónde empieza la provocación.",
+        narrativa1: "Cada tweet tuyo es una granada sin espoleta arrojada al centro del debate.",
+        narrativa2: "El timeline arde a tu paso, pero el Engagement nunca para de subir."
+      },
+      combo_influencer_wholesome: {
+        titulo: "LA BURBUJA DE CRISTAL",
+        sub: "Smoothies, velas y autenticidad 100% de diseño.",
+        narrativa0: "Construiste un paraíso estético impoluto. Vacío por dentro, pero adorado por cientos de miles de seguidores fieles.",
+        narrativa1: "La luz perfecta, los colores pastel y la armonía digital total.",
+        narrativa2: "En un timeline lleno de hostilidad, tu burbuja es un refugio millonario."
+      },
+      combo_militante_troll: {
+        titulo: "EL GUERRERO DIGITAL",
+        sub: "La causa como bandera, el insulto como método.",
+        narrativa0: "Defendiste la trinchera a capa y espada. Bloqueaste a medio país pero tu núcleo duro te venera con fervor.",
+        narrativa1: "Para tus enemigos sos veneno puro; para tu tropa, un general indiscutible.",
+        narrativa2: "La guerra cultural en redes no perdona a los tibios."
+      },
+      combo_crypto_info: {
+        titulo: "EL GURÚ VERIFICADO",
+        sub: "Análisis serio, datos on-chain y cero hype.",
+        narrativa0: "Un unicornio en el barro cripto: rigor, métricas y honestidad. Tu credibilidad vale más que un bitcoin entero.",
+        narrativa1: "Desarmaste estafas y advertiste desplomes antes de que ocurrieran.",
+        narrativa2: "Demostraste que la transparencia técnica puede vencer al humo especulativo."
+      },
+      combo_conspira_wholesome: {
+        titulo: "EL PROFETA GENTIL",
+        sub: "Cree en todo pero con amor y sin agresividad.",
+        narrativa0: "Ves reptiles y conspiraciones globales en todos lados, pero tu tono pacífico y tierno hace que todos te quieran.",
+        narrativa1: "Tus teorías del fin del mundo suenan como cuentos de hadas tranquilizadores.",
+        narrativa2: "Nadie se enoja con vos, porque advertís del colapso planetario con una sonrisa."
+      },
+      combo_of_info: {
+        titulo: "LA ACTIVISTA DIGITAL",
+        sub: "Usa la plataforma para hablar de derechos y economía.",
+        narrativa0: "Descolocaste a la red entera combinando monetización sin tapujos y debates profundos sobre economía y libertades.",
+        narrativa1: "Rompiste todos los prejuicios morales con argumentos implacables y números claros.",
+        narrativa2: "Libertad financiera y batalla cultural en un solo timeline."
+      },
+      combo_per_troll: {
+        titulo: "EL CLICKBAITER DEFINITIVO",
+        sub: "El escándalo vende más que la verdad.",
+        narrativa0: "Aprendiste las reglas del algoritmo: la indignación es el combustible más rentable de internet.",
+        narrativa1: "Títulos engañosos, preguntas retóricas insidiosas y viralidad garantizada.",
+        narrativa2: "La verdad aburre; el escándalo paga las cuentas."
+      },
+      combo_gamer_info: {
+        titulo: "EL CRÍTICO DE LA INDUSTRIA",
+        sub: "Análisis de narrativa, estética y gameplay.",
+        narrativa0: "El anti-streamer por excelencia: no gritás, no hacés payasadas y cada reseña tuya cambia la reputación de un estudio.",
+        narrativa1: "Desmenuzaste mecánicas de diseño con la precisión de un cirujano.",
+        narrativa2: "En una red dominada por el hype vacío, tu palabra es ley."
+      },
+      combo_fut_wholesome: {
+        titulo: "EL FANDOM SANO",
+        sub: "Respeta al rival y no insulta al árbitro.",
+        narrativa0: "Un verdadero marciano en el fútbol de Twitter: celebrás el buen juego, elogiás al rival y desarmás la toxicidad del clásico.",
+        narrativa1: "Demostraste que se puede amar la camiseta sin desearle la muerte al vecino.",
+        narrativa2: "Tu timeline es una pequeña isla de cordura en medio de la cancha salvaje."
+      },
+      combo_tech_troll: {
+        titulo: "EL DISRUPTOR TÓXICO",
+        sub: "Build in public... liquidando a la competencia.",
+        narrativa0: "Lanzaste tres SaaS rentables mientras te burlabas públicamente del código y los despidos de las grandes tecnológicas.",
+        narrativa1: "Tu soberbia solo es comparable con la velocidad con la que lanzás features.",
+        narrativa2: "Te odian en Silicon Valley, pero pagan religiosamente tus suscripciones."
+      },
+      combo_pod_gracioso: {
+        titulo: "EL LATE NIGHT CRIOLLO",
+        sub: "Entrevistas con humor y clips virales.",
+        narrativa0: "Transformaste tu podcast en el show más viral de la red. Cada clip genera millones de reproducciones y memes instantáneos.",
+        narrativa1: "Invitados de todos los palos pasaron por tu micrófono para reírse de sí mismos.",
+        narrativa2: "Hiciste del diálogo informal un fenómeno masivo de streaming."
+      },
+      combo_opi_info: {
+        titulo: "EL INTELECTUAL PÚBLICO",
+        sub: "Opina de todo pero con fuentes y bibliografía.",
+        narrativa0: "Tus hilos son cátedras abiertas. Te convertiste en la voz de consulta obligatoria cuando el país necesita entender una crisis.",
+        narrativa1: "Datos duros, citas académicas y perspectiva histórica frente al ruido cotidiano.",
+        narrativa2: "El algoritmo te premia porque la gente busca certezas en tiempos de confusión."
+      },
+      combo_humor_wholesome: {
+        titulo: "EL CORAZÓN DEL TIMELINE",
+        sub: "La risa que une y no lastima a nadie.",
+        narrativa0: "Lograste lo imposible: hacer reír a millones de usuarios sin caer en la crueldad, el bardo ni la humillación ajena.",
+        narrativa1: "Tus memes son universales, reconfortantes y compartidos por todas las edades.",
+        narrativa2: "Demostraste que la comedia limpia puede ser tan viral como la discordia."
+      },
+      finale_deuda: {
+        titulo: "BANCARROTA DIGITAL",
+        sub: "Los números no mentían. Vos sí.",
+        narrativa0: "Cada booster, cada campaña, cada inversión: todo a pérdida.",
+        narrativa1: "El TL notó el desesperado viraje hacia el contenido pagado. Y lo rechazó.",
+        narrativa2: "El algoritmo no tiene piedad con las cuentas en rojo. Ni la audiencia tampoco."
+      },
+      finale_burnout: {
+        titulo: "COLAPSO DIGITAL",
+        sub: "El timeline ganó. Vos, no.",
+        narrativa0: "Llegó un punto en que abrir la app dolía físicamente.",
+        narrativa1: "La Salud Mental fue ignorada demasiado tiempo. Se cobró la deuda.",
+        narrativa2: "Publicaste tu último tweet con las manos temblando. Después, silencio."
+      },
+      finale_cancelacion_3strikes: {
+        titulo: "CUENTA SUSPENDIDA",
+        sub: "Tres strikes. Cero apelaciones.",
+        narrativa0: "La plataforma envió el mail. Vos ya sabías lo que decía.",
+        narrativa1: "Tres veces cruzaste la línea. Tres veces el TL coordinó el ataque.",
+        narrativa2: "El sistema de moderación es un juez sin misericordia. Ahora lo sabés."
+      },
+      finale_cancelacion_zonaroja: {
+        titulo: "EXPULSIÓN POR TOXICIDAD EXTREMA",
+        sub: "80% de Odio sostenido. 0% de futuro en la plataforma.",
+        narrativa0: "Tu feed se convirtió en un repositorio de odio colectivo.",
+        narrativa1: "Cada nuevo tuit era gasolina al incendio que ya no podías apagar.",
+        narrativa2: "Cuando el odio supera al contenido, la plataforma toma la decisión por vos."
+      }
+    }
+  },
+
+  en: {
+    viral_win: {
+      title: "🔥 VIRAL STREAK COMPLETED!",
+      subtitle: "EPIC VIRAL MOMENT",
+      head: "🌟 3 OUT OF 3 HIT TWEETS!",
+      body: "You conquered the algorithm with total mastery. The timeline turned you into the undisputed main character of the internet.",
+      gained_label: "EXTRA FOLLOWERS GAINED:",
+      footer: "Your account reached an all-time high of clout and reach."
+    },
+    viral_loss: {
+      title: "💔 VIRAL STREAK BROKEN",
+      subtitle: "FAILED VIRAL CHALLENGE",
+      money_lost: "MONEY LOST:",
+      penalty: "PENALTY: +2 STRIKES",
+      status: "ACCOUNT STATUS:",
+      suspended: "(SUSPENDED)",
+      danger: "(1 STRIKE AWAY FROM GAME OVER)"
+    },
+    story_epilogue: {
+      badge: "⚡ CASE CLOSED // NEXT EPISODE",
+      title: "NARRATIVE ARC COMPLETED",
+      ok_btn: "OK"
+    },
+    end_goals: {
+      followers_title: "👥 FOLLOWERS GOAL (80,000)",
+      cash_title: "💰 CASH GOAL ($10,000)",
+      story_title: "🗝️ STORY GOAL (CRIMINAL CASE)",
+      status_met: "✅ MET",
+      status_insufficient: "❌ INSUFFICIENT",
+      status_story_done: "✅ SOLVED",
+      status_story_missing: "⚠️ UNSOLVED",
+      followers_missing: "You were {missing} followers short.",
+      cash_missing: "You were ${missing} short of the cash goal.",
+      story_missing: "You did not uncover the plot in time.",
+      story_done: "You exposed the government corruption scandal.",
+      followers_met: "You achieved mainstream viral clout.",
+      cash_met: "You secured total financial independence.",
+      survivor_badge: "⚠️ SURVIVOR // INCOMPLETE GOALS",
+      victory_badge: "🏆 TOTAL VICTORY // GOALS MET",
+      defeat_badge: "💀 DEFEAT // GAME OVER",
+      created_by: "Created by",
+      btn_copy_report: "📋 Copy Report (JSON)",
+      report_copied: "✓ Report copied!"
+    },
+    story_recs: {
+      title: "⚡ CASE CLOSED // NEXT EPISODE",
+      gamer: "The photo of the luxury car in your dad's garage blew open the decade's biggest government corruption scandal. To see how that same car ended up at a secret barbecue with the star striker, try the Soccer Fan.",
+      futbolero: "You spotted the suspicious car at the stadium and at the team barbecue before the press caught on. To understand how journalists traced the license plate to Delaware shell companies, play as the Indie Journalist.",
+      periodista: "Your investigation exposing the shell company and the unfinished housing project made your career. To see the heartbreak of grassroots activists who canvassed in the rain for a scam, try the Political Militant.",
+      militante: "It broke your heart realizing that while you campaigned in the rain, your leaders already knew the housing fund was a fraud. To see who was tracking those shell companies from the shadows, play as the Conspiracy Theorist.",
+      conspiranoico: "You flagged the Delaware land deals and everyone called you crazy until the courts confirmed it. To see how that money was laundered through a crypto exchange, try playing as the Cryptobro.",
+      cryptobro: "You signed off on a shell company out of love, only to trigger a crypto bank run and end up as the legal fall guy. To meet the developer who saw the collapse coming from the inside, play as the Techie.",
+      techie: "You cracked the encrypted manifest and watched public funds get siphoned before closing your Series A. To see the streamer caught in the crossfire of the scandal, play as the Gamer.",
+      onlyfans: "You got sick of corrupt officials sliding into your DMs at 4am while denying everything on the nightly news. To see how lifestyle influencers tried to mask the crisis behind luxury and matcha, try the Influencer.",
+      influencer: "You masked your grief and the criminal investigation behind morning routines and affirmations. To see how timeline comedians mocked the crisis, play as the Humor Account.",
+      humor: "Your viral joke about the luxury car and the hackers made internet history, even if it left a bitter aftertaste. To hear the uncut deep dive and off-the-record stories, try the Podcaster.",
+      podcaster: "You recorded the leaked audio connecting ministry funds to the fake housing trust, defining your first 200 episodes. To see the commentator who turned the entire scandal into a national moral verdict, play as the Pundit.",
+      opinologo: "You sealed the case with your famous takeaway: it all started with a photo in a streamer's garage. To return to ground zero and live where the fire started, play as the Gamer.",
+      btn_play: "PLAY AS {arch} ▶",
+      next_label: "NEXT PERSPECTIVE:"
+    },
+    splash: {
+      subtitle: "SATIRICAL SOCIAL MEDIA SIMULATOR",
+      tagline: "Gain followers, monetize your feed, and survive cancel culture. One single tweet can make you an icon or get you exiled.",
+      start_btn: "START GAME ▶",
+      fame_btn: "🏆 HALL OF FAME",
+      fullscreen: "⛶ FULLSCREEN",
+      credits: "Created by @kohantoys"
+    },
+    setup: {
+      step: "STEP {current} OF {total}",
+      gender_title: "CHOOSE YOUR DIGITAL IDENTITY",
+      gender_subtitle: "Pick the persona you'll use to game the algorithm.",
+      back_btn: "← BACK TO START",
+      male: "Man",
+      male_desc: "Masculine pronouns.",
+      male_meta: "PRON: HE / HIM",
+      female: "Woman",
+      female_desc: "Feminine pronouns.",
+      female_meta: "PRON: SHE / HER",
+      non_binary: "Non-Binary",
+      nb_desc: "Neutral language.",
+      nb_meta: "PRON: THEY / THEM",
+      archetype_title: "CHOOSE YOUR ARCHETYPE",
+      archetype_subtitle: "Each archetype features distinct followers, tailored cards, and threat levels.",
+      personality_title: "CHOOSE YOUR PERSONALITY",
+      personality_subtitle: "Shapes your voice, tone, and the way the timeline claps back.",
+      handle_title: "YOUR USERNAME",
+      handle_subtitle: "Set the handle that will top the trending topics.",
+      handle_placeholder: "your_handle",
+      dice_tooltip: "Randomize username",
+      start_adventure: "LAUNCH ONTO THE TIMELINE ▶"
+    },
+    dashboard: {
+      turn: "TURN",
+      turn_max: "/ 20",
+      followers: "FOLLOWERS",
+      money: "CASH",
+      mental_health: "MENTAL HEALTH",
+      hate: "HATE",
+      credibility: "CREDIBILITY",
+      virality: "VIRALITY",
+      love: "CLOUT / LOVE",
+      engagement: "ENGAGEMENT",
+      boosters_btn: "⚡ BOOSTERS",
+      restart_btn: "↺ RESTART",
+      audio_btn: "🔊 AUDIO",
+      help_btn: "❓ HELP",
+      timeline_title: "🐦 DAILY TIMELINE",
+      love_hate: "CLOUT / HATE",
+      view_profile: "📋 FULL PROFILE",
+      shortcuts: "⌨️ KEYBOARD SHORTCUTS",
+      audio_opts: "🎧 AUDIO SETTINGS",
+      meta_goal: "WIN CONDITION: 80K FOLLOWERS — {pct}%",
+      tooltips: {
+        followers: "FOLLOWERS: your total audience. Win goal: 80,000.",
+        cash: "CASH: your balance for buying Boosters. Go negative for 5 turns in a row = Bankruptcy.",
+        health: "MENTAL HEALTH: your digital wellbeing. If it hits 0%, you burn out — Game Over.",
+        hate: "HATE: accumulated toxicity. Stay above 80% for 3 turns, or hit 100%, and you're done.",
+        love: "LOVE / CLOUT: positive rep. More love = more organic reach."
+      }
+    },
+    cards: {
+      choose_heading: "PICK YOUR MOVE // 3 OPTIONS IN HAND",
+      section_title: "AVAILABLE TWEETS",
+      section_sub: "PICK A CARD TO BROADCAST THIS TURN",
+      tweet_now: "POST TWEET ▶",
+      blocked: "LOCKED ✕",
+      success_prob: "SUCCESS ODDS:",
+      multiplier: "MULT:",
+      new_badge: "✨ NEW",
+      clue_badge: "🔍 CLUE",
+      danger_high: "HIGH RISK",
+      danger_med: "MEDIUM RISK",
+      danger_low: "SAFE",
+      story_locked: "🔒 STORY LOCKED",
+      palo_meme: "Meme",
+      palo_tema: "Niche Topic",
+      palo_pelea: "Fight",
+      palo_hilo: "Thread",
+      palo_quote: "Spicy Quote",
+      palo_live: "Live-tweet",
+      palo_temaDelDia: "Trending Topic",
+      palo_politica: "Politics",
+      palo_bait: "Rage Bait",
+      palo_patrocinio: "Sponsored",
+      palo_descanso: "Disconnect Day",
+      palo_evento: "Special Event",
+      concept_meme: "Quick, shareable content. Boosts Engagement and Love, naturally reduces Hate.",
+      concept_tema: "Post about your niche. High success odds and low Hate risk.",
+      concept_pelea: "Direct confrontation on the TL. Huge Engagement spike but extreme Hate risk.",
+      concept_hilo: "In-depth analysis. Builds Credibility and Love with your community.",
+      concept_quote: "Spicy reaction to another account. Mix of debate and sharp wit.",
+      concept_live: "Real-time commentary. Massive virality if your timing is on point.",
+      concept_temaDelDia: "Ride the #1 trend. Massive reach with a broad, heterogeneous audience.",
+      concept_politica: "Take a political stance. Triggers strong polarization and massive Hate spikes.",
+      concept_bait: "Inflammatory post engineered to bait replies and inflate Engagement.",
+      concept_patrocinio: "Brand-sponsored tweet. Direct cash income at the cost of Credibility.",
+      concept_descanso: "Go off the grid. Massively reduces Hate and restores Mental Health.",
+      concept_evento: "Strategic response to a live special event."
+    },
+    shop: {
+      title: "BOOSTERS SHOP",
+      subtitle: "Invest cash into algorithmic juice and crisis management.",
+      section_title: "AVAILABLE BOOSTERS",
+      section_sub: "ACTIVATE A BOOSTER TO MULTIPLY YOUR NEXT TWEET",
+      active_boosters: "ACTIVE BOOSTERS",
+      ready: "READY",
+      cooldown: "COOLDOWN ({turns}T)",
+      buy: "BUY",
+      owned: "ACTIVE",
+      need_money: "NOT ENOUGH CASH",
+      close: "CLOSE",
+      no_boosters: "NO BOOSTERS AFFORDABLE WITH CURRENT BALANCE",
+      no_booster_selected: "No booster selected (standard mode)",
+      booster_active: "⚡ {icon} {name} ACTIVE — Next tweet multiplied {mult}x",
+      active_single: "ACTIVE",
+      cooldown_label: "Cooldown: {turns} turn{s}",
+      new_booster: "🚀 NEW BOOSTER UNLOCKED",
+      ok: "[ GOT IT ]"
+    },
+    narrative: {
+      feed_title: "LIVE TIMELINE FEED",
+      clunk_hint: "HIT SPACE OR CLICK TO BRAKE ▶",
+      story_clue_found: "🔍 STORY CLUE DISCOVERED",
+      viral_tweet: "🚀 VIRAL TWEET — ALGORITHM BLESSING",
+      historic_ratio: "💀 BRUTAL RATIO — MOB BACKLASH",
+      normal_tweet: "💬 TWEET PUBLISHED",
+      continue_btn: "ACCEPT & PROCEED ▶",
+      metrics: {
+        replies: "Replies",
+        retweets: "Reposts",
+        likes: "Likes",
+        views: "Impressions"
+      },
+      roll_result: "🎲 ROLL RESULT: <strong>D{roll}</strong> (Required: ≤ {chance}%)",
+      booster_applied: "📢 ACTIVE BOOSTER: <strong>{name}</strong> ({mult}x impact)",
+      followers_gain: "👥 FOLLOWERS GAINED: <strong style=\"color:var(--green)\">+{amount}</strong>",
+      followers_lost: "👥 FOLLOWERS LOST: <strong style=\"color:var(--red)\">{amount}</strong>",
+      engagement_gain: "⚡ ENGAGEMENT: <strong style=\"color:var(--green)\">+{amount}</strong>",
+      cash_earned: "💰 CASH EARNED: <strong style=\"color:var(--amber)\">+${amount}</strong>",
+      hate_generated: "❤️‍🔥 HATE GENERATED: <strong style=\"color:var(--red)\">+{amount}</strong>",
+      stance_registered: "⚡ STRATEGIC STANCE RECORDED",
+      strike_alert: "⚠️ STRIKE {strike}/3 — MODERATION WARNING",
+      strike_fatal: "☠️ STRIKE 3/3 — FINAL ACCOUNT SUSPENSION"
+    },
+    viral_modal: {
+      header: "⚡ SPECIAL EVENT: YOU WENT VIRAL!",
+      slide1_title: "STEP 1: THE FEED OPPORTUNITY 🚀",
+      slide1_p1: "The algorithm just put every spotlight on your profile! You have an <strong>optional high-stakes 3-turn event</strong>.",
+      slide1_p2: "You can choose to <strong>accept the viral challenge</strong> or <strong>pass</strong> and continue playing it safe.",
+      slide2_title: "STEP 2: THE CHALLENGE & REWARDS 🎯",
+      slide2_p1: "If you accept, you must <strong>win 3 consecutive tweets</strong> (play successful cards over the next 3 turns).",
+      slide2_p2: "During the streak, niche-tailored cards will appear. Clearing all 3 earns a massive <strong>+50% to +100% follower surge</strong> plus virality perks.",
+      slide3_title: "STEP 3: THE HIGH RISK ☠️",
+      slide3_p1: "⚠️ <strong>Severe Danger:</strong> If you fail even <strong>one single tweet</strong> out of 3, the streak breaks disastrously:",
+      consequences_title: "💀 FAILURE CONSEQUENCES:",
+      consequences_desc: "• You lose between <strong>30% and 40% of all accumulated cash</strong>.<br>• You receive <strong>2 DIRECT STRIKES</strong>, putting you just 1 strike away from a permanent ban.",
+      accept_btn: "🔥 ACCEPT CHALLENGE",
+      decline_btn: "🛡️ PASS (SAFE MODE)"
+    },
+    story_modal: {
+      header: "⚡ NEW STORYLINE DISCOVERED",
+      slide1_title: "You found a clue!",
+      slide1_p1: "You entered story mode! You just uncovered a clue that connects several characters behind the scenes.",
+      slide1_p2: "Pay close attention to what unfolds in the feed.",
+      slide2_title: "Read between the lines",
+      slide2_p1: "Pay attention to the context and the lurking replies. Each story card hides responses from other users that reveal what's really happening.",
+      slide3_title: "The story is collective",
+      slide3_p1: "To understand the full picture, you need to play as other characters. Each archetype lives a piece of the truth and has their own point of view.",
+      continue_btn: "KEEP PLAYING",
+      next_btn: "NEXT ➡"
+    },
+    cancellation: {
+      title: "CANCEL CULTURE STRIKE",
+      subtitle: "You triggered severe public outrage across the platform.",
+      active_strike: "ACTIVE STRIKE",
+      safe: "CLEAN",
+      expulsion_warning: "Reaching 3 strikes results in permanent account termination.",
+      accept: "UNDERSTOOD & PROCEED ▶"
+    },
+    end: {
+      game_over: "GAME OVER",
+      final_title: "FINAL OUTCOME",
+      replay: "▶ PLAY AGAIN",
+      ranking: "🏆 Leaderboard",
+      tree: "🌳 Decision Tree",
+      share: "🐦 Share on X",
+      evolution: "📊 Turn Evolution",
+      copy_report: "📋 Copy Report",
+      report_copied: "✓ Report Copied!",
+      cafecito: "☕ Buy me a Coffee",
+      collection_title: "🏆 ENDINGS VAULT",
+      discovered: "{found} / {total} UNLOCKED",
+      status_victory: "🏆 VICTORY // GOAL REACHED",
+      status_survivor: "⚠️ SURVIVOR // GOAL MISSED",
+      status_defeat: "💀 DEFEAT // GAME OVER",
+      goal_label: "🎯 VICTORY GOAL: 80,000 FOLLOWERS",
+      verdict_success: "✨ You reached massive influence status and conquered the timeline!",
+      verdict_missing: "⚠️ You needed {missing} more followers to achieve Digital Phenomenon status.",
+      verdict_defeat: "💥 Your account collapsed before reaching the timeline goal."
+    },
+    tutorial: {
+      header: "📖 HOW TO PLAY // SURVIVAL GUIDE",
+      skip: "SKIP TUTORIAL",
+      prev: "⬅ BACK",
+      next: "NEXT ➡",
+      start: "START ▶",
+      slide1_title: "STEP 1: YOUR GOAL 🎯",
+      slide1_p1: "Survive <strong>20 turns</strong> building your follower count and monetizing your clout. To win and enter the Hall of Fame, hit <strong>80,000 followers</strong> or stack over <strong>$10,000</strong>.",
+      slide1_p2: "Watch your <strong>Mental Health</strong> — hitting zero triggers a full burnout. Avoid debt and stay out of the <strong>Cancel Zone</strong>.",
+      slide2_title: "STEP 2: THE TIMELINE 📱",
+      slide2_p1: "Each turn you draw 3 cards with different risk levels, impact, and success odds. A good tweet earns <em>engagement</em> and cash. Miss it, and you bleed followers while Hate spikes hard.",
+      slide3_title: "STEP 3: BOOSTERS 🚀",
+      slide3_p1: "Spend cash on <strong>Boosters</strong> before you post. They amplify your results — but they're pricey and have cooldowns. ⚠️ Heads up: if your tweet flops, the booster amplifies the losses too.",
+      slide4_title: "STEP 4: CANCEL CULTURE ☠️",
+      slide4_p1: "Keep your <strong>Hate</strong> meter in check. Fights and politics send it through the roof. Hit <strong>100%</strong>, rack up 3 cancel strikes, or stay in the Red Zone (>85%) for 3 turns in a row — and you're done. Play a <em>Disconnect Day</em> to cool things down."
+    },
+    cancellation_modal: {
+      header: "⚖️ CANCEL CULTURE SYSTEM // 3 STEPS",
+      slide1_title: "STEP 1: THE TRIGGER ⚠️",
+      slide1_p1: "Playing high-risk cards (<strong>Fight, Politics, Bait or Quote-Tweet</strong>) and failing — or posting while your Hate is already high — sets off a wave of mass reporting across the platform.",
+      slide1_p2: "The result: a <strong>Moderation Strike</strong> on your account.",
+      slide2_title: "STEP 2: THE 3-STRIKE RULE ☠️",
+      slide2_p1: "Your account has a strict three-infraction limit:",
+      strike1: "STRIKE 1: WARNING",
+      strike2: "STRIKE 2: CRITICAL",
+      strike3: "STRIKE 3: BANNED",
+      slide2_p2: "On the <strong>third strike (3/3)</strong>, the platform permanently suspends your profile — no appeal, no exceptions (<strong>Game Over: Cancelled</strong>).",
+      slide3_title: "STEP 3: HOW TO SURVIVE 🛡️",
+      slide3_p1: "• Prioritize <strong>Disconnect Day</strong> cards to cool the timeline down (-10% to -15% Hate + Mental Health recovery).",
+      slide3_p2: "• Drop <strong>Memes</strong> or <strong>Constructive Threads</strong> to rebuild goodwill and drive down polarization.",
+      slide3_p3: "• Never play Fight or Bait cards when you're already sitting on 2 strikes.",
+      understood: "GOT IT ▶"
+    },
+    hate_modal: {
+      header: "🔥 HATE & RED ZONE // 3 STEPS",
+      slide1_title: "STEP 1: THE HATE SPIRAL 📈",
+      slide1_p1: "Every aggressive reply, failed card, or public clash fills your <strong>Hate</strong> meter. Once it crosses <strong>65%</strong>, the timeline enters open hostility mode and toxic replies start snowballing.",
+      slide2_title: "STEP 2: THE RED ZONE COUNTDOWN (≥80%) 🚨",
+      slide2_p1: "If your Hate reaches or exceeds <strong>80%</strong>, you enter the Red Zone and trigger a lethal countdown:",
+      turn1: "TURN 1: RED ALERT",
+      turn2: "TURN 2: LAST CHANCE",
+      turn3: "TURN 3: FORCED SHUTDOWN",
+      slide2_p2: "Staying in the Red Zone for <strong>3 consecutive turns</strong> results in immediate termination for extreme toxicity.",
+      slide3_title: "STEP 3: PUT OUT THE FIRE 🧘",
+      slide3_p1: "• Your most powerful tool is <strong>Disconnect Day</strong> — it sharply cuts your accumulated Hate.",
+      slide3_p2: "• Posting friendly <strong>Memes</strong> brings your feed together and organically reduces Hate.",
+      slide3_p3: "• Watch your <strong>Mental Health</strong> — don't spiral into burnout during a crisis.",
+      understood: "GOT IT ▶"
+    },
+    rotate: {
+      title: "ROTATE YOUR PHONE",
+      desc: "For the premier experience, we recommend playing on Desktop / Mac. On mobile, rotate to landscape mode to view all 3 cards, boosters, and feed at optimal scale.",
+      pill: "🔄 ROTATE TO LANDSCAPE"
+    },
+    profile: {
+      title: "FULL PROFILE",
+      pronouns: "PRONOUNS",
+      archetype_label: "ARCHETYPE",
+      personality_label: "PERSONALITY",
+      allied: "ALLIED TOPICS",
+      weak: "WEAK TOPICS",
+      traits: "TRAITS",
+      synergy: "SYNERGY",
+      cancels: "CANCEL RISK",
+      win_condition: "WIN CONDITION"
+    },
+    pronouns: {
+      hombre: "He/Him",
+      mujer: "She/Her",
+      diverso: "They/Them"
+    },
+    tree: {
+      title: "DECISION TREE — MATCH RECAP",
+      turns: "TURNS",
+      chosen: "Chosen",
+      discarded: "Discarded",
+      success: "Success",
+      ratio: "Ratio",
+      copy_image: "📋 Copy image",
+      close: "✕ Close [Esc]",
+      turn_label: "Turn",
+      viral_impact: "✨ VIRAL IMPACT",
+      tweet_success: "✅ TWEET LANDED",
+      tweet_ratio: "❌ RATIOED ON THE TL",
+      followers: "followers",
+      engagement_label: "engagement",
+      hate_gen: "hate generated",
+      booster_label: "Booster:",
+      end_of_turn: "End-of-turn balance:",
+      stats_followers: "FOLLOWERS:",
+      stats_cash: "CASH:",
+      stats_health: "HEALTH:",
+      stats_final: "ENDING:",
+      discarded_turn: "DISCARDED OPTION · TURN",
+      discarded_desc: "This card was in your hand and you chose not to play it."
+    },
+    mobile_timeline: {
+      title: "📱 MATCH TIMELINE",
+      sub: "{handle} · {count} TWEETS POSTED",
+      viral: "✨ VIRAL",
+      success: "✅ SUCCESS",
+      ratio: "❌ RATIO",
+      hate: "hate",
+      close_btn: "CLOSE TIMELINE ✕"
+    },
+    end2: {
+      chart_title: "TIMELINE EVOLUTION ({turns} TURNS)",
+      legend_followers: "FOLLOWERS",
+      legend_cash: "CASH",
+      created_by: "Created by",
+      tree_btn: "🌳 Decision Tree",
+      share_btn: "🐦 Share on X",
+      ranking_btn: "🏆 Leaderboard",
+      copy_btn: "📋 Copy Report",
+      cafecito_btn: "☕ Buy me a Coffee"
+    },
+    audio: {
+      title: "🎧 AUDIO OPTIONS",
+      music: "🎵 MUSIC",
+      sfx: "🔔 SOUND EFFECTS",
+      ok: "DONE"
+    },
+    ranking: {
+      title: "🏆 HALL OF FAME // LEADERBOARD",
+      daily: "📅 TODAY'S TOP 10 (DAILY)",
+      alltime: "🏆 ALL-TIME TOP 10",
+      close: "CLOSE ✕"
+    },
+    ranking_prompt: {
+      title: "MATCH COMPLETED!",
+      subtitle: "Enter your @ to join the Hall of Fame",
+      submit: "⚡ JOIN THE HALL",
+      skip: "Skip"
+    },
+    mobile_boosters: {
+      title: "🚀 BOOSTER SHOP",
+      subtitle: "Tap a booster to activate or deactivate it for your next tweet:",
+      no_booster: "No booster selected",
+      ready: "READY TO POST ▶"
+    },
+    endings: {
+      villano: {
+        titulo: "THE NECESSARY VILLAIN",
+        sub: "They despised you. They couldn't stop talking about you.",
+        narrativa0: "Your timeline was a war zone, and you were the last one standing.",
+        narrativa1: "Thousands quote-tweeted your name as a slur. Every single one added a follower.",
+        narrativa2: "Love or hate — on this platform, attention is the only currency that matters."
+      },
+      idolo_caido: {
+        titulo: "FALLEN IDOL",
+        sub: "The higher the platform, the harder the ratio.",
+        narrativa0: "You had the algorithm eating out of your hand. Then you fumbled it.",
+        narrativa1: "The screenshots live forever. The context? Nobody saved that part.",
+        narrativa2: "Clout evaporates faster than it builds. You learned that the hard way."
+      },
+      preferido: {
+        titulo: "ALGORITHM'S DARLING",
+        sub: "The system picked you. You didn't even ask.",
+        narrativa0: "You barely had to try. The For You page just kept pushing you forward.",
+        narrativa1: "Your posts landed in feeds you never would have reached organically.",
+        narrativa2: "The platform has its favorites. This time, it was you."
+      },
+      comico: {
+        titulo: "THE TL'S COMEDIAN",
+        sub: "You made the whole timeline laugh — even the haters.",
+        narrativa0: "Every post you dropped had the potential to go viral as a meme.",
+        narrativa1: "People who had you muted were screenshotting your jokes to send their friends.",
+        narrativa2: "Humor was your armor. It never cracked."
+      },
+      autoridad: {
+        titulo: "THE AUTHORITY",
+        sub: "When you post, the timeline listens.",
+        narrativa0: "You don't need to be loud. Your name carries weight on its own.",
+        narrativa1: "Journalists, brands, and rival accounts cited you — without giving you credit.",
+        narrativa2: "You built credibility tweet by tweet. That kind of reputation doesn't cancel easily."
+      },
+      triunfador: {
+        titulo: "DIGITAL PHENOMENON",
+        sub: "You broke the algorithm. Then you broke the internet.",
+        narrativa0: "You hit trending without trying. Then you did it on purpose. Twice.",
+        narrativa1: "Your name showed up in outlets you'd never heard of.",
+        narrativa2: "You won a game most people don't even know they're playing."
+      },
+      nicho: {
+        titulo: "THE NICHE TWEETER",
+        sub: "Small following. Absolute authority.",
+        narrativa0: "You don't need mass appeal. Your community is tight, loyal, and ruthless.",
+        narrativa1: "Every post you drop is an event. No noise — pure signal.",
+        narrativa2: "In a TL full of screaming, you found your frequency and stayed on it."
+      },
+      combo_conspira_troll: {
+        titulo: "THE DARK AGITATOR",
+        sub: "Conspiracy + trolling = pure, uncut chaos.",
+        narrativa0: "Every thread you posted left more questions than answers. By design.",
+        narrativa1: "They mass-blocked you. Then created tribute clone accounts in your honor.",
+        narrativa2: "Nobody knows if you believe what you say. That's exactly the point."
+      },
+      combo_influencer_troll: {
+        titulo: "CONTROVERSY INFLUENCER",
+        sub: "Sponsored posts by day. Ratio magnet by night.",
+        narrativa0: "Your feed is an emotional roller coaster and the audience is addicted.",
+        narrativa1: "Brands DM you with deals. Activists file reports. Sometimes on the same day.",
+        narrativa2: "You discovered that controversy monetizes better than virtue ever will."
+      },
+      combo_fut_troll: {
+        titulo: "THE TOXIC FAN",
+        sub: "Your team lost. You won the argument.",
+        narrativa0: "You never talk about the game without implying the refs were paid off.",
+        narrativa1: "Subtweets are your martial art. You throw them with surgical precision.",
+        narrativa2: "Your account is a monument to the most honest love-hate relationship on the internet."
+      },
+      combo_militante_wholesome: {
+        titulo: "THE ACTIVIST WITH A HEART",
+        sub: "Fighting for change, but make it wholesome.",
+        narrativa0: "Your social justice threads always end with a cat photo compilation.",
+        narrativa1: "You became the voice the movement actually needed: consistent and genuinely human.",
+        narrativa2: "You proved you can fight for something without turning bitter in the process."
+      },
+      combo_gamer_troll: {
+        titulo: "THE UNTOUCHABLE GAMER",
+        sub: "GGs only. Everyone else is irrelevant.",
+        narrativa0: "Your takes on game mechanics have ended studio careers. On the TL.",
+        narrativa1: "You got cancelled three times. You came back each time with a victory gif.",
+        narrativa2: "Gamer culture made you immune to shame. Or so you tell yourself."
+      },
+      combo_tech_wholesome: {
+        titulo: "THE TECH OPTIMIST",
+        sub: "Technology will save us. Probably.",
+        narrativa0: "You explain complex systems with analogies so good they're almost embarrassing.",
+        narrativa1: "Your followers are engineers who finally feel human when they read your posts.",
+        narrativa2: "In a sector drowning in ego, you chose empathy. And it actually worked."
+      },
+      combo_pod_wholesome: {
+        titulo: "THE SOUL PODCASTER",
+        sub: "Long-form thinking in a 280-character world.",
+        narrativa0: "Your threads read like chapters. Your community listens like loyal subscribers.",
+        narrativa1: "Sponsors reached out. You turned them down to protect the voice.",
+        narrativa2: "Rare on this timeline: people actually read you all the way to the end."
+      },
+      combo_of_troll: {
+        titulo: "PREMIUM TROLL",
+        sub: "You charge for the chaos.",
+        narrativa0: "You went from free account to paid subscription. People pay for the drama.",
+        narrativa1: "Your exclusive posts are the most-screenshotted content on the TL. For free.",
+        narrativa2: "You monetized other people's outrage better than any legacy media outlet."
+      },
+      combo_crypto_troll: {
+        titulo: "THE UNREPENTANT SHILLER",
+        sub: "WAGMI. Everyone except you.",
+        narrativa0: "You called an altcoin at $0.001. It hit $0.0001. You called it a healthy correction.",
+        narrativa1: "Your community lost money following your calls. They still follow you.",
+        narrativa2: "In crypto, trust outlasts fundamentals. You milked that truth to its limit."
+      },
+      combo_conspira_gracioso: {
+        titulo: "THE ENLIGHTENED JESTER",
+        sub: "The wildest conspiracies, delivered with perfect comic timing.",
+        narrativa0: "You never know whether to laugh or be genuinely worried. That's the whole bit.",
+        narrativa1: "Your theories are absurd. Your delivery is immaculate.",
+        narrativa2: "Someone has to laugh at the apocalypse. You volunteered."
+      },
+      combo_opi_troll: {
+        titulo: "THE OPINION PROVOCATEUR",
+        sub: "Scorching hot takes. Room temperature accuracy.",
+        narrativa0: "Your daily op-ed is simultaneously the most hated and most-read post on the TL.",
+        narrativa1: "You're right 40% of the time. That's apparently enough to be influential.",
+        narrativa2: "People don't follow you for your ideas. They follow you to dunk on them. It counts."
+      },
+      combo_fut_info: {
+        titulo: "THE FOOTBALL INSIDER",
+        sub: "You know the transfer window before the clubs do.",
+        narrativa0: "Your transfer credibility is so high that journalists cite you without verification.",
+        narrativa1: "A leak you dropped moved the price of a sports stock.",
+        narrativa2: "In digital football culture, information is the most valuable goal you can score."
+      },
+      combo_of_gracioso: {
+        titulo: "THE SUBSCRIPTION COMEDIAN",
+        sub: "People pay to laugh with you.",
+        narrativa0: "Your paid content is funnier than your free stuff. Everyone knows it.",
+        narrativa1: "You turned humor into a product without losing the craft.",
+        narrativa2: "Being funny is a talent. Charging for it is a skill. You've got both."
+      },
+      combo_per_gracioso: {
+        titulo: "THE IRONIC JOURNALIST",
+        sub: "Real news. Absurd headline.",
+        narrativa0: "You cover the same stories as major outlets. Nobody quotes them.",
+        narrativa1: "Your irony is so sharp that people sometimes can't tell if it's real.",
+        narrativa2: "Data journalism with comedic timing is yours. You invented it by accident."
+      },
+      combo_militante_gracioso: {
+        titulo: "THE MEME ACTIVIST",
+        sub: "The cause, delivered in viral format.",
+        narrativa0: "You lowered the ideological defenses of thousands with one perfectly-timed meme.",
+        narrativa1: "Your activism is so entertaining that even the opposition shares it.",
+        narrativa2: "You proved that laughter can be a devastatingly effective political tool."
+      },
+      combo_influencer_gracioso: {
+        titulo: "THE SELF-ROASTING INFLUENCER",
+        sub: "The joke is you. That's the brand.",
+        narrativa0: "You laugh at your own failures before anyone else gets the chance.",
+        narrativa1: "Brands hire you for authenticity. You deliver controlled chaos.",
+        narrativa2: "In a world of polished influencers, your mess is your most valuable asset."
+      },
+      combo_conspira_info: {
+        titulo: "THE UNDERGROUND JOURNALIST",
+        sub: "Investigating what nobody wants you to find.",
+        narrativa0: "Your investigative threads stay in trending for days.",
+        narrativa1: "Anonymous sources reach out. You verify. You publish. The TL detonates.",
+        narrativa2: "In the age of misinformation, you chose the dangerous path of actual facts."
+      },
+      combo_humor_troll: {
+        titulo: "KING OF THE CLASH",
+        sub: "Insults as art. Living off controversies disguised as jokes.",
+        narrativa0: "You turned online flame wars into high art. Nobody can tell where the parody ends and provocation starts.",
+        narrativa1: "Every post of yours is an unpinned grenade thrown into trending discourse.",
+        narrativa2: "The timeline scorches in your wake, but your Engagement graph never stops soaring."
+      },
+      combo_influencer_wholesome: {
+        titulo: "THE GLASS BUBBLE",
+        sub: "Smoothies, candles, and 100% designer authenticity.",
+        narrativa0: "You built an immaculate aesthetic haven. Hollow inside, yet adored by hundreds of thousands of devoted fans.",
+        narrativa1: "Flawless lighting, pastel palettes, and absolute digital serenity.",
+        narrativa2: "In a timeline poisoned with rage, your bubble is a luxury sanctuary."
+      },
+      combo_militante_troll: {
+        titulo: "THE DIGITAL WARRIOR",
+        sub: "Partisan zeal as a flag, ruthless mockery as a method.",
+        narrativa0: "You defended the ideological barricades tooth and nail. Half the internet is blocked, but your base is fanatic.",
+        narrativa1: "Poison to your rivals, an untouchable commander to your followers.",
+        narrativa2: "The digital culture war takes no prisoners, and you showed no mercy."
+      },
+      combo_crypto_info: {
+        titulo: "THE VERIFIED GURU",
+        sub: "On-chain data, deep metrics, and zero cheap hype.",
+        narrativa0: "A true unicorn in crypto sludge: analytical rigor, verified stats, and honesty. Your reputation outvalues a Bitcoin.",
+        narrativa1: "You exposed pump-and-dumps and called crashes weeks in advance.",
+        narrativa2: "Proving that real technical integrity beats speculative noise every time."
+      },
+      combo_conspira_wholesome: {
+        titulo: "THE GENTLE PROPHET",
+        sub: "Believes in every conspiracy, but spreads love instead of anger.",
+        narrativa0: "You spot alien cabals everywhere, yet your calm, wholesome demeanor makes even hard skeptics adore you.",
+        narrativa1: "Apocalyptic warnings that sound like comforting bedtime stories.",
+        narrativa2: "No one can stay mad at you when you warn about global doom with a warm smile."
+      },
+      combo_of_info: {
+        titulo: "THE DIGITAL ACTIVIST",
+        sub: "Using subscriber power to champion civic and economic rights.",
+        narrativa0: "You disrupted the whole feed by combining unapologetic monetization with incisive debates on civil liberties.",
+        narrativa1: "Shattering outdated stigmas with cold logic, balance sheets, and policy analysis.",
+        narrativa2: "Financial autonomy meets cultural vanguard on one single timeline."
+      },
+      combo_per_troll: {
+        titulo: "THE ULTIMATE CLICKBAITER",
+        sub: "Outrage always outsells the nuanced truth.",
+        narrativa0: "You decoded the algorithm's cruelest law: synthetic outrage is the most liquid fuel on the net.",
+        narrativa1: "Provocative framing, leading questions, and explosive engagement every single drop.",
+        narrativa2: "Nuance puts audiences to sleep; high drama pays the server bills."
+      },
+      combo_gamer_info: {
+        titulo: "THE INDUSTRY CRITIC",
+        sub: "Dissecting game design, narrative pacing, and technical fidelity.",
+        narrativa0: "The quintessential anti-streamer: no screams, no cheap gimmicks, just essays that move developer roadmaps.",
+        narrativa1: "Analyzing gameplay systems and corporate monetization with clinical precision.",
+        narrativa2: "In a sea of sponsored hype, your seal of approval is golden."
+      },
+      combo_fut_wholesome: {
+        titulo: "THE NOBLE SUPPORTER",
+        sub: "Honoring opponents and respecting the referee.",
+        narrativa0: "An extraordinary anomaly on sports Twitter: celebrating beauty on the pitch, praising rival brilliance, and disarming toxicity.",
+        narrativa1: "Proving you can bleed club colors without hating your neighbor.",
+        narrativa2: "Your timeline stands as a clean oasis in a feral arena."
+      },
+      combo_tech_troll: {
+        titulo: "THE TOXIC DISRUPTOR",
+        sub: "Building in public while eviscerating the legacy competition.",
+        narrativa0: "You scaled three profitable SaaS tools while publicly roasting big tech architecture and bureaucratic bloat.",
+        narrativa1: "Your swagger is matched only by the blistering speed of your deployments.",
+        narrativa2: "Silicon Valley elites loathe your arrogance, but their engineers pay your licenses."
+      },
+      combo_pod_gracioso: {
+        titulo: "THE LATE NIGHT MAVERICK",
+        sub: "Witty interviews, sharp humor, and endlessly shareable clips.",
+        narrativa0: "You transformed your podcast into the internet's most viral variety show. Every soundbite sparks millions of streams.",
+        narrativa1: "Celebrities and misfits from all spectrums visit your studio to laugh at their own flaws.",
+        narrativa2: "Turning raw, candid banter into a massive cultural phenomenon."
+      },
+      combo_opi_info: {
+        titulo: "THE PUBLIC INTELLECTUAL",
+        sub: "Weighing in on every issue with primary sources and data.",
+        narrativa0: "Your threads are masterclasses in clarity. You became the trusted voice society checks when crisis strikes.",
+        narrativa1: "Hard evidence, historical perspective, and scholarly composure cutting through daily hysteria.",
+        narrativa2: "The algorithm rewards you because people crave certainty in turbulent times."
+      },
+      combo_humor_wholesome: {
+        titulo: "HEART OF THE TIMELINE",
+        sub: "Laughter that unites without mocking anyone.",
+        narrativa0: "You achieved the impossible: delighting millions daily without cynicism, insults, or cheap punches.",
+        narrativa1: "Comforting, universally relatable humor shared across all demographics.",
+        narrativa2: "Proof that uplifting creativity can go just as viral as bitterness."
+      },
+      finale_deuda: {
+        titulo: "FINANCIAL RUIN",
+        sub: "The numbers never lied. You did.",
+        narrativa0: "Every booster, every campaign, every investment: all in the red.",
+        narrativa1: "The TL noticed the desperate pivot to sponsored content. And rejected it.",
+        narrativa2: "The algorithm has no compassion for accounts running on fumes. Neither does the audience."
+      },
+      finale_burnout: {
+        titulo: "DIGITAL BURNOUT",
+        sub: "The timeline won. You didn't.",
+        narrativa0: "There came a point where opening the app was physically painful.",
+        narrativa1: "Mental Health was ignored for too long. It collected what it was owed.",
+        narrativa2: "You posted your last tweet with shaking hands. Then: silence."
+      },
+      finale_cancelacion_3strikes: {
+        titulo: "PERMANENTLY BANNED",
+        sub: "Three strikes. Zero appeals.",
+        narrativa0: "The platform sent the email. You already knew what it said.",
+        narrativa1: "Three times you crossed the line. Three times the TL coordinated the pile-on.",
+        narrativa2: "The moderation system is a judge with no mercy. Now you know."
+      },
+      finale_cancelacion_zonaroja: {
+        titulo: "EXTREME FEED HOSTILITY",
+        sub: "80% sustained Hate. 0% future on this platform.",
+        narrativa0: "Your feed became a landfill of collective outrage.",
+        narrativa1: "Every new post was fuel thrown onto a fire you'd already lost control of.",
+        narrativa2: "When the hate drowns out the content, the platform makes the decision for you."
+      }
+    }
+  },
+
+  ja: {
+    viral_win: {
+      title: "🔥 バズり連鎖コンプリート！",
+      subtitle: "歴史的バズモーメント",
+      head: "🌟 3連続ツイート大成功！",
+      body: "アルゴリズムを完璧に支配しました。タイムライン全体があなたのアカウントに熱狂しています。",
+      gained_label: "獲得した追加フォロワー:",
+      footer: "あなたのアカウントは影響力とリーチの最高記録を更新しました。"
+    },
+    viral_loss: {
+      title: "💔 バズり連鎖失敗",
+      subtitle: "バズ挑戦の代償",
+      money_lost: "失った所持金:",
+      penalty: "ペナルティ: 炎上警告 +2",
+      status: "アカウント状態:",
+      suspended: "(アカウント凍結)",
+      danger: "(ゲームオーバーまであと1回)"
+    },
+    story_epilogue: {
+      badge: "⚡ 事件解明 // 次回エピソード",
+      title: "物語アーク完了",
+      ok_btn: "了解"
+    },
+    end_goals: {
+      followers_title: "👥 フォロワー目標（8万人）",
+      cash_title: "💰 所持金目標（$10,000）",
+      story_title: "🗝️ ストーリー目標（汚職事件）",
+      status_met: "✅ 達成",
+      status_insufficient: "❌ 未達成",
+      status_story_done: "✅ 解明済",
+      status_story_missing: "⚠️ 未解明",
+      followers_missing: "目標まであと{missing}人不足でした。",
+      cash_missing: "目標まであと${missing}不足でした。",
+      story_missing: "事件の全容を解明できませんでした。",
+      story_done: "政府の巨額汚職スキャンダルを暴きました。",
+      followers_met: "圧倒的なネット上の影響力を獲得しました。",
+      cash_met: "完全な経済的自立を達成しました。",
+      survivor_badge: "⚠️ 生き残り // 目標未達",
+      victory_badge: "🏆 完全勝利 // 目標達成",
+      defeat_badge: "💀 敗北 // ゲームオーバー",
+      created_by: "制作:",
+      btn_copy_report: "📋 レポートをコピー (JSON)",
+      report_copied: "✓ コピー完了！"
+    },
+    story_recs: {
+      title: "⚡ 事件解明 // 次回エピソード",
+      gamer: "親父のガレージにあった高級車の写真が、政府の巨額汚職事件を暴く引き金となった。あの車がなぜエースFWとの極秘バーベキュー場にあったのかを知りたいなら、次回は「熱狂サポ」でプレイ！",
+      futbolero: "報道陣が嗅ぎつける前に、スタジアムや選手会食で見かけた不審な高級車。記者がどうやってナンバープレートからデラウェア州の幽霊会社を突き止めたのか、「インディー記者」で確かめよう。",
+      periodista: "未完成の住宅計画と幽霊会社を暴いた調査スレッドは、あなたの記者人生の金字塔となった。雨の中チラシを配っていた信奉者たちがその裏切りをどう受け止めたのか、「政治活動家」の視点で追体験しよう。",
+      militante: "雨の中で住宅計画を信じて活動していたのに、幹部たちは最初から詐欺だと知っていた――その絶望。影から幽霊会社の存在を警告し続けていた人物を見るなら、「陰謀論者」でプレイ！",
+      conspiranoico: "デラウェアの怪しい土地取引を告発し、裁判所が事実認定するまで狂人扱いされた日々。その資金が市中でどう仮想通貨取引所を通じてロンダリングされたのか、「クリプトブロ」の視点を試そう。",
+      cryptobro: "愛のためにサインしたペーパーカンパニーが仮想通貨取り付け騒ぎを招き、法的な捨て駒にされたあの日。システムの崩壊を内部から予見していたエンジニアの視点は、「テック起業家」で！",
+      techie: "暗号化マニフェストを解読し、巨額資金調達の裏で起きた公金横領を見届けた。スキャンダルの渦中に放り込まれた配信者の真実を見るなら、「ゲーム実況者」へ。",
+      onlyfans: "深夜4時にDMを送ってきた政府高官たちが、ニュースで全否定している姿に吐き気がしたあの日。セレブたちが抹茶と高級フィルターでどう疑惑を誤魔化そうとしたのか、「インフルエンサー」で確かめよう。",
+      influencer: "捜査のニュースと失意を、毎朝のルーティンとポジティブな投稿で隠し続けた日々。タイムラインがその事件をどんなミームで嘲笑していたのか、「ミーム・お笑い垢」でプレイ！",
+      humor: "高級車とハッカーをネタにした投稿は大バズりしたが、時が経つにつれ苦い味が残った。オフレコ証言とロングインタビューの真相を聞くなら、「ポッドキャスター」へ。",
+      podcaster: "公金横領のウラ取り音源をガレージで収録し、200回記念の特ダネとなった。このスキャンダルを社会の縮図として総括した評論家の視点は、「ご意見番（オピニオン垢）」で！",
+      opinologo: "「すべては配信者のガレージ写真から始まった」と結論づけたあなた。事件の原点に戻り、内側から最初の火種を体験するなら、「ゲーム実況者」でプレイ！",
+      btn_play: "{arch}でプレイ ▶",
+      next_label: "次のおすすめ視点："
+    },
+    splash: {
+      subtitle: "SNS風刺系カードシミュレーター",
+      tagline: "フォロワーを増やし、収益化し、炎上社会を生き残れ。たった1つのツイートがあなたを時代の寵児にも、追放者にも変える。",
+      start_btn: "ゲームを開始する ▶",
+      fame_btn: "🏆 殿堂入りランキング",
+      fullscreen: "⛶ フルスクリーン",
+      credits: "作者: @kohantoys"
+    },
+    setup: {
+      step: "ステップ {current} / {total}",
+      gender_title: "ネット上の性別・アイデンティティ",
+      gender_subtitle: "アルゴリズムの荒波に挑むキャラクターの性別を選択。",
+      back_btn: "← タイトルに戻る",
+      male: "男性",
+      male_desc: "男性プロファイル・男性代名詞。",
+      male_meta: "代名詞: 彼 / HE",
+      female: "女性",
+      female_desc: "女性プロファイル・女性代名詞。",
+      female_meta: "代名詞: 彼女 / SHE",
+      non_binary: "ノンバイナリー",
+      nb_desc: "中立的な言葉遣い・Xカルチャー。",
+      nb_meta: "代名詞: ニュートラル / THEY",
+      archetype_title: "アカウントの系統（アーキタイプ）",
+      archetype_subtitle: "系統ごとにフォロワー層、専用カード、炎上リスクが変化します。",
+      personality_title: "キャラクターの性格",
+      personality_subtitle: "ツイートの語り口やフォロワーの反応に影響します。",
+      handle_title: "アカウント名（ユーザー名）",
+      handle_subtitle: "タイムラインに表示されるあなたのアカウント名を設定。",
+      handle_placeholder: "your_handle",
+      dice_tooltip: "ランダム生成",
+      start_adventure: "タイムラインへ殴り込む ▶"
+    },
+    dashboard: {
+      turn: "ターン",
+      turn_max: "/ 20",
+      followers: "フォロワー",
+      money: "所持金",
+      mental_health: "メンタル",
+      hate: "ヘイト値",
+      credibility: "信頼度",
+      virality: "バズり力",
+      love: "好感度",
+      engagement: "エンゲージメント",
+      boosters_btn: "⚡ ブースト購入",
+      restart_btn: "↺ やり直し",
+      audio_btn: "🔊 音声設定",
+      help_btn: "❓ ヘルプ",
+      timeline_title: "🐦 本日のタイムライン",
+      love_hate: "好感度 / ヘイト値",
+      view_profile: "📋 プロフィール詳細",
+      shortcuts: "⌨️ キーボード操作一覧",
+      audio_opts: "🎧 音声オプション",
+      meta_goal: "勝利条件: フォロワー8万人 — {pct}%",
+      tooltips: {
+        followers: "フォロワー数：勝利条件は8万人突破。",
+        cash: "所持金：ブースター購入に使用。5ターン連続でマイナスになると自己破産。",
+        health: "メンタル：デジタル上の精神的健康。0%でバーンアウト→ゲームオーバー。",
+        hate: "ヘイト値：炎上度合い。80%超えが3ターン連続、または100%到達でゲームオーバー。",
+        love: "好感度：ポジティブな評判。高いほどオーガニックリーチが増大する。"
+      }
+    },
+    cards: {
+      choose_heading: "今ターンの行動 // 3枚から1枚を選択",
+      section_title: "投稿可能なツイート",
+      section_sub: "今ターン投稿するカードを1枚選択してください",
+      tweet_now: "今すぐツイート ▶",
+      blocked: "ロック中 ✕",
+      success_prob: "成功確率:",
+      multiplier: "倍率:",
+      new_badge: "✨ 初登場",
+      clue_badge: "🔍 手がかり",
+      danger_high: "大炎上リスク",
+      danger_med: "中炎上リスク",
+      danger_low: "安全",
+      story_locked: "🔒 ストーリーロック",
+      palo_meme: "ミーム",
+      palo_tema: "得意テーマ",
+      palo_pelea: "口論",
+      palo_hilo: "スレッド",
+      palo_quote: "引用リポスト",
+      palo_live: "実況ツイート",
+      palo_temaDelDia: "トレンド乗り",
+      palo_politica: "政治ポスト",
+      palo_bait: "釣り投稿",
+      palo_patrocinio: "広告投稿",
+      palo_descanso: "デジタルデトックス",
+      palo_evento: "特殊イベント",
+      concept_meme: "軽快なバズコンテンツ。エンゲージメントと好感度を上げ、ヘイト値を自然に下げる。",
+      concept_tema: "専門テーマの投稿。成功率が高く、ヘイト値リスクが低い。",
+      concept_pelea: "タイムライン上での口論。エンゲージメントは急増するが、炎上リスクも大きい。",
+      concept_hilo: "深掘り分析。コミュニティでの信頼度と好感度を積み上げる。",
+      concept_quote: "他アカウントへの辛口コメント。議論とユーモアが混在する諸刃の剣。",
+      concept_live: "リアルタイム実況。タイミングが合えば爆発的にバズる可能性あり。",
+      concept_temaDelDia: "トレンドに乗る投稿。多様な層へのリーチは最大だが読めない反応も。",
+      concept_politica: "政治的立場を表明。強烈な分断とヘイト値上昇を引き起こす。",
+      concept_bait: "大量リプを誘発する釣り投稿。エンゲージメントは急増するが炎上と隣り合わせ。",
+      concept_patrocinio: "スポンサー付き広告投稿。即金収入だが信頼度が下がる。",
+      concept_descanso: "スマホを置いてデジタルデトックス。ヘイト値を大幅削減し、メンタルを回復。",
+      concept_evento: "タイムラインを揺るがす特殊イベントへの対応。"
+    },
+    shop: {
+      title: "ブースターショップ",
+      subtitle: "資金を投じてアルゴリズムを味方につけ、ヘイトを鎮静化させよう。",
+      section_title: "利用可能なブースター",
+      section_sub: "ブースターを発動して次のツイート効果を増幅",
+      active_boosters: "有効なブースター",
+      ready: "使用可能",
+      cooldown: "待機中 ({turns}T)",
+      buy: "購入",
+      owned: "発動中",
+      need_money: "資金不足",
+      close: "閉じる",
+      no_boosters: "現在の所持金で購入可能なブースターはありません",
+      no_booster_selected: "ブースター未選択（通常モード）",
+      booster_active: "⚡ {icon} {name} 発動中 — 次のツイート効果が{mult}倍",
+      active_single: "発動中",
+      cooldown_label: "待機時間: {turns}ターン",
+      new_booster: "🚀 新たなブースターが解放！",
+      ok: "[ 了解 ]"
+    },
+    narrative: {
+      feed_title: "リアルタイムTL反応",
+      clunk_hint: "SPACEキーまたはタップで停止 ▶",
+      story_clue_found: "🔍 ストーリーの手がかりを発見",
+      viral_tweet: "🚀 大バズり — アルゴリズムの寵児",
+      historic_ratio: "💀 大炎上 — クソリプの嵐",
+      normal_tweet: "💬 投稿完了",
+      continue_btn: "結果を確認して次へ ▶",
+      metrics: {
+        replies: "リプ数",
+        retweets: "リポスト",
+        likes: "いいね",
+        views: "表示回数"
+      },
+      roll_result: "🎲 ダイス判定結果: <strong>D{roll}</strong> (必要成功値: ≤ {chance}%)",
+      booster_applied: "📢 適用ブースター: <strong>{name}</strong> (効果倍率 {mult}x)",
+      followers_gain: "👥 獲得フォロワー: <strong style=\"color:var(--green)\">+{amount}</strong>",
+      followers_lost: "👥 喪失フォロワー: <strong style=\"color:var(--red)\">{amount}</strong>",
+      engagement_gain: "⚡ エンゲージメント: <strong style=\"color:var(--green)\">+{amount}</strong>",
+      cash_earned: "💰 収益獲得: <strong style=\"color:var(--amber)\">+${amount}</strong>",
+      hate_generated: "❤️‍🔥 ヘイト上昇: <strong style=\"color:var(--red)\">+{amount}</strong>",
+      stance_registered: "⚡ 行動方針を記録",
+      strike_alert: "⚠️ ストライク {strike}/3 — 警告",
+      strike_fatal: "☠️ ストライク 3/3 — アカウント永久凍結"
+    },
+    viral_modal: {
+      header: "⚡ 特別イベント：大バズり発生中！",
+      slide1_title: "ステップ 1: タイムラインの好機 🚀",
+      slide1_p1: "アルゴリズムがあなたのプロフィールに世界中の注目を集めています！<strong>3ターン連続の高難易度チャレンジ</strong>が発生しました。",
+      slide1_p2: "<strong>バズり挑戦を受ける</strong>か、<strong>見送って</strong>通常モードで安全にプレイを続けるかを選択できます。",
+      slide2_title: "ステップ 2: 挑戦と莫大な報酬 🎯",
+      slide2_p1: "挑戦を受ける場合、<strong>3ターン連続でツイートを成功</strong>させる必要があります。",
+      slide2_p2: "期間中は得意ジャンルのカードが出現。3連続成功で、<strong>現在のフォロワー数が+50%〜+100%爆増</strong>し、強力な拡散ボーナスを得られます。",
+      slide3_title: "ステップ 3: 極大のリスク ☠️",
+      slide3_p1: "⚠️ <strong>警告：</strong> 3回中<strong>1回でも炎上・失敗</strong>すると、挑戦は破滅的な結果に終わります：",
+      consequences_title: "💀 失敗時のペナルティ:",
+      consequences_desc: "• 所持金の<strong>30%〜40%を喪失</strong>します。<br>• 運営から<strong>ストライク2回を即時付与</strong>され、アカウント凍結まで残り1ストライクの絶体絶命になります。",
+      accept_btn: "🔥 挑戦を受ける",
+      decline_btn: "🛡️ 見送る（安全モード）"
+    },
+    story_modal: {
+      header: "⚡ 新たな物語が解放！",
+      slide1_title: "手がかりを発見！",
+      slide1_p1: "ストーリーモードに突入！舞台裏で複数のキャラクターをつなぐ手がかりを発見しました。",
+      slide1_p2: "フィードで何が起きているか、しっかり観察してください。",
+      slide2_title: "行間を読め",
+      slide2_p1: "コンテキストと潜在的なリプライに注目。各ストーリーカードには、本当に何が起きているかを明かす他のユーザーの反応が隠れています。",
+      slide3_title: "物語はみんなで紡ぐもの",
+      slide3_p1: "全貌を理解するには、他のキャラクターでもプレイする必要があります。各アーキタイプは真実の一部を生き、それぞれ独自の視点を持っています。",
+      continue_btn: "プレイを続ける",
+      next_btn: "次へ ➡"
+    },
+    cancellation: {
+      title: "炎上ストライク発動",
+      subtitle: "世論の激しい怒りを買い、警告を受けました。",
+      active_strike: "警告中",
+      safe: "安全",
+      expulsion_warning: "警告が3回累積すると、アカウントは永久凍結（即ゲームオーバー）となります。",
+      accept: "了解して次へ進む ▶"
+    },
+    end: {
+      game_over: "ゲーム終了",
+      final_title: "最終結果",
+      replay: "▶ もう一度遊ぶ",
+      ranking: "🏆 ランキング",
+      tree: "🌳 決断の軌跡",
+      share: "🐦 Xでシェア",
+      evolution: "📊 ターン推移グラフ",
+      copy_report: "📋 レポートをコピー",
+      report_copied: "✓ コピー完了！",
+      cafecito: "☕ 開発者にコーヒーを奢る",
+      collection_title: "🏆 エンディング図鑑",
+      discovered: "{found} / {total} 解禁済み",
+      status_victory: "🏆 勝利 // 目標達成",
+      status_survivor: "⚠️ 生存 // 目標未達成",
+      status_defeat: "💀 敗北 // ゲームオーバー",
+      goal_label: "🎯 勝利目標：80,000フォロワー",
+      verdict_success: "✨ 圧倒的な影響力を獲得し、タイムラインの覇者となりました！",
+      verdict_missing: "⚠️ バズり王（Fenómeno Digital）達成まで、あと{missing}フォロワー足りませんでした。",
+      verdict_defeat: "💥 目標に到達する前にアカウントが崩壊しました。"
+    },
+    tutorial: {
+      header: "📖 あそびかた // サバイバルガイド",
+      skip: "チュートリアルをスキップ",
+      prev: "⬅ 戻る",
+      next: "次へ ➡",
+      start: "ゲームを始める ▶",
+      slide1_title: "STEP 1: 目標 🎯",
+      slide1_p1: "<strong>20ターン</strong>生き残り、フォロワーを増やして収益化しよう。殿堂入りするには<strong>フォロワー8万人</strong>突破、または<strong>1万ドル以上</strong>の資産蓄積が条件。",
+      slide1_p2: "<strong>メンタル</strong>がゼロになるとバーンアウトで失格。借金と<strong>炎上による凍結</strong>にも要注意。",
+      slide2_title: "STEP 2: タイムライン 📱",
+      slide2_p1: "毎ターン3枚のカードをドロー。リスク・影響力・成功率はそれぞれ異なる。ツイートが成功すれば<em>エンゲージメント</em>と収益を獲得。失敗するとフォロワーが激減し、ヘイト値が急上昇する。",
+      slide3_title: "STEP 3: ブースター 🚀",
+      slide3_p1: "ツイート前に資金で<strong>ブースター</strong>を購入できる。結果を大幅に増幅させるが高額でクールダウンあり。⚠️ 注意：ツイートが失敗した場合、ブースターは損失まで増幅させる。",
+      slide4_title: "STEP 4: 炎上・垢バン ☠️",
+      slide4_p1: "<strong>ヘイト値</strong>の管理が鍵。言い争いや政治ネタは一気に跳ね上がる。<strong>100%</strong>到達・炎上ストライク3回・危険ゾーン(>85%)を3ターン連続で踏むと即ゲームオーバー。<em>デジタルデトックス</em>カードで冷却しよう。"
+    },
+    cancellation_modal: {
+      header: "⚖️ 炎上・垢バンシステム // 3ステップ",
+      slide1_title: "STEP 1: 炎上のトリガー ⚠️",
+      slide1_p1: "高リスクカード（<strong>言い争い・政治・釣り投稿・引用リポスト</strong>）の失敗や、ヘイト値が高い状態での投稿は、プラットフォームとコミュニティによる大規模通報を招く。",
+      slide1_p2: "結果として<strong>モデレーション警告（ストライク）</strong>が累積する。",
+      slide2_title: "STEP 2: 3ストライクルール ☠️",
+      slide2_p1: "アカウントには厳格な3回の違反上限がある：",
+      strike1: "警告1: 注意",
+      strike2: "警告2: 危険",
+      strike3: "警告3: 永久凍結",
+      slide2_p2: "<strong>3回目のストライク（3/3）</strong>で、プラットフォームはアカウントを永久停止——異議申し立て不可（<strong>炎上によるゲームオーバー</strong>）。",
+      slide3_title: "STEP 3: 生き延びる方法 🛡️",
+      slide3_p1: "• <strong>デジタルデトックス</strong>カードを優先——ヘイト値を一気に冷却（-10%〜-15%＋メンタル回復）。",
+      slide3_p2: "• <strong>ミーム</strong>や<strong>建設的なスレッド</strong>で好感度を回復させ、分極化を抑える。",
+      slide3_p3: "• ストライク2枚の状態では言い争いや釣り投稿カードを絶対に使わない。",
+      understood: "了解して続ける ▶"
+    },
+    hate_modal: {
+      header: "🔥 ヘイト値と危険ゾーン // 3ステップ",
+      slide1_title: "STEP 1: ヘイトの連鎖 📈",
+      slide1_p1: "攻撃的なリプライ・カード失敗・口論のたびに<strong>ヘイト値</strong>が上昇する。<strong>65%</strong>を超えると、タイムラインは敵対モードに突入し、クソリプが雪だるま式に増えていく。",
+      slide2_title: "STEP 2: 危険ゾーンのカウントダウン（≥80%）🚨",
+      slide2_p1: "ヘイト値が<strong>80%</strong>以上になると危険ゾーンに突入し、致命的なカウントダウンが始まる：",
+      turn1: "ターン1：レッドアラート",
+      turn2: "ターン2：最後のチャンス",
+      turn3: "ターン3：強制シャットダウン",
+      slide2_p2: "ヘイト≥80%で<strong>3ターン連続</strong>滞在すると、過激な毒性を理由に即座に追放される。",
+      slide3_title: "STEP 3: 炎上を鎮火する 🧘",
+      slide3_p1: "• 最強の手段は<strong>デジタルデトックス</strong>——累積したヘイト値を大幅に削減。",
+      slide3_p2: "• 和やかな<strong>ミーム</strong>の投稿がフィードをまとめ、ヘイトを自然に低下させる。",
+      slide3_p3: "• 危機のさなかにバーンアウトしないよう、<strong>メンタル</strong>を常に確認。",
+      understood: "了解して続ける ▶"
+    },
+    rotate: {
+      title: "端末を横向きに回転してください",
+      desc: "本作はPC/Macでのプレイを推奨しています。スマートフォンでプレイする場合は、端末を横向き（ランドスケープ）に回転させるとカードやタイムラインが綺麗に表示されます。",
+      pill: "🔄 横向きに回転する"
+    },
+    profile: {
+      title: "プロフィール詳細",
+      pronouns: "ネット上の性別",
+      archetype_label: "アカウント系統",
+      personality_label: "ツイートスタイル",
+      allied: "相性の良いジャンル",
+      weak: "苦手なジャンル",
+      traits: "パッシブ特性",
+      synergy: "シナジー",
+      cancels: "炎上ストライク",
+      win_condition: "勝利条件"
+    },
+    pronouns: {
+      hombre: "彼（男性）",
+      mujer: "彼女（女性）",
+      diverso: "ニュートラル"
+    },
+    tree: {
+      title: "決断の軌跡 — プレイ記録",
+      turns: "ターン",
+      chosen: "選択済",
+      discarded: "非選択",
+      success: "成功",
+      ratio: "炎上",
+      copy_image: "📋 画像をコピー",
+      close: "✕ 閉じる [Esc]",
+      turn_label: "ターン",
+      viral_impact: "✨ バズり爆発",
+      tweet_success: "✅ 投稿成功",
+      tweet_ratio: "❌ クソリプの嵐",
+      followers: "フォロワー",
+      engagement_label: "エンゲージメント",
+      hate_gen: "ヘイト上昇",
+      booster_label: "ブースター:",
+      end_of_turn: "ターン終了時のステータス:",
+      stats_followers: "フォロワー:",
+      stats_cash: "所持金:",
+      stats_health: "メンタル:",
+      stats_final: "エンディング:",
+      discarded_turn: "見送った選択肢 · ターン",
+      discarded_desc: "手札にありましたが、プレイしないことを選択しました。"
+    },
+    mobile_timeline: {
+      title: "📱 プレイのタイムライン",
+      sub: "{handle} · {count}件のツイートを投稿",
+      viral: "✨ バズ",
+      success: "✅ 成功",
+      ratio: "❌ 炎上",
+      hate: "ヘイト",
+      close_btn: "タイムラインを閉じる ✕"
+    },
+    end2: {
+      chart_title: "ターン推移グラフ（{turns}ターン）",
+      legend_followers: "フォロワー",
+      legend_cash: "所持金",
+      created_by: "制作:",
+      tree_btn: "🌳 決断の軌跡",
+      share_btn: "🐦 Xでシェア",
+      ranking_btn: "🏆 殿堂入りランキング",
+      copy_btn: "📋 レポートをコピー",
+      cafecito_btn: "☕ コーヒーを奢る"
+    },
+    audio: {
+      title: "🎧 音声オプション",
+      music: "🎵 BGM",
+      sfx: "🔔 効果音",
+      ok: "完了"
+    },
+    ranking: {
+      title: "🏆 殿堂入り // ランキング",
+      daily: "📅 本日のTOP 10",
+      alltime: "🏆 歴代TOP 10",
+      close: "閉じる ✕"
+    },
+    ranking_prompt: {
+      title: "ゲームクリア！",
+      subtitle: "殿堂入りのため@ハンドルを入力してください",
+      submit: "⚡ 殿堂入りする",
+      skip: "スキップ"
+    },
+    mobile_boosters: {
+      title: "🚀 ブースターショップ",
+      subtitle: "ブースターをタップして次のツイートに適用：",
+      no_booster: "ブースター未選択",
+      ready: "投稿画面へ ▶"
+    },
+    endings: {
+      villano: {
+        titulo: "必要悪",
+        sub: "嫌われても、目が離せない存在。",
+        narrativa0: "あなたのTLは戦場だった。そして最後まで立っていたのはあなただけ。",
+        narrativa1: "何万件もの引用リポストがあなたの名前を罵倒した。そのたびにフォロワーが増えた。",
+        narrativa2: "結局、みんながあなたを語り続けた。それがこのプラットフォームでの権力だ。"
+      },
+      idolo_caido: {
+        titulo: "転落したアイコン",
+        sub: "頂点には足場がない。",
+        narrativa0: "タイムラインを掌握していた。そして、手放した。",
+        narrativa1: "スクショは永遠に拡散する。文脈は誰も覚えていない。",
+        narrativa2: "バズりは来たときより速く消えた。それもゲームのうち。"
+      },
+      preferido: {
+        titulo: "アルゴリズムの寵児",
+        sub: "システムが選んだのは、あなただった。",
+        narrativa0: "大して動かなくてもよかった。おすすめ欄が勝手に押し上げてくれた。",
+        narrativa1: "あなたの投稿は、夢にも思わなかったフィードにまで届いた。",
+        narrativa2: "プラットフォームにはお気に入りがいる。今回はあなたの番だった。"
+      },
+      comico: {
+        titulo: "TLの道化師",
+        sub: "笑いはヘイトより強い。",
+        narrativa0: "あなたのツイートは全部、ミームになる素材だった。",
+        narrativa1: "ミュートしていたはずの人たちが、あなたのギャグをリポストしていた。",
+        narrativa2: "ユーモアが鎧だった。一度も砕けなかった。"
+      },
+      autoridad: {
+        titulo: "言論の権威",
+        sub: "あなたが投稿すると、TLが静かになる。",
+        narrativa0: "声を張る必要はない。名前の重さが代わりに語る。",
+        narrativa1: "記者も、ブランドも、ライバル垢も、クレジットなしであなたを引用した。",
+        narrativa2: "1ツイートずつ積み上げた信頼度は、そう簡単には炎上で消えない。"
+      },
+      triunfador: {
+        titulo: "バズり王",
+        sub: "アルゴリズムを破壊し、インターネットを揺るがした。",
+        narrativa0: "狙ってもいないのにトレンド入り。次は狙って、また入った。",
+        narrativa1: "存在すら知らなかったメディアにあなたの名前が載った。",
+        narrativa2: "誰もがプレイしているのに気づいていないゲームで、あなたが勝った。"
+      },
+      nicho: {
+        titulo: "こだわりのオタク垢",
+        sub: "フォロワーは少ない。だが全員が本物だ。",
+        narrativa0: "大衆受けは必要ない。あなたのコミュニティは小さく、忠実で、容赦ない。",
+        narrativa1: "あなたの投稿はひとつひとつがイベントだ。ノイズはない、シグナルだけがある。",
+        narrativa2: "怒号に満ちたTLの中で、あなたは自分の周波数を見つけ、そこに居続けた。"
+      },
+      combo_conspira_troll: {
+        titulo: "闇の扇動者",
+        sub: "陰謀論＋クソリプ＝純粋なカオス。",
+        narrativa0: "あなたのスレッドは答えより疑問を多く残した。意図的に。",
+        narrativa1: "一斉ブロックされた。そして敬意を込めたなりすましアカウントが量産された。",
+        narrativa2: "本気で信じているのか誰も分からない。それが作戦のすべてだ。"
+      },
+      combo_influencer_troll: {
+        titulo: "炎上系インフルエンサー",
+        sub: "いいね稼ぎの昼、クソリプ製造の夜。",
+        narrativa0: "あなたのフィードはジェットコースターで、オーディエンスは中毒になっている。",
+        narrativa1: "企業がDMしてくる。アクティビストが垢報告する。同じ日に。",
+        narrativa2: "炎上の方が誠実さより収益化しやすいと証明してしまった。"
+      },
+      combo_fut_troll: {
+        titulo: "有毒サポーター",
+        sub: "チームは負けた。口論はあなたの勝ちだ。",
+        narrativa0: "試合の話をするとき、必ず「審判は買収されている」を混ぜる。",
+        narrativa1: "サブツイートが武器。外科的な精度で投げ込む。",
+        narrativa2: "あなたの垢はインターネット最大の愛憎劇の記念碑だ。"
+      },
+      combo_militante_wholesome: {
+        titulo: "ハートのある活動家",
+        sub: "世界を変えたい、でもウォームな気持ちで。",
+        narrativa0: "社会正義のスレッドは必ず猫画像まとめで締める。",
+        narrativa1: "運動が必要としていたロールモデルになった。一貫していて、人間らしい。",
+        narrativa2: "戦いながら腐らずにいられると証明した。"
+      },
+      combo_gamer_troll: {
+        titulo: "無敵のゲーマー垢",
+        sub: "GGsのみ。それ以外は眼中にない。",
+        narrativa0: "ゲームのメカニクスに関するあなたの持論がスタジオを潰した。TL上で。",
+        narrativa1: "3回垢バンされた。毎回、勝利のGIFとともに復活した。",
+        narrativa2: "ゲーマー文化があなたを羞恥心から免疫にした。少なくともそう信じている。"
+      },
+      combo_tech_wholesome: {
+        titulo: "テック・オプティミスト",
+        sub: "テクノロジーが私たちを救う。たぶん。",
+        narrativa0: "複雑なシステムをあまりにも上手いアナロジーで説明するので、読んでいて恥ずかしくなるほど。",
+        narrativa1: "フォロワーはエンジニアで、あなたの投稿を読んでやっと人間に戻れる人たち。",
+        narrativa2: "自我に満ちた業界でエンパシーを選んだ。そしてそれが機能した。"
+      },
+      combo_pod_wholesome: {
+        titulo: "魂のポッドキャスター垢",
+        sub: "280文字の世界でロングフォーム思考。",
+        narrativa0: "スレッドはチャプターで、コミュニティは忠実なリスナーだ。",
+        narrativa1: "スポンサーから連絡が来た。声を守るために断った。",
+        narrativa2: "このTLでは珍しい：みんなが最後まで読んでくれる。"
+      },
+      combo_of_troll: {
+        titulo: "有料プレミアムトロール",
+        sub: "カオスを売る。",
+        narrativa0: "無料垢から有料サブスクへ移行した。人々はドラマにお金を払う。",
+        narrativa1: "有料限定コンテンツがTLで一番スクショされている。タダで。",
+        narrativa2: "他人の怒りを既存メディアより上手く収益化した。"
+      },
+      combo_crypto_troll: {
+        titulo: "懲りないシラー",
+        sub: "WAGMI。あなた以外は。",
+        narrativa0: "$0.001のアルトコインを推奨した。$0.0001になった。「健全な調整」と言った。",
+        narrativa1: "あなたの発言に従ったコミュニティが損した。それでもフォローし続けている。",
+        narrativa2: "クリプトではファンダメンタルズより信頼が長持ちする。それを限界まで使い倒した。"
+      },
+      combo_conspira_gracioso: {
+        titulo: "悟ったピエロ",
+        sub: "最高にぶっ飛んだ陰謀論を、完璧なコメディで。",
+        narrativa0: "笑っていいのか本気で心配すべきか分からない。それがオチだ。",
+        narrativa1: "理論はおかしい。デリバリーは完璧だ。",
+        narrativa2: "誰かがアポカリプスを笑う必要がある。あなたが手を挙げた。"
+      },
+      combo_opi_troll: {
+        titulo: "論客系プロボケーター",
+        sub: "激アツなホットテイク。精度は常温。",
+        narrativa0: "あなたの日刊コラムはTLで最も憎まれ、最も読まれている投稿だ。",
+        narrativa1: "正解率40%。それで十分に影響力がある。",
+        narrativa2: "人々はあなたのアイデアのためにフォローしていない。論破するためにフォローしている。それでもカウントされる。"
+      },
+      combo_fut_info: {
+        titulo: "サッカー移籍情報の内通者",
+        sub: "クラブより先に移籍ウィンドウを知っている。",
+        narrativa0: "移籍情報の信頼度が高すぎて、確認なしでメディアに引用される。",
+        narrativa1: "あなたのリーク1件がスポーツ株の価格を動かした。",
+        narrativa2: "デジタルサッカー文化では、情報が最も価値あるゴールだ。"
+      },
+      combo_of_gracioso: {
+        titulo: "サブスク系コメディアン",
+        sub: "笑うためにお金を払う人たち。",
+        narrativa0: "有料コンテンツの方が無料より面白い。みんな分かっている。",
+        narrativa1: "ユーモアを商品にした。でも笑いのセンスは失わなかった。",
+        narrativa2: "面白いのは才能だ。それで稼ぐのはスキルだ。あなたは両方持っている。"
+      },
+      combo_per_gracioso: {
+        titulo: "皮肉系ジャーナリスト",
+        sub: "本物のニュース。バカげた見出し。",
+        narrativa0: "大手メディアと同じ記事を書く。引用されるのはあなただ。",
+        narrativa1: "皮肉が鋭すぎて、ネタか本気か分からない人が続出する。",
+        narrativa2: "データジャーナリズムとコメディの融合はあなたが作った。偶然に。"
+      },
+      combo_militante_gracioso: {
+        titulo: "ミーム活動家",
+        sub: "主義主張、バイラルフォーマットで。",
+        narrativa0: "完璧なミーム1枚で何千人ものイデオロギー的な防衛線を崩した。",
+        narrativa1: "あなたのアクティビズムはエンタメすぎて、反対派まで拡散する。",
+        narrativa2: "笑いが政治的に恐ろしい武器になれると証明した。"
+      },
+      combo_influencer_gracioso: {
+        titulo: "自虐系インフルエンサー",
+        sub: "ネタはあなた自身。それがブランドだ。",
+        narrativa0: "誰かに笑われる前に、自分で笑う。",
+        narrativa1: "ブランドはオーセンティシティのために雇う。あなたは制御されたカオスを届ける。",
+        narrativa2: "完璧なインフルエンサーだらけの世界で、あなたの「ダメさ」が最大の武器になった。"
+      },
+      combo_conspira_info: {
+        titulo: "アンダーグラウンド調査記者",
+        sub: "誰にも知られたくない真実を掘り起こす。",
+        narrativa0: "あなたの調査スレッドは何日もトレンドに居座る。",
+        narrativa1: "匿名のタレコミが届く。裏を取る。投稿する。TLが爆発する。",
+        narrativa2: "フェイクニュースの時代に、あなたはファクトという危険な道を選んだ。"
+      },
+      combo_humor_troll: {
+        titulo: "レスバの王",
+        sub: "煽りを芸術に昇華。ジョークを装った炎上で生きる。",
+        narrativa0: "炎上劇を芸術の域にまで高めた。誰もどこまでがネタでどこからが本気か見分けがつかない。",
+        narrativa1: "あなたの投稿は、トレンド論争の中心に投げ込まれる安全ピンの抜けた手榴弾だ。",
+        narrativa2: "あなたの通った後のTLは常に焦土と化すが、エンゲージメントは天井知らずに跳ね上がる。"
+      },
+      combo_influencer_wholesome: {
+        titulo: "ガラスの楽園",
+        sub: "スムージー、キャンドル、完璧に演出された清潔感。",
+        narrativa0: "穢れなき美意識の城を築き上げた。中身は空虚だが、何十万もの熱狂的な信者から崇拝されている。",
+        narrativa1: "計算し尽くされたライティング、パステルの色彩、完璧なデジタル静寂。",
+        narrativa2: "殺伐としたTLにおいて、あなたの演出された楽園は莫大な富を生む聖域となった。"
+      },
+      combo_militante_troll: {
+        titulo: "電脳の闘士",
+        sub: "イデオロギーを掲げ、煽りと罵倒を武器にする。",
+        narrativa0: "タイムラインの最前線を死守した。国民の半分をブロックしたが、熱狂的なコア層からは崇拝されている。",
+        narrativa1: "敵対勢力には猛毒そのものだが、味方の信奉者にとっては不敗のカリスマ指揮官。",
+        narrativa2: "ネットのイデオロギー戦争に中立など存在しない。あなたは一切の容赦なく敵を粉砕した。"
+      },
+      combo_crypto_info: {
+        titulo: "孤高の分析官",
+        sub: "オンチェーン分析とデータ重視。煽りは一切なし。",
+        narrativa0: "泥沼の仮想通貨界隈における奇跡：厳密なデータと誠実さ。あなたの信用は1ビットコイン以上の価値を誇る。",
+        narrativa1: "数々の詐欺や価格暴落を事前に見抜き、コミュニティを救ってきた。",
+        narrativa2: "誠実な技術解説こそが、怪しい投機筋の虚飾を打ち負かすことを証明した。"
+      },
+      combo_conspira_wholesome: {
+        titulo: "穏やかな預言者",
+        sub: "すべての陰謀論を信じるが、誰に対しても愛を持って接する。",
+        narrativa0: "どこにでも秘密結社の影を見出すが、その温厚で無害な人柄ゆえに誰もがあなたを愛してしまう。",
+        narrativa1: "終末の預言ですら、あなたにかかれば心温まるおとぎ話のように響く。",
+        narrativa2: "世界の崩壊を人懐っこい笑顔で語るあなたを、誰も本気で怒ることはできない。"
+      },
+      combo_of_info: {
+        titulo: "電脳のアクティビスト",
+        sub: "収益化プラットフォームを武器に、権利と経済を語る。",
+        narrativa0: "大胆なコンテンツ収益化と鋭い社会・経済批評を融合させ、ネット全体を驚かせた。",
+        narrativa1: "偏見やモラルハラスメントを、冷徹な論理と明確な数字で打ち破った。",
+        narrativa2: "経済的自立と文化的な発信力を、たった一つのアカウントで体現してみせた。"
+      },
+      combo_per_troll: {
+        titulo: "究極の釣り師",
+        sub: "真実よりも炎上とスキャンダルが金を呼ぶ。",
+        narrativa0: "アルゴリズムの絶対法則を悟った。ネットで最も換金性の高い燃料は『大衆の怒り』である。",
+        narrativa1: "刺激的なタイトル、悪意ある問いかけ、そして毎回確約される爆発的拡散。",
+        narrativa2: "冷静な考察は退屈を生むが、スキャンダルはサーバー代と生活費を確実に稼ぎ出す。"
+      },
+      combo_gamer_info: {
+        titulo: "真摯なるゲーム評論家",
+        sub: "物語・ゲーム性・技術を徹底分析する論壇派。",
+        narrativa0: "絶叫系配信者の対極：奇をてらわず冷静に本質を突くレビューで、開発スタジオをも動かす存在。",
+        narrativa1: "ゲームデザインの構造と商業的罠を、外科手術のような正確さで解剖する。",
+        narrativa2: "安易なタイアップが溢れるSNSで、あなたの推薦はゲーマーにとっての唯一の羅針盤だ。"
+      },
+      combo_fut_wholesome: {
+        titulo: "清廉なるサポーター",
+        sub: "対戦相手を敬い、審判を誹謗中傷しない。",
+        narrativa0: "サッカー界隈の奇跡：美しいプレーを讃え、敵サポにも敬意を払い、TLの殺伐とした空気を浄化する。",
+        narrativa1: "自チームを熱狂的に愛しながらも、他者への憎悪に染まらない鑑のような姿勢。",
+        narrativa2: "罵詈雑言が飛び交う競技場のようなネットで、あなたの投稿は一筋の清涼剤となった。"
+      },
+      combo_tech_troll: {
+        titulo: "毒舌ディスラプター",
+        sub: "競合を公然と煽り倒しながら爆速開発する創業者。",
+        narrativa0: "大手テックの無駄やリストラを辛辣に嘲笑しながら、3つの黒字SaaSを連続でローンチした。",
+        narrativa1: "傲岸不遜な物言いに見合う、圧倒的なプロダクト開発とデプロイの速さ。",
+        narrativa2: "シリコンバレーのエリートからは嫌悪されているが、彼らは悔しがりながら課金している。"
+      },
+      combo_pod_gracioso: {
+        titulo: "深夜のカリスマ司会者",
+        sub: "笑いと毒を織り交ぜたトークでバイラルを連発。",
+        narrativa0: "ポッドキャストをネット最強のバラエティ番組へと育て上げ、切り抜き動画が毎回ミリオン再生を叩き出す。",
+        narrativa1: "各界の著名人や問題児があなたのブースに集まり、自虐と本音で大笑いする。",
+        narrativa2: "気取らない雑談を、時代を牽引する大衆エンターテインメントへと昇華させた。"
+      },
+      combo_opi_info: {
+        titulo: "論客の巨頭",
+        sub: "一次資料と膨大な文献に基づき社会を読み解く。",
+        narrativa0: "あなたの連投スレッドはもはや大学の公開講義。重大ニュースが起きるたび、誰もがあなたの見解を待ち望む。",
+        narrativa1: "確かな一次データ、学術的引用、そして歴史的視座で日常のノイズを一刀両断。",
+        narrativa2: "不透明な時代だからこそ、人々は真の知性を求め、アルゴリズムはあなたを頂点へ押し上げた。"
+      },
+      combo_humor_wholesome: {
+        titulo: "TLの良心",
+        sub: "誰も傷つけずに笑顔を生み出す優しい笑い。",
+        narrativa0: "不可能を成し遂げた：他人を嘲笑したり炎上に加担することなく、何百万人ものフォロワーを温かい笑いで包み込んだ。",
+        narrativa1: "世代や属性を超えて愛される、普遍的で平和なミームとユーモア。",
+        narrativa2: "悪意や冷笑が蔓延するプラットフォームにおいて、優しい笑いもまた強烈にバズることを証明した。"
+      },
+      finale_deuda: {
+        titulo: "自己破産",
+        sub: "数字は嘘をつかなかった。あなたがついた。",
+        narrativa0: "ブースター代、キャンペーン費、あらゆる投資——全部赤字。",
+        narrativa1: "スポンサー投稿への必死の転換をTLは見抜いた。そして拒絶した。",
+        narrativa2: "アルゴリズムは赤字垢に慈悲を持たない。オーディエンスも同じだ。"
+      },
+      finale_burnout: {
+        titulo: "燃え尽き症候群",
+        sub: "タイムラインが勝った。あなたではない。",
+        narrativa0: "アプリを開くことが物理的に苦痛になる瞬間が来た。",
+        narrativa1: "メンタルを無視し続けた。ツケが回ってきた。",
+        narrativa2: "震える手で最後のツイートを投稿した。その後、沈黙。"
+      },
+      finale_cancelacion_3strikes: {
+        titulo: "永久凍結",
+        sub: "3ストライク。異議申し立て不可。",
+        narrativa0: "プラットフォームからメールが届いた。内容はすでに分かっていた。",
+        narrativa1: "3回、一線を越えた。3回、TLが組織的な総攻撃を仕掛けた。",
+        narrativa2: "モデレーションシステムは慈悲のない審判だ。今ならわかる。"
+      },
+      finale_cancelacion_zonaroja: {
+        titulo: "炎上限界突破",
+        sub: "ヘイト値80%継続。プラットフォームに未来なし。",
+        narrativa0: "あなたのフィードは集合的なヘイトの廃棄場になった。",
+        narrativa1: "新しい投稿のたびに、もう制御できない炎にガソリンを注いだ。",
+        narrativa2: "ヘイトがコンテンツを飲み込むとき、プラットフォームがあなたの代わりに決断する。"
+      }
+    }
+  }
+};
+
+// Registrar en el motor i18n
+if (typeof i18n !== "undefined") {
+  i18n.registerDictionary("es", UI_TRANSLATIONS.es);
+  i18n.registerDictionary("en", UI_TRANSLATIONS.en);
+  i18n.registerDictionary("ja", UI_TRANSLATIONS.ja);
+}
+
+
+/* ?? M?DULO: content/i18n/translations-archetypes.js ?? */
+/**
+ * Tuitero v19 — Localización de Arquetipos, Personalidades y Boosters
+ * Adaptación cultural para Español (ES), Inglés (EN) y Japonés (JA)
+ */
+
+const ARCHETYPE_TRANSLATIONS = {
+  es: {
+    archetypes: {
+      opinologo: {
+        nombre: "Opinólogo/a",
+        desc: "Tuitea sobre todo sin saber de nada. Especialista en indignación y sentencias definitivas.",
+        dif: "Dificultad: Alta"
+      },
+      futbolero: {
+        nombre: "Futbolero/a",
+        desc: "La vida es una final de Copa del Mundo. Odia a los rivales y vive del bardo en el entretiempo.",
+        dif: "Dificultad: Media"
+      },
+      militante: {
+        nombre: "Militante Político/a",
+        desc: "Defiende la causa 24/7. El algoritmo es una trinchera ideológica sin grises.",
+        dif: "Dificultad: Alta"
+      },
+      humor: {
+        nombre: "Cuenta de Humor",
+        desc: "Memes, shitpost y robos descarados de chistes. Todo sea por la dopamina del retuit.",
+        dif: "Dificultad: Baja"
+      },
+      periodista: {
+        nombre: "Periodista Indie",
+        desc: "'Urgente', fuentes en off y primicias dudosas. Credibilidad frágil pero adicto a la primicia.",
+        dif: "Dificultad: Alta"
+      },
+      cryptobro: {
+        nombre: "Crypto Bro",
+        desc: "To the moon, lambos y libertad financiera. Sobrevive a fuerza de café y velas rojas.",
+        dif: "Dificultad: Media"
+      },
+      gamer: {
+        nombre: "Gamer / Streamer",
+        desc: "Clips virales, quejas del meta y rage quits. La comunidad lo ama hasta que prende la cámara.",
+        dif: "Dificultad: Baja"
+      },
+      conspiranoico: {
+        nombre: "Conspiranoico/a",
+        desc: "Cree que nada es lo que parece. Conecta puntos invisibles con hilo rojo y paranoia pura.",
+        dif: "Dificultad: Media"
+      },
+      influencer: {
+        nombre: "Influencer Lifestyle",
+        desc: "Aesthetics, café de especialidad y canjes eternos. Sonríe mientras vende aspiraciones.",
+        dif: "Dificultad: Baja"
+      },
+      onlyfans: {
+        nombre: "Creador/a de Contenido Erótico",
+        desc: "Bait sutil, interacción constante y monetización al mango. Un ojo en la cámara y otro en el saldo.",
+        dif: "Dificultad: Media"
+      },
+      techie: {
+        nombre: "Techie / Startup Bro",
+        desc: "IA, rondas de inversión y disrupción constante. Cita a Steve Jobs y duerme 4 horas.",
+        dif: "Dificultad: Media"
+      },
+      podcaster: {
+        nombre: "Podcaster",
+        desc: "Entrevistas de 3 horas sobre la vida. Micrófono caro y opiniones infinitas sobre el éxito.",
+        dif: "Dificultad: Media"
+      }
+    },
+    personalities: {
+      picante: { nombre: "Picante", desc: "Provocador y filoso. Genera bardo instantáneo." },
+      academico: { nombre: "Académico", desc: "Hilos eternos, gráficos y tono profesoral." },
+      conciliador: { nombre: "Conciliador", desc: "Busca consensos y pide calma. Suele ser devorado." },
+      troll: { nombre: "Troll", desc: "Provocador nato. Máximo riesgo de cancelación pero enorme impacto viral.", riesgo: "Alto", retorno: "Alto", bonus: "+15% impacto en Peleas y Baits", malus: "+Odio en fracasos" },
+      wholesome: { nombre: "Wholesome", desc: "Buen trato y buena onda. Protege la salud mental. Nobleza premiada.", riesgo: "Bajo", retorno: "Medio", bonus: "+10% éxito en Tema Propio", malus: "-15% en Peleas" },
+      gracioso: { nombre: "Gracioso", desc: "El todoterreno del humor. Transforma cualquier tema en risa.", riesgo: "Medio", retorno: "Medio", bonus: "+12% en Memes y Quotes", malus: "-10% en Hilos" },
+      informativo: { nombre: "Informativo", desc: "Construye credibilidad a largo plazo. El camino riguroso pero seguro.", riesgo: "Medio", retorno: "Alto (lento)", bonus: "+15% credibilidad en Hilos y Datos", malus: "-10% viralidad en Memes" }
+    },
+    boosters: {
+      verif: { nombre: "Pagar Verificado", desc: "Comprás la tilde azul. El algoritmo te muestra a la fuerza pero te miran de reojo." },
+      ads: { nombre: "Pauta en el Feed", desc: "Invertís en anuncios para inflar impresiones artificialmente." },
+      ghost: { nombre: "Community Manager Pro", desc: "Delegás la redacción en un profesional para blindar tu credibilidad." },
+      shoutout: { nombre: "Mención de Famoso", desc: "Un pez gordo del timeline te cita y te llueven notificaciones." },
+      bots: { nombre: "Comprar Seguidores Fantasma", desc: "Granjas de cuentas falsas para inflar el número rápido sin engagement real." },
+      agencia_pr: { nombre: "Agencia de PR & Influencers", desc: "Campaña de contención y lavado de imagen para frenar el odio masivo." },
+      trollfarm: { nombre: "Granja de Trolls Defensiva", desc: "Brigada digital que ataca a tus críticos y desvía la conversación." }
+    }
+  },
+
+  en: {
+    archetypes: {
+      opinologo: {
+        nombre: "Pundit / Hot-Take Artist",
+        desc: "Unsolicited expertise on every breaking crisis. Loud, polarizing, and perpetually trending.",
+        dif: "Difficulty: High"
+      },
+      futbolero: {
+        nombre: "Sports Ultra / Fanatic",
+        desc: "Every day is a championship derby. Measures human worth by club loyalty and hates rivals on sight.",
+        dif: "Difficulty: Medium"
+      },
+      militante: {
+        nombre: "Culture Warrior / Partisan",
+        desc: "Defends the narrative 24/7. The algorithm is a culture war trench with zero gray areas.",
+        dif: "Difficulty: High"
+      },
+      humor: {
+        nombre: "Meme Page / Shitposter",
+        desc: "Low-effort memes and brazenly stolen jokes. Clout is the only currency that matters.",
+        dif: "Difficulty: Low"
+      },
+      periodista: {
+        nombre: "Independent Journalist",
+        desc: "'BREAKING NEWS', anonymous insiders, and unverified leaks. Addicted to scoops over facts.",
+        dif: "Difficulty: High"
+      },
+      cryptobro: {
+        nombre: "Crypto Degenerate / Web3 Bro",
+        desc: "To the moon, laser eyes, and financial freedom. Thrives on copium and red candle volatility.",
+        dif: "Difficulty: Medium"
+      },
+      gamer: {
+        nombre: "Gamer / Streamer",
+        desc: "Viral clips, tier list arguments, and raging hot mics. Loved right up until the livestream goes wrong.",
+        dif: "Difficulty: Low"
+      },
+      conspiranoico: {
+        nombre: "Conspiracy Truther",
+        desc: "Convinced reality is an orchestrated simulation. Connects imaginary dots with red yarn.",
+        dif: "Difficulty: Medium"
+      },
+      influencer: {
+        nombre: "Lifestyle Influencer",
+        desc: "Oat lattes, neutral color palettes, and endless brand sponsorships. Toxic positivity in beige.",
+        dif: "Difficulty: Low"
+      },
+      onlyfans: {
+        nombre: "Spicy Creator / Thirst Trapper",
+        desc: "Seductive bait, flirty interactions, and high subscription monetization. Turning scrolls into revenue.",
+        dif: "Difficulty: Medium"
+      },
+      techie: {
+        nombre: "Tech Founder / Hustle Bro",
+        desc: "AI evangelist, seed rounds, and continuous disruption. Quotes Steve Jobs and sleeps 4 hours.",
+        dif: "Difficulty: Medium"
+      },
+      podcaster: {
+        nombre: "Podcast Host",
+        desc: "Three-hour unedited rambles about life and stoicism. High-end mic, questionable insight.",
+        dif: "Difficulty: Medium"
+      }
+    },
+    personalities: {
+      picante: { nombre: "Spicy", desc: "Provocative, biting, and always fueling ratio wars." },
+      academico: { nombre: "Academic", desc: "Exhaustive multi-tweet threads with footnotes and charts." },
+      conciliador: { nombre: "Diplomatic", desc: "Appeals for nuance and calm. Often gets ratioed by both sides." },
+      troll: { nombre: "Troll", desc: "Born provocateur. Maximum cancellation risk but huge viral impact.", riesgo: "High", retorno: "High", bonus: "+15% impact on Clashes & Baits", malus: "+Hate on failed tweets" },
+      wholesome: { nombre: "Wholesome", desc: "Good vibes and clean demeanor. Shields mental health. Rewarded for kindness.", riesgo: "Low", retorno: "Medium", bonus: "+10% success on Niche Topics", malus: "-15% in Clashes" },
+      gracioso: { nombre: "Witty", desc: "All-terrain humor. Turns every drama into laughs.", riesgo: "Medium", retorno: "Medium", bonus: "+12% on Memes & Quote-tweets", malus: "-10% on Long Threads" },
+      informativo: { nombre: "Data-Driven", desc: "Builds durable credibility over time. The rigorous, steady climb.", riesgo: "Medium", retorno: "High (Slow)", bonus: "+15% credibility on Threads & Data", malus: "-10% virality on Memes" }
+    },
+    boosters: {
+      verif: { nombre: "Blue Checkmark Subscription", desc: "Pay for algorithmic boost. Visibility explodes, but everyone judges you." },
+      ads: { nombre: "Sponsored Feed Ads", desc: "Pump ad spend into the timeline to artificially juice your impressions." },
+      ghost: { nombre: "Pro Ghostwriter / Social Lead", desc: "Outsource your tweets to a savvy operator to shield your credibility." },
+      shoutout: { nombre: "Celebrity Repost", desc: "A timeline titan quotes your post, unleashing an avalanche of notifications." },
+      bots: { nombre: "Buy Bot Swarm", desc: "Instant vanity metrics that pump follower counts with zero organic engagement." },
+      agencia_pr: { nombre: "PR Agency & Crisis Control", desc: "Professional image laundering that suppresses hate spikes and media fallout." },
+      trollfarm: { nombre: "Digital Defense Militia", desc: "A coordinated troll army that harasses detractors and derails bad press." }
+    }
+  },
+
+  ja: {
+    archetypes: {
+      opinologo: {
+        nombre: "ご意見番 / 物申す系",
+        desc: "専門知識ゼロで全トレンドに首を突っ込む。上から目線の正論パンチで連日トレンド入り。",
+        dif: "難易度: 上級"
+      },
+      futbolero: {
+        nombre: "熱狂的サポーター / ガチ勢",
+        desc: "人生は常に天王山。推しチームの勝利が全てで、ライバル陣営の煽りとレスバが生き甲斐。",
+        dif: "難易度: 中級"
+      },
+      militante: {
+        nombre: "政治系インフルエンサー",
+        desc: "推し陣営を全肯定し、対立陣営を全否定。白黒つけなきゃ気が済まないネット論客。",
+        dif: "難易度: 上級"
+      },
+      humor: {
+        nombre: "ネタ垢 / ミーム職人",
+        desc: "パクツイ、クソコラ、時事ネタ擦り倒し。バズるためならプライドすら投げ捨てる。",
+        dif: "難易度: 初級"
+      },
+      periodista: {
+        nombre: "インディー記者 / 速報民",
+        desc: "「独自取材」「関係者談」を乱発。裏取りよりも最速ツイート、誤報すらエンタメ化。",
+        dif: "難易度: 上級"
+      },
+      cryptobro: {
+        nombre: "暗号資産トレーダー / クリプト民",
+        desc: "億り人を夢見て草コインに特攻。暴落相場でも虚勢を張り続け、次の爆益を信じる。",
+        dif: "難易度: 中級"
+      },
+      gamer: {
+        nombre: "ゲーム配信者 / ストリーマー",
+        desc: "大会の切り抜き動画と台パン配信で同接を稼ぐ。失言ひとつで大炎上する綱渡り生活。",
+        dif: "難易度: 初級"
+      },
+      conspiranoico: {
+        nombre: "考察系 / 陰謀論ウォッチャー",
+        desc: "「メディアが報じない真実」を追い求める考察班。点と点を無理やり繋ぎ信者を獲得。",
+        dif: "難易度: 中級"
+      },
+      influencer: {
+        nombre: "キラキラ系インフルエンサー",
+        desc: "オーガニックカフェと丁寧な暮らしのPR案件。フィルター越しの虚構で承認欲求を満たす。",
+        dif: "難易度: 初級"
+      },
+      onlyfans: {
+        nombre: "裏垢女子 / ファンクラブ運営",
+        desc: "匂わせチラ見せと有料限定コンテンツ。孤独なネット民を沼らせて現金を巻き上げる。",
+        dif: "難易度: 中級"
+      },
+      techie: {
+        nombre: "ITベンチャー起業家 / Web系信者",
+        desc: "AI、シード調達、ゲームチェンジャー。横文字カタカナ語を乱射して業界を牽引気取り。",
+        dif: "難易度: 中級"
+      },
+      podcaster: {
+        nombre: "ポッドキャスター / 音声配信者",
+        desc: "高級マイクを前に人生論を語り明かす長尺雑談。中身は薄いが熱狂的リスナーが信奉。",
+        dif: "難易度: 中級"
+      }
+    },
+    personalities: {
+      picante: { nombre: "辛口 / 煽り系", desc: "皮肉たっぷりの毒舌。常に炎上すれすれの刺激を投下。" },
+      academico: { nombre: "インテリ / 理論派", desc: "長文ツリーと統計データで圧倒する教授スタイル。" },
+      conciliador: { nombre: "平和主義 / バランス派", desc: "「みんな仲良く」を唱えるが、両陣営から叩かれがち。" },
+      troll: { nombre: "トロール / 煽り系", desc: "天性の煽り屋。炎上リスクは極大だが、爆発的な拡散力を誇る。", riesgo: "高", retorno: "高", bonus: "レスバトルと釣り投稿の効果 +15%", malus: "失敗時のヘイト上昇量増加" },
+      wholesome: { nombre: "聖人 / 癒やし系", desc: "平和的で温かい交流。メンタルヘルスを守り、誠実さで愛される。", riesgo: "低", retorno: "中", bonus: "専門テーマツイートの成功率 +10%", malus: "レスバトルの効果 -15%" },
+      gracioso: { nombre: "ユーモア / お笑い枠", desc: "笑いのオールラウンダー。どんな話題もユーモアに変えて笑い飛ばす。", riesgo: "中", retorno: "中", bonus: "ミーム・引用RTの効果 +12%", malus: "長文解説スレッドの効果 -10%" },
+      informativo: { nombre: "知識人 / 解説系", desc: "確かなファクトと分析で長期的な信頼を築く、堅実な王道スタイル。", riesgo: "中", retorno: "高（大器晩成）", bonus: "長文スレッド・データ投稿の信用度 +15%", malus: "ミームツイートの拡散力 -10%" }
+    },
+    boosters: {
+      verif: { nombre: "認証バッジ課金", desc: "青バッジを購入して露出度爆上げ。ただし界隈からは冷ややかな目で見られる。" },
+      ads: { nombre: "タイムライン広告出稿", desc: "課金しておすすめ欄をジャック。数字を無理やり底上げする。" },
+      ghost: { nombre: "専属SNS運用代行の雇用", desc: "プロに運用を丸投げし、炎上回避とブランディングを徹底。" },
+      shoutout: { nombre: "大物インフルエンサーの引用RT", desc: "ネットの権力者に拾われ、通知欄が爆発する。" },
+      bots: { nombre: "海外ボット部隊の大量購入", desc: "見栄のためだけにフォロワー数を水増し。エンゲージメントは皆無。" },
+      agencia_pr: { nombre: "大手PR代理店 ＆ 危機管理", desc: "プロの火消しチームを雇い、炎上を鎮静化させて好感度を回復。" },
+      trollfarm: { nombre: "親衛隊トロールファーム", desc: "批判的なリプ欄をアンチ攻撃部隊で埋め尽くし、言論を封殺。" }
+    }
+  }
+};
+
+// Registrar en el motor i18n
+if (typeof i18n !== "undefined") {
+  i18n.registerDictionary("es", ARCHETYPE_TRANSLATIONS.es);
+  i18n.registerDictionary("en", ARCHETYPE_TRANSLATIONS.en);
+  i18n.registerDictionary("ja", ARCHETYPE_TRANSLATIONS.ja);
+}
+
+
+/* ?? M?DULO: content/i18n/translations-events.js ?? */
+/**
+ * Tuitero v19 — Localización de Eventos y Dilemas de Arquetipo
+ * Soporte integral para ES (original), EN y JA
+ */
+
+const EVENT_TRANSLATIONS = {
+  "en": {
+    "crypto_halving": {
+      "titulo": "The Halving Spectacle",
+      "desc": "The most anticipated event in crypto is unfolding live. Your community is glued to the charts, waiting on your prediction.",
+      "opciones": [
+        {
+          "texto": "Predict a steady rise without throwing out wild numbers.",
+          "tweet": "Halving confirmed. Historically, accumulation follows. No wild price targets, but data doesn't lie. Keep your eyes peeled.",
+          "resultado": "Moderate growth. You stay credible regardless of price swings."
+        },
+        {
+          "texto": "Post a detailed historical cycle analysis calling for caution.",
+          "tweet": "Deep dive into past halving cycles: 2016 vs 2020 patterns. Not financial advice, just context. DYOR before buying. 🧵👇",
+          "resultado": "Respected industry voices quote your thread; your authority soars."
+        },
+        {
+          "texto": "Claim Bitcoin hits 500k this month and drop a 50x leverage affiliate link.",
+          "tweet": "Moon mission INEVITABLE. $500k by end of month. If you aren't positioned, you missed out. 50x leverage link in bio 🚀🚀",
+          "resultado": "If price dips, the timeline brands you a predatory scammer."
+        }
+      ]
+    },
+    "crypto_startup": {
+      "titulo": "Seeking an Advisor",
+      "desc": "A new Web3 startup offers you an official advisory role with token allocation and promotion duties.",
+      "opciones": [
+        {
+          "texto": "Accept but state clearly that it is purely an ad deal.",
+          "tweet": "Heads up: this is sponsored, not investment advice. Paid to amplify, not manage your bags. With that said, welcome aboard 🤝",
+          "resultado": "You pocket income without fully selling out, though purists judge you."
+        },
+        {
+          "texto": "Decline after auditing the contract and spotting red flags.",
+          "tweet": "Not everything has a price tag. Integrity and respecting followers come before easy cash.",
+          "resultado": "You share your technical doubts. Followers praise you for saving their funds."
+        },
+        {
+          "texto": "Shill the project as a revolutionary gem without disclosing tokens.",
+          "tweet": "Found an undiscovered 100x gem with world-class tech. Insiders are quietly loading up before the mainnet launch.",
+          "resultado": "The team dumps tokens. You are dragged across the feed."
+        }
+      ]
+    },
+    "crypto_hackeo": {
+      "titulo": "Exchange on Fire",
+      "desc": "Rumors swirl that a major centralized exchange is insolvent and freezing user withdrawals.",
+      "opciones": [
+        {
+          "texto": "Report neutrally citing only verified exchange statements.",
+          "tweet": "Monitoring the withdrawal delays. Waiting on official post-mortem before speculating.",
+          "resultado": "Calm, professional coverage appreciated by level-headed traders."
+        },
+        {
+          "texto": "Publish an emergency self-custody guide for hardware wallets.",
+          "tweet": "Not your keys, not your crypto. Simple guide on moving funds to cold storage right now 🧵",
+          "resultado": "Thousands bookmark your thread. You become the hero of the day."
+        },
+        {
+          "texto": "Dismiss everything as baseless FUD and tell people to keep funds on-chain.",
+          "tweet": "Ignore the cheap FUD. The exchange is solid and whales are just trying to shake you out. Keep holding.",
+          "resultado": "The exchange collapses completely. Your credibility is decimated."
+        }
+      ]
+    },
+    "crypto_rugpull": {
+      "titulo": "The Rug Pull Fallout",
+      "desc": "A DeFi protocol you briefly mentioned last week just vanished with $10 million in community liquidity.",
+      "opciones": [
+        {
+          "texto": "Acknowledge the mistake publicly without excuses.",
+          "tweet": "I take full responsibility. I highlighted a project that turned out to be malicious. I failed to vet properly and I am sorry.",
+          "resultado": "Painful backlash, but honest admission earns long-term respect."
+        },
+        {
+          "texto": "Contribute personal funds to kickstart a victim recovery pool.",
+          "tweet": "Setting up a recovery fund with my own capital for affected followers. Let's make this right.",
+          "resultado": "A financial hit, but your community now defends you fiercely."
+        },
+        {
+          "texto": "Delete all past tweets and claim your account was hacked.",
+          "tweet": "My account was compromised last week. Anyone following links wasn't listening to me.",
+          "resultado": "Followers pull up archived screenshots. Ratio of the century."
+        }
+      ]
+    },
+    "crypto_conferencia": {
+      "titulo": "Keynote Speaker",
+      "desc": "You are invited to deliver a keynote at the biggest international blockchain summit.",
+      "opciones": [
+        {
+          "texto": "Deliver an honest, grounded talk on real adoption barriers.",
+          "tweet": "Keynote done. Spoke on why crypto UX still sucks and how we fix it instead of hyping tokens.",
+          "resultado": "Builders and venture funds respect your grounded pragmatism."
+        },
+        {
+          "texto": "Deliver a fiery maximalist speech predicting the death of fiat.",
+          "tweet": "Fiat is dying before our eyes. The future belongs to decentralized sovereign math. LFG.",
+          "resultado": "Clips circulate wildly among crypto purists. Viral surge."
+        },
+        {
+          "texto": "Show up late, shill a meme coin, and argue with the moderator.",
+          "tweet": "They gave me a mic and didn't like what I had to say. Real degens don't wear suits.",
+          "resultado": "Turned into an instant laughingstock meme across Crypto Twitter."
+        }
+      ]
+    },
+    "of_collab": {
+      "titulo": "Collab of the Year",
+      "desc": "A top-tier creator in your niche proposes a high-profile collaborative photoshoot.",
+      "opciones": [
+        {
+          "texto": "Post tasteful, candid teaser selfies from behind the scenes.",
+          "tweet": "Fun afternoon in the studio with the best company ✨ Full set dropping tonight on the main page.",
+          "resultado": "Healthy crossover traffic with great positive reception."
+        },
+        {
+          "texto": "Craft an artistic, editorial-grade high-fashion concept.",
+          "tweet": "So proud of this shoot. We spent weeks perfecting the lighting and aesthetic. Art is art.",
+          "resultado": "Praise for production quality. Expands your appeal to premium subscribers."
+        },
+        {
+          "texto": "Push platform terms of service to the absolute edge.",
+          "tweet": "If you know, you know 😈 New uncensored drop is live. Definitely not for the faint of heart.",
+          "resultado": "Temporary shadowban and platform warnings, though subscriber spike is real."
+        }
+      ]
+    },
+    "of_hater": {
+      "titulo": "The Timeline Troll",
+      "desc": "A recurring troll floods every tweet you post with self-righteous, moralizing harassment.",
+      "opciones": [
+        {
+          "texto": "Block quietly and move on with your day.",
+          "tweet": "Blocked and moving on. Protecting my peace always 💅",
+          "resultado": "Cuts the toxicity at the root without wasting energy."
+        },
+        {
+          "texto": "Ignore and let your community roast him in replies.",
+          "tweet": "Funny how the people who claim to hate my content spend all day refreshing my profile 🙃",
+          "resultado": "Fans rush to your defense. Community solidarity skyrockets."
+        },
+        {
+          "texto": "Expose hypocritical old DMs the troll sent you months ago.",
+          "tweet": "Since you insisted on lecturing me publicly: here are your DMs from 3 months ago 🙂 Moralists are always the biggest hypocrites.",
+          "resultado": "Brutal public destruction. Massive drama erupts across the timeline."
+        }
+      ]
+    },
+    "of_regalo": {
+      "titulo": "The Mysterious Gift",
+      "desc": "An anonymous subscriber sends high-end streaming gear to your private PO Box.",
+      "opciones": [
+        {
+          "texto": "Return the gift to avoid unwritten obligations.",
+          "tweet": "When strings might be attached, peace of mind is worth more than free gear.",
+          "resultado": "Maintains professional boundaries at the cost of free hardware."
+        },
+        {
+          "texto": "Acknowledge the gift publicly with strict professional boundaries.",
+          "tweet": "Big shoutout to the community for the studio upgrade! Everything goes directly toward making better content for you all.",
+          "resultado": "Fans appreciate seeing their support put to good work."
+        },
+        {
+          "texto": "Keep the gear, tease the sender, and give a fake private number.",
+          "tweet": "Somebody spoiled me today... maybe I'll text you a thank you 😉",
+          "resultado": "The stalker escalates demands. Toxic drama ensues."
+        }
+      ]
+    },
+    "of_filtracion": {
+      "titulo": "Leaked Content",
+      "desc": "A pirate forum leaks your subscriber-only content across public social media.",
+      "opciones": [
+        {
+          "texto": "File DMCA takedowns silently through your legal team.",
+          "tweet": "Quietly handling business behind the scenes. Focus on the art.",
+          "resultado": "Content removed with minimal public commotion."
+        },
+        {
+          "texto": "Post a frank, vulnerable statement about creative theft.",
+          "tweet": "Piracy isn't harmless fun—it steals hours of labor from independent creators. Support real artists.",
+          "resultado": "Generates huge empathy and converts casual observers into paying subscribers."
+        },
+        {
+          "texto": "Laugh it off, claim the leak was intentional promo, and hike subscription prices.",
+          "tweet": "Thanks for the free billboard advertising, pirates! Prices go up tonight since demand is through the roof 💅",
+          "resultado": "Brazen boss move. Polarizing, but brings in heavy revenue."
+        }
+      ]
+    },
+    "of_marca_grande": {
+      "titulo": "The Corporate Sponsor",
+      "desc": "A mainstream cosmetics conglomerate reaches out for an official brand partnership.",
+      "opciones": [
+        {
+          "texto": "Accept on the condition of total creative control over the campaign.",
+          "tweet": "Honored to partner with a legacy brand that respects creative freedom. Let's shake things up.",
+          "resultado": "Groundbreaking deal bridging alternative creators with mainstream legitimacy."
+        },
+        {
+          "texto": "Turn it down because their brand contract forces you to sanitize your feed.",
+          "tweet": "I built this platform on authenticity. I will never let a corporate contract tell me how to dress or speak.",
+          "resultado": "Beloved by core supporters for refusing to sell out."
+        },
+        {
+          "texto": "Sign the sanitized contract and scrub half your spicy timeline history.",
+          "tweet": "Time for a new, elegant chapter in my journey ✨ Excited for what's ahead!",
+          "resultado": "Lucrative payout, but core early subscribers feel abandoned."
+        }
+      ]
+    },
+    "life_viaje": {
+      "titulo": "Sponsored Getaway",
+      "desc": "A luxury boutique resort invites you for an all-expenses-paid weekend in exchange for feed coverage.",
+      "opciones": [
+        {
+          "texto": "Standard poolside photos with glowing brand gratitude.",
+          "tweet": "Paradise found ✨ Eternal gratitude to the team here for making every detail pure magic.",
+          "resultado": "Classic influencer content. Reliable engagement without controversy."
+        },
+        {
+          "texto": "Curate an in-depth aesthetic travel guide with genuine local tips.",
+          "tweet": "Beyond the resort: secret cafes, local artisans, and where to wander. Full travel diary 🧵👇",
+          "resultado": "Followers love actionable utility over generic glamour."
+        },
+        {
+          "texto": "Complain publicly about room temperature and demand VIP perks.",
+          "tweet": "Air conditioning in room 402 is barely functional. When you pay for 5 stars, you expect 5 stars. Do better.",
+          "resultado": "Branded an entitled diva. Backlash in quote-tweets."
+        }
+      ]
+    },
+    "life_morning": {
+      "titulo": "The Flawless Morning Routine",
+      "desc": "Your 5 AM morning routine vlog blows up, but comments accuse you of promoting toxic productivity.",
+      "opciones": [
+        {
+          "texto": "Ignore the debate and post your morning matcha latte.",
+          "tweet": "Slow sips and positive vibrations only today 🍵 Grateful for every moment.",
+          "resultado": "Maintains aesthetic peace, letting the criticism fade."
+        },
+        {
+          "texto": "Clarify that everyone has their own rhythm and routines aren't one-size-fits-all.",
+          "tweet": "Routines are about finding what centers YOU. Some thrive at dawn, others at midnight. Do what serves your soul ✨",
+          "resultado": "Balanced, mature response that disarms critics."
+        },
+        {
+          "texto": "Reply condescendingly that people are lazy if they don't wake up at 4:30 AM.",
+          "tweet": "We all have the same 24 hours. The difference between success and mediocrity is what you do while others sleep.",
+          "resultado": "Massive ratio. Quotes turn into endless mocking memes."
+        }
+      ]
+    },
+    "life_producto": {
+      "titulo": "Faulty Skincare Collab",
+      "desc": "Followers report that a sponsored night cream you promoted caused skin breakouts.",
+      "opciones": [
+        {
+          "texto": "Dismiss it as rare isolated cases and suggest consulting a dermatologist.",
+          "tweet": "Skin chemistry is unique for everyone. Always patch-test and consult a specialist before starting new serums.",
+          "resultado": "Technically defensive, but leaves disgruntled buyers unsatisfied."
+        },
+        {
+          "texto": "Take accountability, halt promo, and demand answers from the brand.",
+          "tweet": "Pausing all collaborations with this brand immediately. Your health comes before any sponsor contract.",
+          "resultado": "Exemplary integrity. Credibility and trust multiply tenfold."
+        },
+        {
+          "texto": "Delete critical replies and pretend everything is glowing.",
+          "tweet": "Loving all the gorgeous feedback from everyone trying the new night routine! Glow on ✨",
+          "resultado": "Expose threads surface showing deleted comments. Reputation tanks."
+        }
+      ]
+    },
+    "life_mascara_cae": {
+      "titulo": "Behind the Filter",
+      "desc": "An unedited photo of you looking stressed and disheveled leaks from an airport terminal.",
+      "opciones": [
+        {
+          "texto": "Laugh it off and post self-deprecating humor.",
+          "tweet": "Yes, that's me running on 2 hours of sleep and airport coffee. Influencers are human too 😂",
+          "resultado": "Relatable charm turns a potential embarrassment into a win."
+        },
+        {
+          "texto": "Post an honest reflection on the exhausting pressure of curated perfection.",
+          "tweet": "The pressure to appear flawless 24/7 is suffocating. Sometimes life is messy, and that's okay.",
+          "resultado": "Viral wave of support celebrating unvarnished honesty."
+        },
+        {
+          "texto": "Claim the photo was an intentional performance art experiment.",
+          "tweet": "Fascinating to watch society obsess over an uncurated image. A social experiment on perception.",
+          "resultado": "Cringe overload. The timeline roasts your pretentious excuse."
+        }
+      ]
+    },
+    "life_producto_milagro": {
+      "titulo": "The Miracle Detox Deal",
+      "desc": "A dubious supplement brand offers an astronomical sum to promote their quick detox tea.",
+      "opciones": [
+        {
+          "texto": "Refuse outright to preserve your followers' trust.",
+          "tweet": "No shortcuts, no magic potions. Nourish your body with real food and sleep.",
+          "resultado": "Health advocates applaud your refusal to push snake oil."
+        },
+        {
+          "texto": "Accept but include extensive health disclaimers in the caption.",
+          "tweet": "Partnering with [Brand]—remember teas are just supplements, not medical miracles! (Ad)",
+          "resultado": "You cash the check, but eagle-eyed followers notice the compromise."
+        },
+        {
+          "texto": "Promote it relentlessly with extravagant weight-loss claims.",
+          "tweet": "Dropped 10 pounds in 5 days with this tea! Absolute game changer, grab yours before it sells out!",
+          "resultado": "Fact-checkers and community notes destroy the post. Severe credibility hit."
+        }
+      ]
+    },
+    "poli_debate": {
+      "titulo": "The Electoral Debate",
+      "desc": "A fierce nationwide presidential debate is taking place live on TV.",
+      "opciones": [
+        {
+          "texto": "Repeat official party slogans safely and consistently.",
+          "tweet": "Clear proposals, unmatched leadership, and a vision for the future. The opposition has no answers.",
+          "resultado": "Standard party cheerleading. Solid approval from base loyalists."
+        },
+        {
+          "texto": "Post sharp, data-backed analysis breaking down economic proposals.",
+          "tweet": "Comparing budget pledges: candidate A relies on unverified deficits, candidate B balances trade data. Thread 🧵",
+          "resultado": "Independent analysts quote your breakdown. High authority."
+        },
+        {
+          "texto": "Unleash unhinged, aggressive insults against opposing candidates.",
+          "tweet": "Look at these corrupt clowns sweating on stage. Complete humiliation for their pathetic coalition.",
+          "resultado": "Viral frenzy among radical supporters, but triggers fierce mutual harassment."
+        }
+      ]
+    },
+    "poli_escrache": {
+      "titulo": "The Convenient Leak",
+      "desc": "Photos leak of an opposition leader dining at an ultra-exclusive luxury restaurant.",
+      "opciones": [
+        {
+          "texto": "Retweet the image without adding incendiary text.",
+          "tweet": "RT 🍷📸",
+          "resultado": "Quiet amplification that keeps your hands clean."
+        },
+        {
+          "texto": "Critique the glaring disconnect between political speech and lifestyle.",
+          "tweet": "Preaching austerity to struggling families by day, champagne dinners by night. The hypocrisy speaks for itself.",
+          "resultado": "Devastating critique that cuts through partisan noise."
+        },
+        {
+          "texto": "Fabricate that taxpayers footed the bill with zero evidence.",
+          "tweet": "CONFIRMED: Paid for with public treasury funds! Arrest warrants should be issued tomorrow morning!",
+          "resultado": "Fact-checks prove it was private funds. You lose all journalistic standing."
+        }
+      ]
+    },
+    "poli_meme": {
+      "titulo": "The Campaign Meme",
+      "desc": "A hilarious video meme mocking the rival candidate trends #1 in political circles.",
+      "opciones": [
+        {
+          "texto": "Share it with just a laughing emoji.",
+          "tweet": "💀😂",
+          "resultado": "Simple, organic laughs shared across both aisles."
+        },
+        {
+          "texto": "Add insightful political commentary on why the satire resonates.",
+          "tweet": "When satire becomes this sharp, it means political messaging has failed. Humor reveals what speeches hide.",
+          "resultado": "Intellectual spin that earns retweets from journalists."
+        },
+        {
+          "texto": "Slap cruel personal insults on top of the clip.",
+          "tweet": "Dumbest politician in modern history. Even animals show more brain activity than this fraud.",
+          "resultado": "Turns a lighthearted meme into an ugly partisan dogfight."
+        }
+      ]
+    },
+    "poli_fake_news_propia": {
+      "titulo": "The Dubious Scoop",
+      "desc": "You receive an explosive scoop that paints your opponents as criminals, but the source is sketchy.",
+      "opciones": [
+        {
+          "texto": "Wait for independent corroboration before posting.",
+          "tweet": "Hearing wild rumors, but we verify before we amplify. Fact-checking in progress.",
+          "resultado": "Patience protects your profile from an engineered trap."
+        },
+        {
+          "texto": "Post it anyway, rationalizing that 'the core spirit is true'.",
+          "tweet": "Even if details are muddy, the fundamental corruption is obvious to anyone paying attention. Read this.",
+          "resultado": "Debunked in minutes. Opponents gloat over your gullibility."
+        },
+        {
+          "texto": "Retract and issue a prompt public correction before being forced to.",
+          "tweet": "Correction: earlier documents do not hold up to scrutiny. Deleting initial post. Truth matters.",
+          "resultado": "Courageous transparency that protects institutional trust."
+        }
+      ]
+    },
+    "poli_debate_publico_tv": {
+      "titulo": "Primetime TV Invite",
+      "desc": "A major cable news channel invites you to a live panel representing your party's viewpoint.",
+      "opciones": [
+        {
+          "texto": "Prepare thoroughly with calm, measured arguments.",
+          "tweet": "Joining the panel tonight on live TV. Facts over screaming.",
+          "resultado": "Stellar television performance. Mainstream credibility skyrockets."
+        },
+        {
+          "texto": "Repeat aggressive partisan talking points without listening.",
+          "tweet": "Going into the lion's den tonight to expose their media bias live on air.",
+          "resultado": "Predictable shouting match. Satisfies loyalists, alienates undecideds."
+        },
+        {
+          "texto": "Lose your temper, scream at the host, and storm off the set.",
+          "tweet": "Host is an undercover operative. Refused to be silenced by their rigged microphones. Walked out.",
+          "resultado": "Instant viral clips across all networks, mocking your meltdown."
+        }
+      ]
+    },
+    "fut_pronostico": {
+      "titulo": "Derby Day Prediction",
+      "desc": "The biggest football derby of the season kicks off in two hours. Everyone expects your match prediction.",
+      "opciones": [
+        {
+          "texto": "Predict a tense, hard-fought 1-0 win for your team.",
+          "tweet": "Matches like this aren't played, they're won. 1-0 scrap, leaving everything on the pitch.",
+          "resultado": "Passionate yet grounded. Fans echo your fighting spirit."
+        },
+        {
+          "texto": "Break down tactical lineups and injury reports objectively.",
+          "tweet": "Derby tactical preview: pressing triggers in midfield, defensive transitions, and key matchups 🧵",
+          "resultado": "Tactical analysts praise your football knowledge over raw tribalism."
+        },
+        {
+          "texto": "Boast that you will obliterate them and call rivals cowards.",
+          "tweet": "We are going to steamroll these cowards 5-0. They are already trembling in the tunnel. Total destruction.",
+          "resultado": "If your team loses, rival fans mock your tweet for the next decade."
+        }
+      ]
+    },
+    "fut_partidario": {
+      "titulo": "Fan Channel Feud",
+      "desc": "A rival fan account accuses you of receiving club payouts to cover up board incompetence.",
+      "opciones": [
+        {
+          "texto": "Ignore the feud and focus on academy youth prospects.",
+          "tweet": "Academy U-20s won 3-0 today. Exciting talent coming up the ranks for next season.",
+          "resultado": "High-road approach that keeps focus on the club."
+        },
+        {
+          "texto": "Show your 15-year season ticket history and club membership card.",
+          "tweet": "Been in the stands in rain and second division before you were born. My loyalty doesn't need a receipt.",
+          "resultado": "Definitive authentic flex. Your club standing is unassailable."
+        },
+        {
+          "texto": "Accuse the rival of being on the payroll of opposition directors.",
+          "tweet": "Look who's talking! Everyone knows whose campaign checks fund your fake outrage channel.",
+          "resultado": "Messy flame war dragging down both accounts."
+        }
+      ]
+    },
+    "fut_leyenda": {
+      "titulo": "Farewell to a Legend",
+      "desc": "An iconic rival player announces his retirement after a legendary 20-year career.",
+      "opciones": [
+        {
+          "texto": "Tweet respectful condolences and acknowledge his greatness.",
+          "tweet": "Hated facing him on derby day, but you have to respect greatness. Happy retirement to a true legend of the sport.",
+          "resultado": "Classy sportsmanship applauded across all rival fanbases."
+        },
+        {
+          "texto": "Write a retrospective thread on iconic derby clashes against him.",
+          "tweet": "A retrospective on the legendary battles against [Player]: heartbreak, rivalry, and pure football history.",
+          "resultado": "Heartfelt homage appreciated by purists."
+        },
+        {
+          "texto": "Mock his lost finals and claim he was always overrated.",
+          "tweet": "Retiring without an international trophy. Never showed up in the big games. Good riddance.",
+          "resultado": "Branded a bitter, classless ultra with zero football culture."
+        }
+      ]
+    },
+    "fut_hinchada_violenta": {
+      "titulo": "Stadium Violence",
+      "desc": "Violent skirmishes break out outside the stadium between radical fan factions.",
+      "opciones": [
+        {
+          "texto": "Unconditionally condemn violence across all fan clubs.",
+          "tweet": "Football belongs to families and real fans. Criminals using our colors to destroy the neighborhood must be jailed.",
+          "resultado": "Principled condemnation that builds moral authority."
+        },
+        {
+          "texto": "Downplay the incidents as isolated troublemakers.",
+          "tweet": "99% of fans were singing peacefully. A few hotheads don't define our entire community.",
+          "resultado": "Lukewarm defensiveness that draws skepticism."
+        },
+        {
+          "texto": "Justify the violence because rival supporters started the brawl.",
+          "tweet": "They came looking for trouble in our neighborhood and found out. Don't play the victim now.",
+          "resultado": "Account reported for promoting violent conduct."
+        }
+      ]
+    },
+    "fut_transferencia_rumor": {
+      "titulo": "The Transfer Bombshell",
+      "desc": "Rumors link your club's star player with an imminent transfer to your bitterest rival.",
+      "opciones": [
+        {
+          "texto": "Remind everyone it is an unconfirmed rumor and urge calm.",
+          "tweet": "Silly season in full swing. Don't fall for agent games until ink meets paper.",
+          "resultado": "Voice of reason while the feed loses its collective mind."
+        },
+        {
+          "texto": "Preemptively brand the player a traitor and burn his shirt.",
+          "tweet": "If you cross that city bridge you are dead to this club forever. Traitorous mercenary.",
+          "resultado": "The player signs a new contract renewal. You look completely foolish."
+        },
+        {
+          "texto": "Fabricate that you spoke directly to board insiders.",
+          "tweet": "EXCLUSIVE: Spoke with a top board director 10 mins ago. The deal is 100% closed, fee agreed.",
+          "resultado": "Deal never existed. Your reputation as an insider is shredded."
+        }
+      ]
+    },
+    "hum_plagio": {
+      "titulo": "The Stolen Meme",
+      "desc": "A corporate meme aggregator with 5 million followers reposts your original joke without credit.",
+      "opciones": [
+        {
+          "texto": "Ask politely for creator credit in a quote-tweet.",
+          "tweet": "Glad you loved my joke! Would appreciate a creator tag though 🤝",
+          "resultado": "Polite request gets buried, but followers notice your class."
+        },
+        {
+          "texto": "Quote-tweet roasting their unoriginal corporate social media manager.",
+          "tweet": "Imagine getting paid a corporate salary just to right-click save memes from accounts with 10k followers 😂",
+          "resultado": "Devastating ratio that forces the brand to publicly credit you."
+        },
+        {
+          "texto": "Unleash a mob of followers to brigade their comment section with hate.",
+          "tweet": "Spam their mentions until they take it down. Swarm mode activated.",
+          "resultado": "Platform strikes your account for organizing targeted harassment."
+        }
+      ]
+    },
+    "hum_trend": {
+      "titulo": "Viral Trend of the Moment",
+      "desc": "A bizarre viral format is dominating every trending topic today.",
+      "opciones": [
+        {
+          "texto": "Post a clever, subversive twist on the format.",
+          "tweet": "Me trying to understand the latest trending format without losing my last remaining brain cells.",
+          "resultado": "Flawless comedic timing. Hundreds of thousands of retweets."
+        },
+        {
+          "texto": "Write an absurd meta-parody deconstructing the trend.",
+          "tweet": "A 10-step guide on how algorithmic decay manufactured this exact joke in a lab.",
+          "resultado": "Loved by cynical internet purists."
+        },
+        {
+          "texto": "Cross the line with a cruel joke targeting a celebrity's medical crisis.",
+          "tweet": "Too soon? Probably. Funny? Absolutely.",
+          "resultado": "Immediate public disgust. Advertisers and followers flee."
+        }
+      ]
+    },
+    "hum_standup": {
+      "titulo": "Live Comedy Debut",
+      "desc": "You step onto a live comedy club stage to perform stand-up for the very first time.",
+      "opciones": [
+        {
+          "texto": "Perform a modest, self-aware set poking fun at Twitter culture.",
+          "tweet": "Did stand-up comedy live tonight. Nobody threw tomatoes and three people laughed. Massive personal victory.",
+          "resultado": "Charming humility that endears you to your audience."
+        },
+        {
+          "texto": "Crush the room with razor-sharp original material.",
+          "tweet": "Sold-out room, killer crowd, and zero dead air. Stand-up tour coming soon 🔥",
+          "resultado": "Crosses the bridge from online memer to legitimate comedian."
+        },
+        {
+          "texto": "Bomb horribly on stage, get booed off, and blame the audience online.",
+          "tweet": "Crowd was too uneducated to understand dry satire. You guys deserve low-effort slapstick.",
+          "resultado": "Cringe defensive posting. The comedy scene mercilessly mocks you."
+        }
+      ]
+    },
+    "hum_censura": {
+      "titulo": "Post Removed",
+      "desc": "The algorithm automatically takes down one of your most viral memes for violating vague terms.",
+      "opciones": [
+        {
+          "texto": "Submit an appeal quietly through official support tickets.",
+          "tweet": "Meme flagged by the bot army. Ticket submitted, back to regular programming.",
+          "resultado": "Restored within 48 hours without drama."
+        },
+        {
+          "texto": "Post an absurd screenshot mocking the moderation bot's logic.",
+          "tweet": "Flagged for 'dangerous behavior' because a cat looked slightly annoyed in panel 2. Tech dystopia is here.",
+          "resultado": "Viral mockery of corporate AI moderation."
+        },
+        {
+          "texto": "Post a hysterical thread claiming state censorship and political persecution.",
+          "tweet": "The global regime is silencing my memes because the truth threatens their power matrix.",
+          "resultado": "Sounds like unhinged paranoia. Loses you sensible followers."
+        }
+      ]
+    },
+    "hum_colaboracion_rival": {
+      "titulo": "Rival Meme Alliance",
+      "desc": "A competing meme account that frequently exchanges jabs with you offers to co-host a podcast episode.",
+      "opciones": [
+        {
+          "texto": "Accept and turn the playful feud into hilarious collaborative banter.",
+          "tweet": "We put aside the timeline wars for 60 minutes. The peace treaty episode is live now.",
+          "resultado": "Instant viral hit. Both audiences blend seamlessly."
+        },
+        {
+          "texto": "Decline respectfully, preferring to keep the comedic rivalry organic.",
+          "tweet": "Rivalry is better when it's kept on the timeline. Respectfully declining, game on 🤝",
+          "resultado": "Preserves competitive spark with clean boundaries."
+        },
+        {
+          "texto": "Accept the invite and shamelessly steal their private joke drafts without credit.",
+          "tweet": "Shoutout to my guy for the 'inspiration'. Real creatives know how to borrow.",
+          "resultado": "Exposed in the community as a joke thief. Severe reputational damage."
+        }
+      ]
+    },
+    "per_filtracion": {
+      "titulo": "The Anonymous Leak",
+      "desc": "An encrypted document leaks to your ProtonMail showing fiscal misconduct in high office.",
+      "opciones": [
+        {
+          "texto": "Publish while clearly adding disclaimers that verification is ongoing.",
+          "tweet": "EXCLUSIVE: Preliminary fiscal leak under review. Publishing verified pages with ongoing cross-checks 🧵",
+          "resultado": "Cautious journalism that builds unshakeable credibility."
+        },
+        {
+          "texto": "Spend three days cross-referencing government databases before dropping the story.",
+          "tweet": "INVESTIGATION: 72 hours of cross-referencing public records confirm systematic financial misconduct. Full report:",
+          "resultado": "Pulitzer-grade investigative scoop. Massive professional prestige."
+        },
+        {
+          "texto": "Drop the unredacted PDF immediately with sensationalist clickbait headlines.",
+          "tweet": "CABINET OVERTHROW IMMINENT! UNREDACTED LEAK EXPOSES EVERYTHING! RETWEET BEFORE THEY CENSOR ME!",
+          "resultado": "Contains fake fabricated pages. Legal notices and devastating loss of standing."
+        }
+      ]
+    },
+    "per_vivo": {
+      "titulo": "Live Protest Coverage",
+      "desc": "Massive protests erupt downtown with tear gas, riot police, and conflicting reports.",
+      "opciones": [
+        {
+          "texto": "Retweet verified video footage safely from your home desk.",
+          "tweet": "Aggregating verified eyewitness footage from downtown. Confirmed standoff on 5th Avenue.",
+          "resultado": "Safe, reliable news aggregation."
+        },
+        {
+          "texto": "Report on the ground live in the middle of the gas and barricades.",
+          "tweet": "Live on the street: tear gas deployed, crowd dispersing toward the square. Stay safe out here.",
+          "resultado": "Courageous journalism. Earns massive respect across the platform."
+        },
+        {
+          "texto": "Invent unconfirmed casualty rumors to juice live engagement.",
+          "tweet": "MULTIPLE FATALITIES REPORTED NEAR PLAZA! POLICE COVER-UP UNDERWAY!",
+          "resultado": "No casualties occurred. Sued for inciting public panic."
+        }
+      ]
+    },
+    "per_nota_paga": {
+      "titulo": "The Sponsored Editorial",
+      "desc": "A private conglomerate offers $5,000 for a puff piece disguised as an objective market analysis.",
+      "opciones": [
+        {
+          "texto": "Turn down the offer immediately to protect journalistic independence.",
+          "tweet": "My editorial independence is not for sale at any price. Ever.",
+          "resultado": "Moral victory that earns unyielding trust from readers."
+        },
+        {
+          "texto": "Publish an expose detailing how PR firms bribe independent reporters.",
+          "tweet": "PR firms offer thousands to buy independent coverage. Here are the exact email templates they send journalists 🧵",
+          "resultado": "Sensation that establishes you as an untouchable truth-teller."
+        },
+        {
+          "texto": "Take the cash and run the puff piece with no sponsorship label.",
+          "tweet": "Remarkable innovation happening at [Corp]. An inspiring model of modern corporate governance.",
+          "resultado": "Readers spot the blatant shill. Credibility permanently destroyed."
+        }
+      ]
+    },
+    "per_presion_gobierno": {
+      "titulo": "State Pressure",
+      "desc": "An official government spokesperson calls demanding you pull down your latest investigative thread.",
+      "opciones": [
+        {
+          "texto": "Stand firm and publish their recorded intimidation attempt.",
+          "tweet": "Official call received demanding this thread be taken down. Freedom of the press will not bend to pressure.",
+          "resultado": "Heroic defense of press freedom. Nationwide viral solidarity."
+        },
+        {
+          "texto": "Tone down a few aggressive adjectives while keeping all factual findings.",
+          "tweet": "Clarifying phrasing on point 4 for absolute legal precision. The facts remain undisputed.",
+          "resultado": "Prudent balance that avoids litigation while preserving the scoop."
+        },
+        {
+          "texto": "Delete the entire thread in panic and go silent for a week.",
+          "tweet": "Temporarily taking some time off the timeline to focus on personal matters.",
+          "resultado": "Viewed as cowardly surrender. Followers feel let down."
+        }
+      ]
+    },
+    "per_error_propio": {
+      "titulo": "The Factual Error",
+      "desc": "A critical number in your viral infographic turns out to be wrong due to a typo.",
+      "opciones": [
+        {
+          "texto": "Post an immediate, prominent correction pinned to the top of your feed.",
+          "tweet": "CORRECTION: Graphic contained an error on slide 2 (deficit was 4.2%, not 8.4%). Corrected version attached. My apologies.",
+          "resultado": "Transparent accountability that reinforces your reputation for honesty."
+        },
+        {
+          "texto": "Silently delete the tweet and reupload the corrected graphic.",
+          "tweet": "Updated infographic with fresh official revisions.",
+          "resultado": "Critics catch the stealth edit, but minimal long-term fallout."
+        },
+        {
+          "texto": "Defend the incorrect number aggressively and claim detractors are government shills.",
+          "tweet": "Establishment fact-checkers are nitpicking decimals to distract from the real crisis. The number stands.",
+          "resultado": "Embarrassing stubbornness. Colleagues disavow your reporting."
+        }
+      ]
+    },
+    "opi_debate_nacio": {
+      "titulo": "The National Crisis",
+      "desc": "An unprecedented macroeconomic crisis paralyzes the country. The entire timeline demands your verdict.",
+      "opciones": [
+        {
+          "texto": "Post a vague tweet wishing for institutional harmony.",
+          "tweet": "A difficult hour for the republic. Wishing for dialogue, calm, and wisdom from all leaders.",
+          "resultado": "Safe, bland statement that offends nobody."
+        },
+        {
+          "texto": "Publish an incisive 20-tweet historical analysis on past crisis outcomes.",
+          "tweet": "To understand today's currency collapse, we must revisit 1989 and 2001. A comprehensive macroeconomic breakdown 🧵",
+          "resultado": "Solid, educational thread that establishes intellectual authority."
+        },
+        {
+          "texto": "Aggressively blame one faction and stoke cultural division.",
+          "tweet": "These treasonous parasites brought the country to ruin. Zero reconciliation with economic saboteurs.",
+          "resultado": "Massive engagement spike, but timeline toxicity explodes."
+        }
+      ]
+    },
+    "opi_cultura": {
+      "titulo": "The Cultural Essay",
+      "desc": "A classic cinema masterpiece or literary work trends on cultural Twitter.",
+      "opciones": [
+        {
+          "texto": "Copy-paste a summarized Wikipedia plot synopsis.",
+          "tweet": "Rewatching this masterpiece. Themes of alienation and moral duality remain timeless.",
+          "resultado": "Generic cultural commentary."
+        },
+        {
+          "texto": "Write a deeply original, researched essay on the director's philosophy.",
+          "tweet": "Why this film predicted our modern internet neurosis: an essay on aesthetics, sound design, and memory 🧵",
+          "resultado": "Acclaimed by intellectuals, bookmarks surge."
+        },
+        {
+          "texto": "Trash the masterpiece as 'boring woke trash' for easy contrarian clout.",
+          "tweet": "Unpopular opinion: this movie is unwatchable garbage overrated by pretentious film snobs.",
+          "resultado": "Easy ragebait engagement, but cinephiles dismiss you as a clown."
+        }
+      ]
+    },
+    "opi_fake": {
+      "titulo": "The Viral Fall",
+      "desc": "You retweet an obvious AI-generated parody image believing it was real news.",
+      "opciones": [
+        {
+          "texto": "Delete and laugh at yourself for being duped.",
+          "tweet": "Got completely fooled by an AI render. Taking the L on this one, time to get my eyes checked 😂",
+          "resultado": "Disarming self-awareness defuses the mockery."
+        },
+        {
+          "texto": "Write a thoughtful thread on how convincing generative AI is becoming.",
+          "tweet": "The fact that this fooled so many reveals a terrifying milestone in generative deception. Thread on digital authenticity 🧵",
+          "resultado": "Smart pivot that turns a mistake into serious discourse."
+        },
+        {
+          "texto": "Keep the fake post up and claim 'it could easily have been real'.",
+          "tweet": "Even if the photo is fake, the fact that we all believed it proves how corrupt they truly are!",
+          "resultado": "Immortalized in the hall of shame. Endlessly ratioed."
+        }
+      ]
+    },
+    "opi_polemica_ajena": {
+      "titulo": "Surfing the Wave",
+      "desc": "Two minor celebrities have an absurd public breakup. The timeline is consuming nothing else.",
+      "opciones": [
+        {
+          "texto": "Wait for full context before passing grand philosophical judgments.",
+          "tweet": "Timeline treating personal heartbreak like reality television. Let them handle private grief.",
+          "resultado": "Mature, dignified stance."
+        },
+        {
+          "texto": "Jump in immediately with hot takes without reading the backstory.",
+          "tweet": "Clear red flags on both sides. Another case study in modern relationship narcissism.",
+          "resultado": "Quick engagement hit, but aged poorly once facts surfaced."
+        },
+        {
+          "texto": "Take such an extreme stance that you contradict your own past posts.",
+          "tweet": "No excuses: accountability must be total! Zero tolerance for this behavior!",
+          "resultado": "Followers bring up your old contradictory tweets. Total hypocrisy exposed."
+        }
+      ]
+    },
+    "opi_entrevista_tv": {
+      "titulo": "TV Talk Show Debut",
+      "desc": "A prime-time national talk show invites you to comment on the state of social media culture.",
+      "opciones": [
+        {
+          "texto": "Come prepared with measured points, nuances, and data.",
+          "tweet": "Enjoyed the studio debate tonight. Nuance is rare on television, but worth fighting for.",
+          "resultado": "Polished performance that earns respect from serious commentators."
+        },
+        {
+          "texto": "Repeat your Twitter persona with loud interruptions and catchphrases.",
+          "tweet": "Brought the timeline energy to broadcast TV tonight. No apologies.",
+          "resultado": "Entertaining spectacle for your followers, polarizing for general public."
+        },
+        {
+          "texto": "Pick a screaming match with the veteran host purely for viral clips.",
+          "tweet": "Told the host to his face what nobody in his studio dared to say. Watch the viral clip here 🔥",
+          "resultado": "Brief viral spike, but blacklisted from legacy broadcast networks."
+        }
+      ]
+    },
+    "gam_drama": {
+      "titulo": "Community Drama",
+      "desc": "Two big streamers in your circle started an ugly public feud. The timeline is demanding you pick a side.",
+      "opciones": [
+        {
+          "texto": "Keep playing and completely ignore the drama.",
+          "tweet": "Ranked grind is on 🔥 10-win streak today, nothing else matters.",
+          "resultado": "You stay out of the crossfire and your chat stays focused on gameplay."
+        },
+        {
+          "texto": "Tweet calling for everyone to cool down.",
+          "tweet": "Can we remember we play video games for a living? Log off and touch grass for an hour.",
+          "resultado": "Respected as the mature voice in the room."
+        },
+        {
+          "texto": "Aggressively take a side on the drama.",
+          "tweet": "I wasn't gonna say anything, but what [Streamer] did is completely shameless. Zero respect left.",
+          "resultado": "Huge engagement spike, but half the community now considers you an enemy."
+        }
+      ]
+    },
+    "gam_lanzamiento": {
+      "titulo": "The Anticipated Game",
+      "desc": "The most hyped game of the decade launches and the studio sends you an exclusive review code.",
+      "opciones": [
+        {
+          "texto": "Post a screaming gameplay reaction clip.",
+          "tweet": "Clip of the day 🎮🔥 when everything goes according to plan. Or completely fails.",
+          "resultado": "Solid entertainment for your existing audience."
+        },
+        {
+          "texto": "Write an honest review detailing launch bugs.",
+          "tweet": "Honest review of [Game]: gorgeous art and compelling story, but launch bugs ruin the pacing. Needed more polish.",
+          "resultado": "Gamers respect your honesty over empty corporate hype."
+        },
+        {
+          "texto": "Accept sponsor cash and call it a 10/10 masterpiece.",
+          "tweet": "Finished the Game of the Year in 48 hours. Absolute masterpiece, 10/10! (Sponsored, but doesn't change my genuine opinion 😉)",
+          "resultado": "The game is riddled with glitches. The community calls you a sellout."
+        }
+      ]
+    },
+    "gam_torneo": {
+      "titulo": "Creators Invitational",
+      "desc": "You get invited to a massive streaming tournament with $50k on the line.",
+      "opciones": [
+        {
+          "texto": "Join casually just to have fun with chat.",
+          "tweet": "In the tournament! Here for good vibes and laughs, not sweating the rank today.",
+          "resultado": "Relaxed stream, chat enjoys the chill energy."
+        },
+        {
+          "texto": "Grind hard and finish in the top 3.",
+          "tweet": "GGs! Top 3 in the tournament. Weeks of practice paid off. Proud of the squad.",
+          "resultado": "Massive influx of followers who respect your competitive skill."
+        },
+        {
+          "texto": "Use an undetected exploit live on stream.",
+          "tweet": "Just a superior gaming chair and game sense, stay mad losers.",
+          "resultado": "Disqualified live on stream. You face community backlash."
+        }
+      ]
+    },
+    "gam_boicot_empresa": {
+      "titulo": "Studio Boycott",
+      "desc": "A major publisher introduces aggressive predatory microtransactions in their new title.",
+      "opciones": [
+        {
+          "texto": "Join the player boycott with solid arguments.",
+          "tweet": "Charging $70 upfront and putting core mechanics behind gacha lootboxes is predatory. Uninstalled.",
+          "resultado": "Your community rallies behind you as a defender of player rights."
+        },
+        {
+          "texto": "Stay neutral and avoid taking a stance.",
+          "tweet": "Let's see how the studio responds to the patch notes before jumping to conclusions.",
+          "resultado": "Nobody is satisfied with your lukewarm response."
+        },
+        {
+          "texto": "Defend the studio in exchange for exclusive sponsorships.",
+          "tweet": "Developers gotta eat too. If you don't like cosmetics, just don't buy them. Game is great.",
+          "resultado": "Immediate ratio. You are branded a corporate shill."
+        }
+      ]
+    },
+    "gam_acoso_fan": {
+      "titulo": "The Obsessive Fan",
+      "desc": "A viewer crosses boundaries, flooding your DMs and chat with uncomfortable personal messages.",
+      "opciones": [
+        {
+          "texto": "Block and report quietly without making a scene.",
+          "tweet": "Boundaries matter. Keep chat positive and respectful.",
+          "resultado": "Clean and mature handling of a delicate issue."
+        },
+        {
+          "texto": "Post an educational video on streamer boundaries.",
+          "tweet": "Streamers are human beings, not parasocial companions. Video addressing boundaries.",
+          "resultado": "Widely shared across the streaming sphere, boosting your credibility."
+        },
+        {
+          "texto": "Doxx and expose the user's private messages publicly.",
+          "tweet": "Look at the disgusting messages this clown sends me in DMs. Expose him.",
+          "resultado": "Platform warning for harassment. Drama escalates out of control."
+        }
+      ]
+    },
+    "cons_ovni": {
+      "titulo": "Lights in the Night Sky",
+      "desc": "Mysterious flashing lights appear across the night horizon in multiple cities.",
+      "opciones": [
+        {
+          "texto": "Share the clips stating 'the proof is right before our eyes'.",
+          "tweet": "Look at the telemetry and movement vector. That is not satellite debris. The evidence is right in front of us 🛸",
+          "resultado": "Thoroughly excites your loyal believer base."
+        },
+        {
+          "texto": "Analyze flight paths searching for logical explanations first.",
+          "tweet": "Investigating the radar data: checking drone light shows and Starlink passes before jumping to conclusions.",
+          "resultado": "Earns respect from rational skeptics."
+        },
+        {
+          "texto": "Claim alien invasion is imminent and peddle emergency bunker kits.",
+          "tweet": "INVASION HAS BEGUN. The veil has dropped. Bunkers and emergency kits available at link in bio 👽🚨",
+          "resultado": "Branded a fearmongering snake-oil salesman."
+        }
+      ]
+    },
+    "cons_luz": {
+      "titulo": "The Rolling Blackout",
+      "desc": "A massive unexpected power outage knocks out electricity across three metropolitan regions.",
+      "opciones": [
+        {
+          "texto": "Suggest ambiguously that a coordinated cyberattack occurred.",
+          "tweet": "Three grids fail simultaneously within 40 seconds. Just a power surge, right? Keep asking questions.",
+          "resultado": "Classic conspiratorial suspense that hooks curious followers."
+        },
+        {
+          "texto": "Track infrastructure failure data and maintenance budgets.",
+          "tweet": "Substation maintenance deferred for 4 years. When you gut infrastructure, the lights go out. Thread on grid decay 🧵",
+          "resultado": "Practical investigative angle that earns mainstream retweets."
+        },
+        {
+          "texto": "Declare this marks the start of the global economic Great Reset.",
+          "tweet": "THE RESET IS UNDERWAY. Power grid goes down first, digital currencies get locked next. Withdraw everything NOW.",
+          "resultado": "Wild panic that triggers platform misinformation flags."
+        }
+      ]
+    },
+    "cons_debate": {
+      "titulo": "Face to Face with Science",
+      "desc": "A prominent astrophysicist publicly challenges you to a live debate on your planetary theories.",
+      "opciones": [
+        {
+          "texto": "Decline, claiming academic elites just want to censor and ridicule you.",
+          "tweet": "Tenured gatekeepers want to debate on their terms inside their bubble. I answer to the people, not the establishment.",
+          "resultado": "Followers view you as an unbowed anti-establishment martyr."
+        },
+        {
+          "texto": "Accept, bringing curated research papers and alternative hypotheses.",
+          "tweet": "Debate accepted. Let's see if peer review holds up against raw anomalous data. See you Friday.",
+          "resultado": "High-stakes debate. You hold your ground surprisingly well."
+        },
+        {
+          "texto": "Dodge the science and attack the scientist's corporate funding sources.",
+          "tweet": "Check who funds his research laboratory before listening to a word he says. Pure pharmaceutical shill.",
+          "resultado": "Blatant ad hominem. Academic community mocks your evasion."
+        }
+      ]
+    },
+    "cons_prediccion_fallida": {
+      "titulo": "The Unfulfilled Prophecy",
+      "desc": "A specific date you promised would bring cosmic revelations passes with absolutely nothing happening.",
+      "opciones": [
+        {
+          "texto": "Admit honestly that the predicted event did not happen.",
+          "tweet": "Date passed, nothing occurred. I was wrong on the timeline. Reassessing the data and taking responsibility.",
+          "resultado": "Rare humility that shocks detractors and preserves core respect."
+        },
+        {
+          "texto": "Claim the prophecy was fulfilled on a subtle symbolic dimension.",
+          "tweet": "The shift wasn't physical, it was spiritual and energetic. The energetic timeline has altered permanently.",
+          "resultado": "Predictable esoteric rationalization. Satisfies true believers."
+        },
+        {
+          "texto": "Claim the event was averted because your tweets exposed their plans.",
+          "tweet": "We exposed their operation in advance, forcing them to abort the schedule. Our vigilance saved the day!",
+          "resultado": "Ludicrous self-congratulation. Endless memes mocking your copium."
+        }
+      ]
+    },
+    "cons_medios_infiltran": {
+      "titulo": "The Undercover Reporter",
+      "desc": "A documentary journalist reaches out wanting to profile your online following.",
+      "opciones": [
+        {
+          "texto": "Set strict ground rules with full uncut recording rights.",
+          "tweet": "Agreed to interview only if I can release the raw unedited audio to my followers simultaneously. Transparency first.",
+          "resultado": "Smart tactical defense that protects against unfair editing."
+        },
+        {
+          "texto": "Decline cordially, warning followers about media spin.",
+          "tweet": "Legacy media wants another hit piece on 'online radicals'. Politely declining. We build our own media.",
+          "resultado": "Maintains sovereign independence and insulates your circle."
+        },
+        {
+          "texto": "Accept and immediately scream at the journalist live on air.",
+          "tweet": "Look at this operative sweating as soon as real questions get asked. Corrupt media exposed live!",
+          "resultado": "Documentary airs portraying your community as volatile and unhinged."
+        }
+      ]
+    },
+    "tec_SaaS": {
+      "titulo": "The Product Launch",
+      "desc": "Your new productivity micro-SaaS application is ready for its official Product Hunt debut.",
+      "opciones": [
+        {
+          "texto": "Launch cleanly with an early-bird lifetime discount.",
+          "tweet": "After 4 months of building: [App] is officially live! 50% discount for early adopters this week 🚀",
+          "resultado": "Steady initial conversions and positive organic feedback."
+        },
+        {
+          "texto": "Post a transparent 'Build in Public' journey detailing all metrics.",
+          "tweet": "0 to $5k MRR in public: server architecture, failed marketing channels, and raw numbers. Full breakdown 🧵",
+          "resultado": "Indie hackers and engineers re-share your breakdown widely."
+        },
+        {
+          "texto": "Claim your app uses proprietary quantum AI when it's just a generic API wrapper.",
+          "tweet": "Disrupting the productivity paradigm with proprietary neuro-quantum AI algorithms. Legacy software is dead.",
+          "resultado": "Engineers inspect network requests and expose your basic wrapper. Heavy ratio."
+        }
+      ]
+    },
+    "tec_lenguajes": {
+      "titulo": "The Programming War",
+      "desc": "A ferocious religious debate breaks out over Rust vs JavaScript vs Python on tech Twitter.",
+      "opciones": [
+        {
+          "texto": "Post a hilarious meme mocking the holy wars between developers.",
+          "tweet": "Senior devs debating memory safety for 6 hours while the client just wants the login button moved 2px left.",
+          "resultado": "Universally shared laugh across the entire developer sphere."
+        },
+        {
+          "texto": "Publish an objective, nuanced breakdown of tradeoffs for each stack.",
+          "tweet": "Tooling is contextual: Rust for low-level performance, Go for microservices, Python for data. Stop tribalism 🧵",
+          "resultado": "Senior staff engineers praise your balanced maturity."
+        },
+        {
+          "texto": "Belittle anyone not using Rust in production as incompetent amateurs.",
+          "tweet": "If you're still writing backend code in anything other than Rust in 2026, you shouldn't be trusted with an IDE.",
+          "resultado": "Elitist toxicity that alienates peers and hiring managers."
+        }
+      ]
+    },
+    "tec_oferta": {
+      "titulo": "Venture Capital Term Sheet",
+      "desc": "A prestigious Silicon Valley VC firm offers you a $1.5M pre-seed investment round.",
+      "opciones": [
+        {
+          "texto": "Accept the term sheet to aggressively accelerate growth.",
+          "tweet": "Thrilled to partner with top tier partners for our $1.5M round. Time to build the future of software.",
+          "resultado": "Massive capital injection. High expectations and aggressive targets."
+        },
+        {
+          "texto": "Turn down VC money and remain a 100% bootstrapped, profitable founder.",
+          "tweet": "Turned down $1.5M in venture capital today. Bootstrapped, cashflow-positive, and 100% sovereign.",
+          "resultado": "Legendary standing among indie hackers and bootstrapper communities."
+        },
+        {
+          "texto": "Brag about valuation on Twitter while having zero actual paying customers.",
+          "tweet": "Valued at $15M pre-revenue. Capital flows to visionaries, not spreadsheet clerks. Keep hustling.",
+          "resultado": "Viewed as a hollow bubble startup waiting to burst."
+        }
+      ]
+    },
+    "tec_bug_critico": {
+      "titulo": "Production Outage",
+      "desc": "A critical database glitch in your latest deployment leaks user emails publicly.",
+      "opciones": [
+        {
+          "texto": "Publish an immediate transparent incident report and live post-mortem.",
+          "tweet": "Security incident: database bug patched in 18 minutes. Full transparent post-mortem and mitigation steps here:",
+          "resultado": "Exemplary engineering response that actually increases user trust."
+        },
+        {
+          "texto": "Patch it quietly in the dark without informing affected users.",
+          "tweet": "Deployed routine performance improvements to production servers.",
+          "resultado": "White-hat security researcher catches the cover-up and exposes it."
+        },
+        {
+          "texto": "Blame an external cloud vendor publicly without verifying logs.",
+          "tweet": "Third-party cloud infrastructure let us down today. Holding their engineers accountable.",
+          "resultado": "Logs prove it was your own bad SQL query. Total humiliation."
+        }
+      ]
+    },
+    "tec_competencia_copia": {
+      "titulo": "Cloned by Competitors",
+      "desc": "A venture-backed corporate clone copies your UI and core feature set pixel by pixel.",
+      "opciones": [
+        {
+          "texto": "Double down on improving product speed, features, and user happiness.",
+          "tweet": "They can clone your features, but they can't clone your velocity. Shipping 3 new releases this week.",
+          "resultado": "Indie resilience that wins customer loyalty and respect."
+        },
+        {
+          "texto": "Post a side-by-side comparison thread exposing the blatant copying.",
+          "tweet": "Spot the difference: 4 months of my indie work vs corporate clone's latest release. Thread on fair play 🧵",
+          "resultado": "Viral outrage on your behalf forces the clone to apologize."
+        },
+        {
+          "texto": "Post exaggerated legal threats claiming you'll bankrupt their executives.",
+          "tweet": "My lawyers will destroy your company. Every executive will be personally liable. See you in court.",
+          "resultado": "Comes off as unhinged bluster. Legal experts mock your threats."
+        }
+      ]
+    },
+    "pod_clip": {
+      "titulo": "The Viral Soundbite",
+      "desc": "A controversial 30-second snippet from your latest episode starts trending heavily on TikTok and Twitter.",
+      "opciones": [
+        {
+          "texto": "Share the isolated soundbite with clean subtitles for maximum reach.",
+          "tweet": "The clip everyone is talking about today. Listen closely to what was said 🎙️👇",
+          "resultado": "Massive click-through traffic to the full episode."
+        },
+        {
+          "texto": "Post the full, uncut 5-minute context of the discussion.",
+          "tweet": "Context matters: here is the uncut 5-minute discussion before and after the soundbite. Judge for yourself.",
+          "resultado": "Praised for intellectual honesty and anti-clickbait principles."
+        },
+        {
+          "texto": "Edit the clip deceitfully to make the guest appear to say something illegal.",
+          "tweet": "DID HE REALLY JUST ADMIT TO THIS ON CAMERA?! Unbelievable confession on today's show 🚨",
+          "resultado": "The guest issues a legal cease-and-desist and cuts all ties."
+        }
+      ]
+    },
+    "pod_auspicio": {
+      "titulo": "The Boring Sponsor",
+      "desc": "A dull B2B accounting software company pays top tier money for an ad read.",
+      "opciones": [
+        {
+          "texto": "Deliver the sponsor read professionally and swiftly.",
+          "tweet": "Support our sponsors who keep this show 100% free and independent. Link in show notes 🤝",
+          "resultado": "Clean commercial execution. Sponsor renews contract."
+        },
+        {
+          "texto": "Turn the boring ad read into an unhinged, hilarious comedic sketch.",
+          "tweet": "Ad read of the week: trying to make payroll tax software sound exciting for 90 seconds 😂",
+          "resultado": "Listeners loved the creativity, sponsor gets record conversions."
+        },
+        {
+          "texto": "Read the sponsor script sarcastically while making fun of their product.",
+          "tweet": "Nobody actually cares about accounting software, but they paid for the studio lights so whatever.",
+          "resultado": "Sponsor cancels the contract and demands a refund."
+        }
+      ]
+    },
+    "pod_invitado": {
+      "titulo": "The Problematic Guest",
+      "desc": "A highly controversial cultural figure with radioactive reputation asks to be a guest on your podcast.",
+      "opciones": [
+        {
+          "texto": "Decline to prevent toxic drama from consuming your show's brand.",
+          "tweet": "Curating our studio space matters. Some figures bring noise, not conversation. Passing.",
+          "resultado": "Protects your show's reputation and long-term brand equity."
+        },
+        {
+          "texto": "Accept, but conduct a rigorous, tough, unsparing cross-examination.",
+          "tweet": "No puff piece, no softballs. We held his feet to the fire on every contradiction for 2 hours. Full episode live.",
+          "resultado": "Masterful interview that earns widespread journalistic acclaim."
+        },
+        {
+          "texto": "Conduct a sycophantic, fawning interview whitewashing his record.",
+          "tweet": "Such an misunderstood visionary! Honored to give him a platform to clear his name ✨",
+          "resultado": "Severe audience backlash. Branded a spineless enabler."
+        }
+      ]
+    },
+    "pod_numero_bajo": {
+      "titulo": "The Slump Episode",
+      "desc": "An episode you poured weeks of deep research into lands with disappointing listener numbers.",
+      "opciones": [
+        {
+          "texto": "Stay committed to quality, knowing evergreen content pays off over time.",
+          "tweet": "Algorithms chase noise, but depth stands the test of time. Proud of this episode regardless of day-one numbers.",
+          "resultado": "Respected by loyal listeners who value depth over cheap trends."
+        },
+        {
+          "texto": "Repackage the core insights into visual infographics and threads.",
+          "tweet": "Distilled the 3 most crucial takeaways from our latest deep-dive into visual breakdowns 🧵",
+          "resultado": "Sparks a delayed second wave of engagement and downloads."
+        },
+        {
+          "texto": "Post an angry rant scolding your audience for having short attention spans.",
+          "tweet": "You all cry for intelligent content, and when I deliver it you'd rather watch brainrot memes. Disappointing.",
+          "resultado": "Lashing out at your audience never works. Listeners unfollow."
+        }
+      ]
+    },
+    "pod_crossover": {
+      "titulo": "The Dream Crossover",
+      "desc": "The host of the #1 podcast in the country offers to record a joint crossover episode.",
+      "opciones": [
+        {
+          "texto": "Accept and prepare a phenomenal collaborative episode.",
+          "tweet": "The crossover you asked for is finally here. Two studios, one historic conversation. Streaming now 🎙️🔥",
+          "resultado": "Explosive milestone. Hundreds of thousands of new subscribers."
+        },
+        {
+          "texto": "Decline because their show requires you to fly across the country on short notice.",
+          "tweet": "Honored by the invite, but keeping our production schedule grounded right now. Timing wasn't right.",
+          "resultado": "Maintains professional independence without burning bridges."
+        },
+        {
+          "texto": "Accept and spend the entire episode desperately trying to upstage the host.",
+          "tweet": "Took over his studio today. Everyone knows who really ran that conversation 😉",
+          "resultado": "Host cuts ties and cuts your mic volume in post-production. Awkward disaster."
+        }
+      ]
+    },
+    "super_hab_opinologo_0": {
+      "titulo": "The One Who Knew",
+      "desc": "A major plane incident happens. You already had an analytical thread explaining the exact geopolitical cause before official reports."
+    },
+    "super_hab_opinologo_1": {
+      "titulo": "Told You So",
+      "desc": "A month before a conflict broke out, you predicted it. When it happens, you quote yourself and the entire timeline rediscovers you."
+    },
+    "super_hab_futbolero_0": {
+      "titulo": "Quoted by a National Team Star",
+      "desc": "A national team player quote-tweets your post praising your insight. Your notifications go nuclear."
+    },
+    "super_hab_futbolero_1": {
+      "titulo": "The Exact Scoreline",
+      "desc": "You posted the exact scoreline of the cup final before kickoff. Your tweet gets screenshotted by millions."
+    },
+    "super_hab_militante_0": {
+      "titulo": "Endorsed by the Party",
+      "desc": "The top leader of your party quotes you, publicly validating what you've been fighting for. Your following multiplies overnight."
+    },
+    "super_hab_militante_1": {
+      "titulo": "Unexpected Legitimacy",
+      "desc": "A respected veteran journalist quotes your analysis on television. Suddenly you are considered an authoritative voice."
+    },
+    "super_hab_humor_0": {
+      "titulo": "Completely Out of Control",
+      "desc": "A casual meme you posted goes wildly viral beyond comprehension. Even national television shows are using it as a bumper."
+    },
+    "super_hab_humor_1": {
+      "titulo": "Ratioed the Original Post",
+      "desc": "You quote-tweet an arrogant celebrity and your punchline outperforms their original post 20 to 1."
+    },
+    "super_hab_periodista_0": {
+      "titulo": "The Major Scoop",
+      "desc": "You receive a verified exclusive leak and break the investigative story before any traditional newsroom."
+    },
+    "super_hab_periodista_1": {
+      "titulo": "Cited as the Source",
+      "desc": "Major international newspapers pick up your investigation and cite your handle as the primary source."
+    },
+    "super_hab_cryptobro_0": {
+      "titulo": "Saw It Coming",
+      "desc": "You predicted an asset would 10x before anyone cared. It rockets straight up. Your credibility reaches legend status."
+    },
+    "super_hab_cryptobro_1": {
+      "titulo": "My Call Exploded",
+      "desc": "A token you publicly vouched for explodes overnight. Followers celebrate you as an infallible market wizard."
+    },
+    "super_hab_gamer_0": {
+      "titulo": "Mega Raid Received",
+      "desc": "A streaming titan with 80k viewers raids your channel at the end of their broadcast. Your chat moves at lightspeed."
+    },
+    "super_hab_gamer_1": {
+      "titulo": "Leaked It Before Anyone Else",
+      "desc": "You accurately leak the announcement date of the next-gen console. The gaming internet hails you as the ultimate insider."
+    },
+    "super_hab_conspiranoico_0": {
+      "titulo": "I Was Right All Along",
+      "desc": "A theory you championed for months is validated by newly declassified documents. Your skeptics are stunned."
+    },
+    "super_hab_conspiranoico_1": {
+      "titulo": "Connected the Dots First",
+      "desc": "Your thread connects the pieces of a major real-world scandal weeks before mainstream media catches on."
+    },
+    "super_hab_influencer_0": {
+      "titulo": "Exclusive Promo Code",
+      "desc": "A global luxury brand issues you an exclusive promo code with uncapped creator commissions. It sells out in hours."
+    },
+    "super_hab_influencer_1": {
+      "titulo": "VIP Red Carpet Invite",
+      "desc": "You receive a VIP invitation to Paris Fashion Week. Your live front-row coverage dominates lifestyle feeds."
+    },
+    "super_hab_onlyfans_0": {
+      "titulo": "A Big Voice Defended Me",
+      "desc": "During a moral crusade against you, a respected cultural icon publicly defends your work ethic and bodily autonomy."
+    },
+    "super_hab_onlyfans_1": {
+      "titulo": "The Streisand Effect",
+      "desc": "Puritan critics try to get your account banned, and the controversy causes your subscriber numbers to explode 5x."
+    },
+    "super_hab_techie_0": {
+      "titulo": "Product-Market Fit",
+      "desc": "You ship an update that goes viral on Hacker News and Product Hunt. Servers melt under record signups."
+    },
+    "super_hab_techie_1": {
+      "titulo": "Backed by a Legend VC",
+      "desc": "A legendary Silicon Valley investor quote-tweets your architecture breakdown calling you a generational founder."
+    },
+    "super_hab_podcaster_0": {
+      "titulo": "The Blockbuster Interview",
+      "desc": "You land an exclusive 3-hour sit-down with the most elusive cultural figure in the country. Streaming records broken."
+    },
+    "super_hab_podcaster_1": {
+      "titulo": "The Runaway Clip",
+      "desc": "A 40-second soundbite from your show breaks out of your niche and becomes an inescapable global meme."
+    }
+  },
+  "ja": {
+    "crypto_halving": {
+      "titulo": "半減期狂騒曲",
+      "desc": "仮想通貨界最大のイベント「半減期」がリアルタイムで進行中。フォロワー全員があなたの価格予想を注視している。",
+      "opciones": [
+        {
+          "texto": "根拠のない暴騰煽りは避け、堅実な上昇を予想する。",
+          "tweet": "半減期完了。過去のデータを見る限りここからが仕込み時。極端な煽りはしないが、数字は嘘をつかない。",
+          "resultado": "穏やかなフォロワー増加。相場の行方に関わらず信頼を維持。"
+        },
+        {
+          "texto": "過去の市場サイクルを徹底分析し、過熱感に警鐘を鳴らす。",
+          "tweet": "【半減期徹底解説】2016年と2020年の推移比較。投資は自己責任、飛びつく前にまず深呼吸して読もう 🧵👇",
+          "resultado": "業界の大手インフルエンサーから引用され、アナリストとしての格が上がる。"
+        },
+        {
+          "texto": "「今月中に億り人確定」と煽り、ハイレバ取引所のアフィリンクを貼る。",
+          "tweet": "絶対に今すぐ買え！月末までに500k到達確実。今乗らない奴は一生養分。50倍レバのアフィリンク貼っとくぞ 🚀🚀",
+          "resultado": "その後の相場下落で大炎上。「信者を嵌め込んだ詐欺師」の烙印を押される。"
+        }
+      ]
+    },
+    "crypto_startup": {
+      "titulo": "アドバイザー就任オファー",
+      "desc": "新興Web3プロジェクトから、独自トークン付与を条件に公式アドバイザー就任の打診が届いた。",
+      "opciones": [
+        {
+          "texto": "PR案件であることを公言した上で、限定的に引き受ける。",
+          "tweet": "【PR告知】アドバイザー就任。これは広告宣伝としての参画であり、投資助言ではありません。そこを理解した上でよろしく 🤝",
+          "resultado": "信用を切り売りしすぎずに現金を確保。一部からは冷ややかな目も。"
+        },
+        {
+          "texto": "コードや運営陣の怪しい点を見抜き、キッパリ辞退する。",
+          "tweet": "金で買えないものもある。フォロワーへの誠実さを捨ててまで安易な案件に乗る気はない。",
+          "resultado": "技術的な懸念を暴露。フォロワーから「悪徳案件から救ってくれた」と感謝される。"
+        },
+        {
+          "texto": "裏でトークンを貰いながら「革新的神プロジェクト」と大絶賛する。",
+          "tweet": "久々に震えるレベルの本物に出会った。大口が水面下で買い集めてる。メインネット稼働前に仕込むべし。",
+          "resultado": "開発陣がトークンを売り逃げ。共犯者として袋叩きに遭う。"
+        }
+      ]
+    },
+    "crypto_hackeo": {
+      "titulo": "取引所ハッキング騒動",
+      "desc": "大手暗号資産取引所の出金停止とハッキング疑惑がタイムラインを駆け巡っている。",
+      "opciones": [
+        {
+          "texto": "公式発表のみを引用し、冷静かつ中立に速報を流す。",
+          "tweet": "現在一部で出金遅延が報告されています。憶測でのパニック売却は避け、公式の発表を待ちましょう。",
+          "resultado": "冷静な報道姿勢が評価され、落ち着いたトレーダーから支持される。"
+        },
+        {
+          "texto": "即座にハードウェアウォレットへの資産退避マニュアルを投稿する。",
+          "tweet": "自分の鍵を持たない資産は自分のものじゃない。今すぐコールドウォレットに資産を逃がす手順まとめ 🧵",
+          "resultado": "数千人が即ブックマーク。混乱の中での頼れる英雄となる。"
+        },
+        {
+          "texto": "「ただの煽り（FUD）だ」と一蹴し、資産を預けたままにするよう呼びかける。",
+          "tweet": "大口の振り落としにビビるな。完全なデマだから資金はそのままにしてガチホ一択。",
+          "resultado": "直後に取引所が完全破綻。信じたフォロワーが破産し、大恨みを買う。"
+        }
+      ]
+    },
+    "crypto_rugpull": {
+      "titulo": "ラグプル（資金持ち逃げ）の代償",
+      "desc": "先週あなたが好意的に紹介したDeFi銘柄の開発陣が、深夜に全資金を持ち逃げした。",
+      "opciones": [
+        {
+          "texto": "言い訳を一切せず、自分の調査不足を公に謝罪する。",
+          "tweet": "紹介したプロジェクトが資金を持ち逃げしました。精査を怠った私の責任です。本当に申し訳ありませんでした。",
+          "resultado": "批判は浴びるが、逃げずに頭を下げたことで長期的には信頼を残す。"
+        },
+        {
+          "texto": "自腹を切って被害者救済ファンドを立ち上げる。",
+          "tweet": "被害を受けたフォロワーのため、自分のポケットマネーから補填プールを作ります。少し時間をください。",
+          "resultado": "大金を失うが、コミュニティからの忠誠心は神格化レベルに。"
+        },
+        {
+          "texto": "過去ツイートを全消しし、「アカウントが乗っ取られていた」と言い張る。",
+          "tweet": "先週アカウントが不正アクセスされていました。心当たりのない投稿はすべて私の発言ではありません。",
+          "resultado": "魚拓を取られて嘘が即座にバレる。界隈の語り草となる伝説の炎上。"
+        }
+      ]
+    },
+    "crypto_conferencia": {
+      "titulo": "国際カンファレンスの登壇",
+      "desc": "ドバイで開催される世界最大級のブロックチェーンEXPOのメインステージ登壇を依頼された。",
+      "opciones": [
+        {
+          "texto": "現状の課題と実用化へのハードルを語る誠実なスピーチをする。",
+          "tweet": "登壇終了。安易な価格煽りではなく、UXの課題とマスアダプションへの道筋を語ってきました。",
+          "resultado": "現場の開発者や機関投資家から高い評価を受け、人脈が広がる。"
+        },
+        {
+          "texto": "「法定通貨の終焉」を高らかに叫ぶアグレッシブな演説で会場を沸かせる。",
+          "tweet": "既存の金融システムは崩壊寸前。未来はコードと分散型プロトコルにある。全員ついてこい！",
+          "resultado": "切り抜き動画がバズり、信奉者が急増する。"
+        },
+        {
+          "texto": "遅刻してステージに上がり、草コインを連呼して司会者と口論になる。",
+          "tweet": "スーツ着たエリート連中の前で本音をぶちまけてやった。リアルな界隈は壇上にはない。",
+          "resultado": "ネット上で嘲笑の的になり、まともなスポンサーがすべて撤退。"
+        }
+      ]
+    },
+    "of_collab": {
+      "titulo": "超大物コラボの打診",
+      "desc": "同ジャンルのトップクリエイターから、合同でのグラビア撮影とコラボ配信を持ちかけられた。",
+      "opciones": [
+        {
+          "texto": "自然体で親しみやすいオフショットをチラ見せする。",
+          "tweet": "今日はスタジオで楽しい撮影でした✨ 本編は夜にファンクラブ限定で公開するね。",
+          "resultado": "相手のファン層が自然に流入し、フォロワーが大幅増。"
+        },
+        {
+          "texto": "世界観とライティングに徹底的にこだわった芸術的写真を投稿する。",
+          "tweet": "お互いのこだわりを詰め込んだ特別な作品が撮れました。妥協ゼロの美しさを見てほしい。",
+          "resultado": "クオリティの高さが絶賛され、高額プランの加入者が急増。"
+        },
+        {
+          "texto": "規約ギリギリの過激な告知でTLの視線を独占する。",
+          "tweet": "ちょっとやりすぎちゃったかも…😈 消される前に見に来てね。",
+          "resultado": "通報が殺到してシャドウバンを食らうが、瞬間風速で売上は爆発。"
+        }
+      ]
+    },
+    "of_hater": {
+      "titulo": "執拗な説教アンチ",
+      "desc": "毎日すべての投稿に道徳を振りかざして説教してくる有名アンチが粘着している。",
+      "opciones": [
+        {
+          "texto": "無言でブロックし、自分の機嫌を取ることに集中する。",
+          "tweet": "ブロック完了、平常運転！ 自分の大切な時間をアンチなんかに1秒も使わない💅",
+          "resultado": "余計な火種を作らず、平穏なタイムラインを維持。"
+        },
+        {
+          "texto": "相手を無視しつつ、リプ欄でファンに軽くいじらせる。",
+          "tweet": "私のこと嫌いって言いながら、毎回秒速で通知欄見に来てくれるの可愛すぎるでしょ🙃",
+          "resultado": "ファンが一致団結して味方になり、コミュニティの結束が強化。"
+        },
+        {
+          "texto": "過去にそのアンチが送ってきた気持ち悪い裏アカDMをスクショして晒す。",
+          "tweet": "偉そうに説教してるこの人、3ヶ月前に私に送ってきたDMこれですからね🙂 恥を知りなさい。",
+          "resultado": "アンチを社会的に抹殺するが、ドロ沼のレスバにTLが荒れ狂う。"
+        }
+      ]
+    },
+    "of_regalo": {
+      "titulo": "謎の高額プレゼント",
+      "desc": "匿名ファンから私書箱宛てに、最新の超高級撮影機材一式が送られてきた。",
+      "opciones": [
+        {
+          "texto": "トラブル防止のため、受け取りを拒否して返送する。",
+          "tweet": "見返りを求められるかもしれない物は受け取らない主義。心の平穏は機材より大切。",
+          "resultado": "プロとしての健全な境界線を守り、精神的負担を回避。"
+        },
+        {
+          "texto": "お礼を述べつつ、「今後はプレゼント企画以外は辞退」と明記する。",
+          "tweet": "素晴らしい機材をありがとう！今後はルールを統一するため私書箱への直接送付はお控えください🙏",
+          "resultado": "角を立てずにルールを周知。ファンからも分別のある対応と称賛される。"
+        },
+        {
+          "texto": "機材を使って匂わせ投稿をし、送り主にお礼DMを送る。",
+          "tweet": "素敵なプレゼントで撮った写真…送り主さん、見てくれてるかな？😉",
+          "resultado": "ストーカー化して自宅特定スキャンダルへと発展する。"
+        }
+      ]
+    },
+    "of_filtracion": {
+      "titulo": "有料コンテンツの流出",
+      "desc": "ファンクラブ限定の有料動画が、某掲示板や海外違法サイトに無断転載された。",
+      "opciones": [
+        {
+          "texto": "弁護士を通じて水面下で粛々と削除申請と開示請求を行う。",
+          "tweet": "法的措置を進めています。クリエイターの権利を侵害する行為には厳正に対処します。",
+          "resultado": "騒ぎを最小限に抑えつつ、確実に加害者を追い詰める。"
+        },
+        {
+          "texto": "創作物を奪われる悲しさとクリエイター支援の意義を誠実に語る。",
+          "tweet": "無料で見られる裏で、クリエイターがどれだけ傷ついているか知ってほしい。正規の応援をお願いします。",
+          "resultado": "ファンの同情と応援が爆発し、公式会員への乗り換えが相次ぐ。"
+        },
+        {
+          "texto": "「無料の宣伝乙！」と強がり、値上げを発表して話題に変える。",
+          "tweet": "勝手に宣伝してくれてありがとう！需要ありすぎだから今夜から会費値上げしまーす💅",
+          "resultado": "メンタルの強さに驚かれるが、流出を気にするファンとの間に溝も。"
+        }
+      ]
+    },
+    "of_marca_grande": {
+      "titulo": "大手コスメからの大型オファー",
+      "desc": "誰もが知る有名化粧品メーカーから、年間の公式アンバサダー契約の打診が舞い込んだ。",
+      "opciones": [
+        {
+          "texto": "「過度な表現制限をしない」条件をつけて契約を結ぶ。",
+          "tweet": "大手ブランド様との提携が決定しました。私らしさを失わずに発信していきます✨",
+          "resultado": "アングラから表舞台への進出を果たし、社会的ステータスが向上。"
+        },
+        {
+          "texto": "「過去ツイートを全部消せ」という条件を拒否し、蹴る。",
+          "tweet": "過去の自分を否定してまで大きな看板にすがる気はありません。私は私の道を行く。",
+          "resultado": "ブレない生き方に熱狂的な支持が集まり、個人課金が急増。"
+        },
+        {
+          "texto": "指示通りに過去の過激投稿を全消しし、清楚系にキャラ変する。",
+          "tweet": "これからはエレガントで上質な女性を目指します✨ 新しい私を応援してね！",
+          "resultado": "古参ファンが「魂を売った」と激怒し、大量離脱。"
+        }
+      ]
+    },
+    "life_viaje": {
+      "titulo": "高級リゾートのご招待",
+      "desc": "某超高級ヴィラから、宿泊無料と引き換えにPR投稿を行う案件が届いた。",
+      "opciones": [
+        {
+          "texto": "プールサイドでシャンパンを持つ王道の映え写真を投稿する。",
+          "tweet": "最高の週末✨ いつも頑張っている自分へのご褒美ステイ。スタッフの皆様に感謝。",
+          "resultado": "定番のインフルエンサー投稿。ファンから安定した憧れの反応。"
+        },
+        {
+          "texto": "ホテルの魅力だけでなく、周辺のローカルな隠れ家スポットも紹介する。",
+          "tweet": "ホテルも最高ですが、徒歩5分の裏路地にあるカフェが感動的でした。詳しい旅プランはこちら 🧵",
+          "resultado": "実用性の高さがバズり、旅系アカウントとしても重宝される。"
+        },
+        {
+          "texto": "部屋のエアコンの効きが悪いと公開クレームをつけてVIP対応を迫る。",
+          "tweet": "一泊20万も取ってこの空調はないんじゃない？ 正直ガッカリです。対応求む。",
+          "resultado": "「案件の分際で傲慢すぎる」と引用RTで袋叩きに遭う。"
+        }
+      ]
+    },
+    "life_morning": {
+      "titulo": "完璧すぎるモーニングルーティン",
+      "desc": "「朝5時起きルーティン」の動画が大バズりしたが、「ワーママを馬鹿にしている」とリプ欄が荒れ始めた。",
+      "opciones": [
+        {
+          "texto": "批判には一切触れず、朝のハーブティーの写真を優雅に投稿する。",
+          "tweet": "今朝も心静かにハーブティーをいただきます🌿 穏やかな一日を。",
+          "resultado": "スルー力で雑音を流し、ブランドイメージを守る。"
+        },
+        {
+          "texto": "「人それぞれの生活リズムがあっていい」と寄り添う声明を出す。",
+          "tweet": "朝型が偉いわけではありません。それぞれのライフスタイルを尊重し合える世界が素敵ですよね✨",
+          "resultado": "大人の余裕ある回答で批判派を沈黙させ、好感度アップ。"
+        },
+        {
+          "texto": "「努力できない人の僻み乙」と上から目線で煽り返す。",
+          "tweet": "時間は全員に平等。文句を言う暇があるなら10分早く起きればいいのに。",
+          "resultado": "「特権階級の嫌味」として大炎上。主婦層を完全に敵に回す。"
+        }
+      ]
+    },
+    "life_producto": {
+      "titulo": "PR美容液の肌トラブル騒動",
+      "desc": "あなたが「神コスメ」と絶賛した美容液を使ったフォロワーから、肌荒れの苦情が届き始めた。",
+      "opciones": [
+        {
+          "texto": "「体質による個人差があります」と注意喚起を出し、受診を促す。",
+          "tweet": "お肌の状態は人それぞれです。異常を感じた方はすぐに使用を中止し、皮膚科にご相談ください。",
+          "resultado": "無難なリスク管理だが、被害を訴えるファンからは不満の声も。"
+        },
+        {
+          "texto": "真摯に謝罪し、メーカー側に成分の再調査を公開要求する。",
+          "tweet": "フォロワーの皆様の健康が第一です。メーカーに確認が取れるまで本商品の紹介を全面中止します。",
+          "resultado": "誠実な企業姿勢へのこだわりが絶賛され、圧倒的な信頼を獲得。"
+        },
+        {
+          "texto": "批判的なコメントを即座にブロック・削除し、絶賛コメントだけ残す。",
+          "tweet": "使ってくれたみんなから「肌ツヤが出た」って嬉しい報告がたくさん届いてます💖",
+          "resultado": "言論統制が告発され、ステマ疑惑としてまとめサイトの餌食に。"
+        }
+      ]
+    },
+    "life_mascara_cae": {
+      "titulo": "すっぴん無加工写真の流出",
+      "desc": "空港でボロボロの部屋着で猫背になっている無加工の盗撮写真がネットに晒された。",
+      "opciones": [
+        {
+          "texto": "自虐ネタに変えて「人間だもの」と笑い飛ばす。",
+          "tweet": "完全にオフモードの私で草。インフルエンサーだってフライト後はこうなります😂",
+          "resultado": "親近感が湧くと大好評。ピンチをチャンスに変える。"
+        },
+        {
+          "texto": "完璧を演じ続けるプレッシャーとSNS疲れについて本音を吐露する。",
+          "tweet": "常に完璧でいなければならない毎日に息が詰まっていました。素の自分も受け入れていきたいです。",
+          "resultado": "同情と共感の嵐。飾らない自然体キャラへと路線変更に成功。"
+        },
+        {
+          "texto": "「あれは現代社会のルッキズムを暴く社会実験だった」と強弁する。",
+          "tweet": "見た目ばかり気にするネット社会へのアンチテーゼとしてあえて撮らせた演出です。",
+          "resultado": "往生際の悪さにドン引きされ、ネット中の笑い者に。"
+        }
+      ]
+    },
+    "life_producto_milagro": {
+      "titulo": "飲むだけ激痩せサプリの誘惑",
+      "desc": "「飲むだけで1週間で5キロ減」という怪しい海外ダイエット茶から、超高額な報酬が提示された。",
+      "opciones": [
+        {
+          "texto": "信用に関わるため、どれだけ金を積まれても断固拒否する。",
+          "tweet": "健康に近道はありません。バランスの良い食事と睡眠が一番の美容法です✨",
+          "resultado": "健康志向のフォロワーから「信頼できるインフルエンサー」と再評価。"
+        },
+        {
+          "texto": "「適度な運動と合わせて」と小さく注釈を入れて案件をこなす。",
+          "tweet": "最近取り入れているお茶🌿 ※適切な食事と運動との併用をおすすめします（PR）",
+          "resultado": "金は手に入るが、古参フォロワーから失望の溜息。"
+        },
+        {
+          "texto": "ビフォーアフターを加工して「奇跡のサプリ」と大々的に売り込む。",
+          "tweet": "ガチで人生変わった！食事制限なしでマイナス5キロ！今なら特別リンクから買えます！",
+          "resultado": "薬機法違反疑惑でコミュニティノートがつき、大炎上。"
+        }
+      ]
+    },
+    "poli_debate": {
+      "titulo": "党首討論の夜",
+      "desc": "国政を左右する大注目の党首討論会が生中継されている。",
+      "opciones": [
+        {
+          "texto": "自陣営の公約をブレずに分かりやすく反復してアピールする。",
+          "tweet": "明確なリーダーシップと具体的な政策。対立陣営の曖昧な批判とは覚悟が違う。",
+          "resultado": "味方支持層を鼓舞し、団結を強める安定のムーブ。"
+        },
+        {
+          "texto": "数字と一次資料を用いて相手陣営の予算案の矛盾を突く。",
+          "tweet": "相手候補の財源案を試算：現実味ゼロの根拠と歳出の破綻をデータで解説します 🧵",
+          "resultado": "論理的な切れ味の鋭さで、無党派層や記者からの評価を獲得。"
+        },
+        {
+          "texto": "対立候補の顔写真や喋り方を嘲笑し、人格攻撃を連射する。",
+          "tweet": "あの汗のかき方見てみろよw 嘘八百並べて恥ずかしくないのか売国奴どもが。",
+          "resultado": "コアな過激派は大喜びするが、一般層から強烈に嫌悪される。"
+        }
+      ]
+    },
+    "poli_escrache": {
+      "titulo": "敵対政治家の密会スキャンダル",
+      "desc": "敵対陣営の大物議員が高級料亭で密談している写真がネットに流出した。",
+      "opciones": [
+        {
+          "texto": "余計な主観を交えず、写真のみを引用リポストする。",
+          "tweet": "RT 📸",
+          "resultado": "手を汚さずに拡散に貢献し、リスクを避ける。"
+        },
+        {
+          "texto": "庶民感覚の欠如と公約違反の構造的な問題を指摘する。",
+          "tweet": "庶民に増税と我慢を強いておきながら、裏では一晩数十万の会食。これが彼らの本質です。",
+          "resultado": "的確な政治批評として大きく拡散される。"
+        },
+        {
+          "texto": "「官房機密費が使われたに違いない」と証拠なしに断言する。",
+          "tweet": "確定情報！ 税金から数百万が裏金として支払われた！ 明日逮捕者が出るぞ！",
+          "resultado": "虚偽情報であることが即座に判明。信用失墜と法的措置の危機。"
+        }
+      ]
+    },
+    "poli_meme": {
+      "titulo": "選挙コラ画像の拡散",
+      "desc": "対立候補の失言を風刺した強烈な動画ミームがトレンド入りしている。",
+      "opciones": [
+        {
+          "texto": "笑い泣きの絵文字だけをつけて拡散する。",
+          "tweet": "😂👏",
+          "resultado": "政治色を抑えつつ、ライト層にも笑いとして拡散。"
+        },
+        {
+          "texto": "なぜこの風刺が人々の共感を呼んでいるのか背景を解説する。",
+          "tweet": "風刺がここまでバズるのは、国民の怒りが限界に達している証拠。政治不信の象徴です。",
+          "resultado": "インテリジェントな分析として言論界隈で引用される。"
+        },
+        {
+          "texto": "相手の容姿や出自を侮辱する差別的なキャプションをつけて拡散する。",
+          "tweet": "この顔見てみろよw 遺伝子レベルで嘘つきの顔つきだろ。",
+          "resultado": "プラットフォーム規約のヘイトスピーチに該当し、アカウントに傷がつく。"
+        }
+      ]
+    },
+    "poli_fake_news_propia": {
+      "titulo": "未確認の特大タレコミ",
+      "desc": "敵対陣営に致命傷を与えられるスキャンダル情報がDMに届いたが、証拠の裏付けが弱い。",
+      "opciones": [
+        {
+          "texto": "裏が取れるまで拡散を控え、慎重に事実確認を行う。",
+          "tweet": "様々な噂が飛び交っていますが、確定的なファクトが揃うまで軽はずみな言及は控えます。",
+          "resultado": "デマ拡散の罠を回避。賢明な判断が賞賛される。"
+        },
+        {
+          "texto": "「火のない所に煙は立たない」と断定的な言い回しで投下する。",
+          "tweet": "細部は違えど、本質的な腐敗は明白。これが本当なら政権交代レベルの事件だ。",
+          "resultado": "完全な捏造文書と判明。敵陣営から猛烈なカウンターを食らう。"
+        },
+        {
+          "texto": "誤報だと気づいた瞬間に、誰よりも早く自ら訂正を出す。",
+          "tweet": "【訂正】先ほどの文書は真偽不明の疑いが生じたため削除しました。正確な情報発信に努めます。",
+          "resultado": "潔い訂正姿勢が逆に信頼を生み、被害を最小限に食い止める。"
+        }
+      ]
+    },
+    "poli_debate_publico_tv": {
+      "titulo": "報道番組の生出演オファー",
+      "desc": "全国ネットの討論番組から、ネット世論を代表する論客としての出演依頼が届いた。",
+      "opciones": [
+        {
+          "texto": "感情論を排し、データと論理で武装して番組に臨む。",
+          "tweet": "今夜の生放送に出演します。ネットの声を冷静かつ客観的にお伝えしてきます。",
+          "resultado": "テレビ視聴者にも伝わる大人の議論を展開し、全国区の知名度に。"
+        },
+        {
+          "texto": "いつものTwitterの攻撃的なノリをそのままスタジオに持ち込む。",
+          "tweet": "テレビの偏向報道をぶっ壊してくる。生放送で全員論破してやるから見てろよ。",
+          "resultado": "スタジオが凍りつき、熱狂的支持者以外からはドン引きされる。"
+        },
+        {
+          "texto": "生放送中に激昂して司会者を罵倒し、途中退場する。",
+          "tweet": "司会が台本通りの誘導尋問しかしないからスタジオを出てやった。偏向メディアに鉄槌を！",
+          "resultado": "ネットミームとして消費され、まともな論壇から永久追放。"
+        }
+      ]
+    },
+    "fut_pronostico": {
+      "titulo": "伝統の一戦のスコア予想",
+      "desc": "年間最大のダービーマッチキックオフ直前。フォロワーから試合予想を迫られている。",
+      "opciones": [
+        {
+          "texto": "泥臭い1-0の辛勝を予想し、選手たちの気迫を信じる。",
+          "tweet": "ダービーは内容じゃない、結果がすべて。1-0の泥臭い勝利を信じて最後まで声枯らすぞ。",
+          "resultado": "サポ仲間の共感を呼び、スタジアムの士気を高める。"
+        },
+        {
+          "texto": "相手の戦術的弱点とフォーメーションの噛み合わせを分析する。",
+          "tweet": "【ダービー戦術展望】相手の右SB裏のスペース管理とハイプレス回避が勝負の分かれ目 🧵",
+          "resultado": "戦術クラスタからも納得の唸り声。サッカーを見る目が認められる。"
+        },
+        {
+          "texto": "「相手はビビってるから5-0で圧勝」と挑発しまくる。",
+          "tweet": "こんな雑魚相手に負けるわけない。前半で3点取って公開処刑してやるよw",
+          "resultado": "試合に敗北。一生擦られる黒歴史ツイートとして魚拓が残る。"
+        }
+      ]
+    },
+    "fut_partidario": {
+      "titulo": "御用サポーター疑惑",
+      "desc": "ライバル派閥のアカウントから「フロントから金をもらって擁護している」と告発された。",
+      "opciones": [
+        {
+          "texto": "くだらない中傷は無視し、下部組織のユースの試合結果をツイートする。",
+          "tweet": "U-18が3-1で快勝！次世代のホープたちが順調に育ってて週末から元気を貰えた。",
+          "resultado": "クラブへの純粋な愛を示し、不毛な内紛を回避。"
+        },
+        {
+          "texto": "20年分の年間シートとファンクラブ会員証の写真を叩きつける。",
+          "tweet": "J2の暗黒期から雨の日もゴール裏に立ち続けてきた。お前らに忠誠心を疑われる筋合いはない。",
+          "resultado": "筋金入りのガチサポとしての威厳を見せつけ、相手を完全論破。"
+        },
+        {
+          "texto": "相手こそ他クラブのスパイだと根拠のない陰謀論で反撃する。",
+          "tweet": "あいつが騒ぎ立てるタイミング、いつも相手クラブに有利なんだよな。どっから金出てるか調査中。",
+          "resultado": "サポーター間の泥沼の内ゲバに発展し、クラブの雰囲気が最悪に。"
+        }
+      ]
+    },
+    "fut_leyenda": {
+      "titulo": "宿敵レジェンドの引退",
+      "desc": "長年自チームを苦しめ続けたライバルクラブの英雄が、現役引退を発表した。",
+      "opciones": [
+        {
+          "texto": "敵ながら長年の激闘に心からの敬意を表して労う。",
+          "tweet": "何度あなたのゴールに泣かされたことか。最高のライバルでした。現役生活お疲れ様でした。",
+          "resultado": "敵味方を超えたスポーツマンシップに、両サポから温かい拍手。"
+        },
+        {
+          "texto": "彼との名勝負の歴史を振り返る長文スレッドを投稿する。",
+          "tweet": "【追悼ではなく敬意を】あのロスタイムのFK、ゴール裏から見ていた絶望と美しさの記録 🧵",
+          "resultado": "サッカーを愛する全てのファンの胸を打つ名文として拡散。"
+        },
+        {
+          "texto": "大舞台でのミスや敗退を引き合いに出して最後まで嘲笑する。",
+          "tweet": "結局代表ではノータイトルw 肝心なところでPK外す過大評価選手乙でした〜。",
+          "resultado": "「リスペクトがなさすぎる」とサッカーファン全員から軽蔑される。"
+        }
+      ]
+    },
+    "fut_hinchada_violenta": {
+      "titulo": "スタジアム周辺の暴動",
+      "desc": "試合終了後、スタジアムの外で過激派サポーター同士の小競り合いが発生した。",
+      "opciones": [
+        {
+          "texto": "暴力行為をいかなる理由があろうと断固として非難する。",
+          "tweet": "サッカーは暴力のはけ口じゃない。愛するエンブレムを汚す連中はサポーター失格だし出禁にしろ。",
+          "resultado": "毅然とした態度が健全なサポーター層から絶大な支持を集める。"
+        },
+        {
+          "texto": "「ごく一部の人間が騒いでいるだけ」と事態を矮小化する。",
+          "tweet": "大半のサポは平和に帰宅してます。メディアは大袈裟に切り取って騒ぐのをやめてほしい。",
+          "resultado": "身内擁護と見なされ、世論から批判を浴びる。"
+        },
+        {
+          "texto": "「先に挑発してきたのは相手だ」と暴力を正当化する。",
+          "tweet": "縄張りに土足で踏み込んできたんだからやり返されて当然。やられたらやり返すのが筋。",
+          "resultado": "治安当局やプラットフォームから危険アカウント指定を受ける。"
+        }
+      ]
+    },
+    "fut_transferencia_rumor": {
+      "titulo": "エースの宿敵移籍の噂",
+      "desc": "チームの絶対的エースが、よりによって宿敵クラブへ電撃移籍するという飛ばし記事が出た。",
+      "opciones": [
+        {
+          "texto": "公式発表が出るまではメディアの飛ばしに踊らされないよう呼びかける。",
+          "tweet": "移籍期間の怪しい噂に一喜一憂しない。公式のアナウンスがあるまで選手を信じて待とう。",
+          "resultado": "動揺するタイムラインを落ち着かせる大黒柱となる。"
+        },
+        {
+          "texto": "事実確認もせず「裏切り者」と決めつけてユニフォームを燃やす。",
+          "tweet": "もし宿敵に行ったら人間として軽蔑する。お前のユニはもうゴミ箱に捨てた。",
+          "resultado": "直後に残留と契約延長が発表され、一生モノの恥をかく。"
+        },
+        {
+          "texto": "「内部関係者から聞いたがすでに合意済み」と嘘の情報を流す。",
+          "tweet": "【独自情報】フロントの知人から確認。違約金満額でサイン済み。来週発表されます。",
+          "resultado": "完全な誤報と判明。情報通を気取ったペテン師として失脚。"
+        }
+      ]
+    },
+    "hum_plagio": {
+      "titulo": "ネタの丸パクリ被害",
+      "desc": "フォロワー500万人の大企業公式アカが、あなたの渾身のネタツイを無断転載した。",
+      "opciones": [
+        {
+          "texto": "引用RTでユーモアを交えつつ、やんわりとクレジット表記を求める。",
+          "tweet": "気に入ってもらえて光栄ですが、引用元も書いてもらえると泣いて喜びます🤝",
+          "resultado": "大人の対応が共感を呼び、公式側が謝罪して引用表記を追加。"
+        },
+        {
+          "texto": "企業の無能なSNS運用担当者を皮肉るキレキレのネタをぶつける。",
+          "tweet": "高い給料もらって個人のツイート右クリック保存して仕事した気になってるの羨ましすぎる😂",
+          "resultado": "強烈なカウンターが数万RTされ、企業公式を完全公開処刑。"
+        },
+        {
+          "texto": "フォロワーを扇動して企業アカのリプ欄を荒らし尽くす。",
+          "tweet": "みんなで凸って謝罪するまでリプ欄埋め尽くそうぜ！総攻撃開始！！",
+          "resultado": "嫌がらせの首謀者として通報され、アカウント停止危機に。"
+        }
+      ]
+    },
+    "hum_trend": {
+      "titulo": "爆発的バズトレンドへの便乗",
+      "desc": "ネット全体を席巻する謎のミーム構文がトレンド1位を独走している。",
+      "opciones": [
+        {
+          "texto": "構文のルールを逆手に取った、誰も思いつかない秀逸なオチをつける。",
+          "tweet": "この構文を使いこなそうとした結果、一番大事なことを忘れてしまった私の図。",
+          "resultado": "天才的な発想力と賞賛され、トレンド内でぶっちぎりのRT数を記録。"
+        },
+        {
+          "texto": "なぜこのミームがここまで流行るのか、メタ的な風刺ネタにする。",
+          "tweet": "アルゴリズムの深淵が生み出した集団幻覚の観察記録 🧵",
+          "resultado": "ネット中毒者たちのツボに刺さり、濃いファンを獲得。"
+        },
+        {
+          "texto": "不謹慎な時事ニュースや有名人の訃報と無理やり絡めてネタにする。",
+          "tweet": "このタイミングでこのネタぶっ込むの俺くらいだろw 反応よろしくw",
+          "resultado": "ドン引きされて大炎上。スポンサーが全員逃げ出す。"
+        }
+      ]
+    },
+    "hum_standup": {
+      "titulo": "リアルお笑いライブへの出演",
+      "desc": "ネットの話題枠として、都内の劇場で開催されるお笑いライブへの出演オファーが届いた。",
+      "opciones": [
+        {
+          "texto": "ネットのノリを自虐しつつ、等身大の謙虚なネタを披露する。",
+          "tweet": "リアルのお笑いライブ出てきました。生卵投げられなかっただけで大勝利です。",
+          "resultado": "愛嬌のあるキャラクターが観客にウケて大成功。"
+        },
+        {
+          "texto": "劇場向けに磨き上げたオリジナルのフリップ芸で爆笑をさらう。",
+          "tweet": "劇場満員御礼！ネット民の底力見せてきました。笑ってくれたみんなありがとう🔥",
+          "resultado": "ネット発の芸人・クリエイターとしての評価を確立。"
+        },
+        {
+          "texto": "舞台上で大スベリし、ネット上で「観客のレベルが低すぎた」と愚痴る。",
+          "tweet": "劇場に来る客ってなんであんなに笑いのセンス古いの？ ネットの笑いについてこれてない。",
+          "resultado": "見苦しい言い訳としてお笑い界隈全体から失笑される。"
+        }
+      ]
+    },
+    "hum_censura": {
+      "titulo": "AIによる誤BAN",
+      "desc": "何気ないギャグツイートが、プラットフォームの自動検閲AIに規約違反と判定され削除された。",
+      "opciones": [
+        {
+          "texto": "異議申し立てフォームから冷静に審査請求を送信する。",
+          "tweet": "AIにツッコミが通じず一時削除されました。審査請求中ですので少々お待ちを。",
+          "resultado": "48時間後に無事復活。何事もなかったかのように日常へ。"
+        },
+        {
+          "texto": "検閲AIのポンコツな判定理由をスクショして大喜利ネタにする。",
+          "tweet": "「猫が画面越しに睨んでいる」だけで暴力行為判定されたの面白すぎるだろ。",
+          "resultado": "不条理なAI判定ネタとして大バズりし、怪我の功名に。"
+        },
+        {
+          "texto": "「国家権力による言論弾圧だ」と陰謀論めいた長文で騒ぎ立てる。",
+          "tweet": "真実を暴く私のユーモアが支配層にとって都合が悪かったようです。言論統制の始まりだ。",
+          "resultado": "ただのシステムエラーに大騒ぎする痛い人扱いされる。"
+        }
+      ]
+    },
+    "hum_colaboracion_rival": {
+      "titulo": "ライバルネタ垢からの共闘提案",
+      "desc": "いつもタイムラインでプロレス（煽り合い）をしているライバルネタ垢から、共同企画の誘いがあった。",
+      "opciones": [
+        {
+          "texto": "快諾し、事前のプロレスを回収する最高の大喜利合戦を仕掛ける。",
+          "tweet": "宿敵との停戦協定が結ばれました。今夜21時、タイムラインを揺るがす共同企画やります。",
+          "resultado": "お互いのファンが大熱狂。最高のエンタメコラボに。"
+        },
+        {
+          "texto": "「馴れ合いはつまらない」と断り、ライバル関係を維持する。",
+          "tweet": "馴れ合ったら終わり。お前とはタイムラインの戦場で殴り合い続けるのが一番面白いんだよ。",
+          "resultado": "硬派な職人魂にフォロワーが惚れ直す。"
+        },
+        {
+          "texto": "企画に乗ったフリをして、相手が裏で温めていたネタ案を先出しして奪う。",
+          "tweet": "思いついちゃったから先に投稿しまーすw 良いアイデアをありがとうな！",
+          "resultado": "業界内での信用がゼロになり、他のクリエイターから総スカン。"
+        }
+      ]
+    },
+    "per_filtracion": {
+      "titulo": "政財界の匿名内部告発",
+      "desc": "政府機関の不正な資金流用を示す極秘PDFが、匿名の暗号化メールで届いた。",
+      "opciones": [
+        {
+          "texto": "「現在裏取り中」と注記をつけ、確認が取れた部分から慎重に報じる。",
+          "tweet": "【独自】公金支出に関する内部告発資料を入手。現在複数の関係者に事実関係を確認中 🧵",
+          "resultado": "慎重で正確な報道姿勢がジャーナリストとしての信用を不動のものにする。"
+        },
+        {
+          "texto": "数日かけて公文書データベースと照合し、完璧な調査報道を公開する。",
+          "tweet": "【特報】3日間の公文書照合により確認。総額数億円規模の不正会計の実態を全公開します。",
+          "resultado": "新聞社も後追いするスクープとなり、調査報道の金字塔を打ち立てる。"
+        },
+        {
+          "texto": "裏取りを一切せず、扇情的な見出しをつけて即座にネットに放流する。",
+          "tweet": "内閣総辞職確定！ヤバすぎる極秘文書が流出！消される前に拡散しろ！！",
+          "resultado": "巧妙に作られた偽文書であることが判明。名誉毀損で訴訟問題に。"
+        }
+      ]
+    },
+    "per_vivo": {
+      "titulo": "緊迫するデモ現場の生中継",
+      "desc": "都心で数万人規模のデモが暴徒化し、催涙ガスと機動隊が投入される非常事態が発生。",
+      "opciones": [
+        {
+          "texto": "自宅から複数の配信や目撃情報を整理し、安全にまとめ速報を打つ。",
+          "tweet": "現場からの複数映像を検証中。現在大通り周辺で機動隊による規制線が敷かれています。",
+          "resultado": "信頼できる情報アグリゲーターとして重宝される。"
+        },
+        {
+          "texto": "ヘルメットを被って現場の最前線に飛び込み、緊迫のライブ中継を行う。",
+          "tweet": "現場より生中継：催涙ガスの白煙の中、群衆が後退しています。周囲の安全を確認しつつ継続します。",
+          "resultado": "命がけのジャーナリズム精神が全国から絶賛される。"
+        },
+        {
+          "texto": "インプレッション稼ぎのために「死傷者多数」と未確認のデマを流す。",
+          "tweet": "速報！現場で複数名の死者が出ているとの情報！警察が隠蔽工作を図っています！",
+          "resultado": "死傷者はゼロと判明。虚偽情報によるパニック扇動で社会的に抹殺される。"
+        }
+      ]
+    },
+    "per_nota_paga": {
+      "titulo": "企業タイアップの甘い罠",
+      "desc": "問題を起こした大企業から「客観的な業界分析に見せかけた擁護記事」に500万円のオファー。",
+      "opciones": [
+        {
+          "texto": "ジャーナリストの魂はお金で買えないと、即座にオファーを突き返す。",
+          "tweet": "報道の独立性は金では売らない。真実を伝えるのが私の仕事です。",
+          "resultado": "読者からの圧倒的な信頼を獲得。有料サポーターが急増。"
+        },
+        {
+          "texto": "PR会社が独立系記者を買収しようとする手口そのものを告発記事にする。",
+          "tweet": "【告発】PR会社がいかにして記者に金銭を握らせ世論を誘導しているか。送られてきたメール全文 🧵",
+          "resultado": "メディア業界を揺るがす大スクープとなり、伝説の記者へ。"
+        },
+        {
+          "texto": "大金に目が眩み、広告表記（PR）を隠して提灯記事を書く。",
+          "tweet": "客観的に見て、今回の同社の対応は業界最高峰のガバナンスと評価できます。",
+          "resultado": "ステマであることが即座に見抜かれ、記者人生が完全に終わる。"
+        }
+      ]
+    },
+    "per_presion_gobierno": {
+      "titulo": "権力からの圧力",
+      "desc": "政府広報の担当者から、先日の特報スレッドを即時削除するよう強硬な電話がかかってきた。",
+      "opciones": [
+        {
+          "texto": "圧力に一切屈せず、通話記録と圧迫の事実をそのまま報道する。",
+          "tweet": "先ほど政府関係者より記事の削除要請がありました。報道の自由を脅かす圧力には一切屈しません。",
+          "resultado": "言論の自由を守る闘士として、国内外から連帯の声が集まる。"
+        },
+        {
+          "texto": "法的係争を避けるため、事実関係を保ちつつ表現をより厳密に推敲する。",
+          "tweet": "より法的・客観的な正確性を期すため、一部の形容詞を修正しました。事実関係の根幹に揺らぎはありません。",
+          "resultado": "大人のリスクヘッジにより、スクープを守りつつ訴訟を回避。"
+        },
+        {
+          "texto": "逮捕や弾圧を恐れてスレッドを丸ごと削除し、逃亡する。",
+          "tweet": "体調不良のため、当面の間すべてのSNSの更新を休止いたします。",
+          "resultado": "「腰抜け記者」と失望され、フォロワーが一斉に離脱。"
+        }
+      ]
+    },
+    "per_error_propio": {
+      "titulo": "痛恨の誤報発覚",
+      "desc": "あなたの出したスクープ記事の数字に重大な計算ミスがあり、結論が逆転することが判明した。",
+      "opciones": [
+        {
+          "texto": "トップ固定で即座に訂正と謝罪を出し、どこを間違えたか全公開する。",
+          "tweet": "【お詫びと訂正】先ほどのデータ集計に誤りがありました。正しくは以下の通りです。心よりお詫び申し上げます。",
+          "resultado": "迅速かつ透明な訂正姿勢が、かえってプロとしての信頼を高める。"
+        },
+        {
+          "texto": "元のツイートをサイレント削除し、何事もなかったかのように修正版を再投稿する。",
+          "tweet": "最新のデータを反映した修正版のチャートをアップしました。",
+          "resultado": "サイレント修正をフォロワーに暴かれ、セコい態度を批判される。"
+        },
+        {
+          "texto": "ミスを認めず、「本質的には間違っていない」と逆ギレして読者とレスバする。",
+          "tweet": "枝葉末節の計算ミスを鬼の首取ったように叩く連中がいるが、巨悪の構図は変わらない。",
+          "resultado": "最も醜悪なジャーナリストの末路として、同業者からも見放される。"
+        }
+      ]
+    },
+    "opi_debate_nacio": {
+      "titulo": "国論を二分する大激論",
+      "desc": "国家を揺るがす経済危機と法改正をめぐり、タイムライン全体が殺伐とした大論争に突入している。",
+      "opciones": [
+        {
+          "texto": "当たり障りのない平和と対話を呼びかける投稿で逃げる。",
+          "tweet": "今こそ冷静な対話が必要です。分断ではなく、国を挙げた英知の結集を望みます。",
+          "resultado": "無難だが、誰の心にも刺さらない薄味なツイート。"
+        },
+        {
+          "texto": "過去の歴史的教訓を引いた重厚な連投スレッドで本質を突く。",
+          "tweet": "この危機の本質は30年前の構造改革のツケです。過去の失敗例から読み解く現状分析 🧵",
+          "resultado": "圧倒的な知性と教養が光り、論客としての地位を確立。"
+        },
+        {
+          "texto": "極端にどちらか一方を罵倒し、国民の憎悪を煽り立てる。",
+          "tweet": "こんな政策を支持する連中は売国奴か脳内お花畑だけ。徹底的に叩き潰すべき。",
+          "resultado": "瞬間的にインプレッションは稼ぐが、タイムラインの治安を最悪にする。"
+        }
+      ]
+    },
+    "opi_cultura": {
+      "titulo": "往年の名作を語る",
+      "desc": "世界的な名画や文学の古典が、SNSの映画クラスタで熱く語り合われている。",
+      "opciones": [
+        {
+          "texto": "Wikipediaのあらすじを適当にリライトして通ぶる。",
+          "tweet": "改めて見返すと、この作品の持つ疎外感と実存主義的テーマは現代にも通じるものがある。",
+          "resultado": "薄っぺらさが透けて見えるが、一応形にはなる。"
+        },
+        {
+          "texto": "独自の切り口と鋭い視点で監督の作家性を解剖する批評を書く。",
+          "tweet": "なぜこのラストシーンは映画史に残るのか？ 音響演出と色彩設計から読み解く名作の裏側 🧵",
+          "resultado": "映画ファンから大絶賛され、カルチャー系論客としての評価が急上昇。"
+        },
+        {
+          "texto": "「昔の映画なんて退屈な駄作」と安易な逆張りで喧嘩を売る。",
+          "tweet": "ぶっちゃけ今の映画の方が100倍面白い。これ持ち上げてるやつ全員ただの懐古厨だろw",
+          "resultado": "浅はかな逆張りであることが即座に見抜かれ、教養のない馬鹿扱いされる。"
+        }
+      ]
+    },
+    "opi_fake": {
+      "titulo": "生成AIデマへの引っかかり",
+      "desc": "あまりに巧妙に作られた生成AIのコラ画像を、本物のニュースだと思い込んで激怒ツイートしてしまった。",
+      "opciones": [
+        {
+          "texto": "ミスを認めて自虐し、「AIすげえな」と笑いに変える。",
+          "tweet": "完全にAI画像に騙されました！不覚！目を洗って出直してきます😂 みんなも気をつけて！",
+          "resultado": "愛嬌のある失敗談としてフォロワーに受け入れられる。"
+        },
+        {
+          "texto": "生成AI技術が世論誘導に使われる危険性についての真面目な考察スレッドに切り替える。",
+          "tweet": "プロの言論人ですら一瞬騙される時代。フェイク画像が選挙や社会に与える影響についての警鐘 🧵",
+          "resultado": "ピンチを深い考察へと昇華させる鮮やかなリカバリー。"
+        },
+        {
+          "texto": "「嘘でもいい、こういうことが現実に起こり得るのが問題だ」と居直る。",
+          "tweet": "仮に画像がフェイクだとしても、みんなが信じた事実こそが彼らの日頃の行いの証明だろ！",
+          "resultado": "SNSの恥さらしとして語り継がれる屈辱的な敗北。"
+        }
+      ]
+    },
+    "opi_polemica_ajena": {
+      "titulo": "芸能人の泥沼不倫劇",
+      "desc": "トップタレントの泥沼不倫と離婚劇で、タイムラインのすべてのトレンドが埋め尽くされている。",
+      "opciones": [
+        {
+          "texto": "「他人の家庭のことに口を出すな」と大人な態度で静観する。",
+          "tweet": "他人のプライベートで集団リンチを楽しむのは品がない。当事者同士で解決すべき問題。",
+          "resultado": "品性を保ち、ゴシップ狂いのTLから一線を画す。"
+        },
+        {
+          "texto": "詳細も調べずに最速で感情的なお気持ち表明を投下する。",
+          "tweet": "これは許されない。人間として絶対にやってはいけない裏切り。徹底的に糾弾されるべき。",
+          "resultado": "後に新事実が判明して的外れな批判となり、赤っ恥をかく。"
+        },
+        {
+          "texto": "過去の自分の発言と矛盾するレベルの過激なモラルパンチを繰り出す。",
+          "tweet": "不誠実な人間は社会的に抹殺されるべき！一切の情状酌量の余地なし！",
+          "resultado": "過去に自分が不倫を擁護していたツイートを掘り起こされ、特大ブーメラン。"
+        }
+      ]
+    },
+    "opi_entrevista_tv": {
+      "titulo": "深夜番組のコメンテーター出演",
+      "desc": "テレビ局から、若者のネット世論を代表する論客として情報番組への出演依頼が届いた。",
+      "opciones": [
+        {
+          "texto": "しっかり準備し、過激さよりも説得力とバランスを重視する。",
+          "tweet": "テレビ出演終了。尺の短い中で本質を伝える難しさを痛感しつつ、良い経験になりました。",
+          "resultado": "テレビ業界関係者からのウケも良く、レギュラー出演への足がかりに。"
+        },
+        {
+          "texto": "Twitterの芸風をそのまま持ち込み、スタジオで毒舌を連発する。",
+          "tweet": "テレビのぬるま湯コメンテーター全員に現実を突きつけてやった。爽快感MAX。",
+          "resultado": "一部の信者は熱狂するが、視聴者センターに苦情が殺到。"
+        },
+        {
+          "texto": "大物司会者に噛み付いてスタジオを険悪な空気にして爪痕を残そうとする。",
+          "tweet": "司会者の老害発言をその場で完全論破してやったわ。切り抜き動画拡散よろしく！",
+          "resultado": "テレビ業界から一発出禁を食らい、ただの失礼な人として終わる。"
+        }
+      ]
+    },
+    "gam_drama": {
+      "titulo": "ストリーマー界隈の内紛",
+      "desc": "仲の良い大手配信者同士が配信上で大喧嘩を始めた。リスナーから立場を明確にするよう迫られている。",
+      "opciones": [
+        {
+          "texto": "完全に無視して自分のランク戦に集中する。",
+          "tweet": "今夜もランク戦爆走中🔥 10連勝達成！ゲーム以外に興味なし。",
+          "resultado": "余計な火の粉を浴びず、自分のリスナーと平和に盛り上がった。"
+        },
+        {
+          "texto": "「冷静になろう」と大人の対応を呼びかける。",
+          "tweet": "みんなゲームを楽しく遊ぶ仲間だろ？ 一度スマホを置いて深呼吸しよう。",
+          "resultado": "界隈の良心・まとめ役として好感度と信頼が上昇。"
+        },
+        {
+          "texto": "片方の肩を持って強烈に参戦・煽る。",
+          "tweet": "言いたくなかったけど、あいつの言い分は完全に筋が通ってない。幻滅したわ。",
+          "resultado": "同接とバズりは激増したが、アンチも大量に抱え込むことに。"
+        }
+      ]
+    },
+    "gam_lanzamiento": {
+      "titulo": "待望の超大作ゲーム",
+      "desc": "今世紀最大の期待作がついに発売。開発スタジオから先行レビューコードが届いた。",
+      "opciones": [
+        {
+          "texto": "絶叫プレイの切り抜き動画を投稿する。",
+          "tweet": "本日のベストクリップ🎮🔥 完璧なスーパープレイ（なお最後は爆笑のオチ）",
+          "resultado": "既存リスナー向けの鉄板エンタメとして安定したウケ。"
+        },
+        {
+          "texto": "バグや粗を隠さず、忖度なしの誠実なレビューを書く。",
+          "tweet": "【本音レビュー】グラフィックと世界観は最高峰。だが進行不能バグが多すぎる。アプデ待ち推奨。",
+          "resultado": "提灯記事を嫌うゲーマー層から絶大な信用を獲得。"
+        },
+        {
+          "texto": "企業案件マネーを受け取り、神ゲーと絶賛する。",
+          "tweet": "48時間不眠不休でクリア！文句なしの10/10、歴史に残る神ゲー降臨！！（※PR案件ですが本心です😉）",
+          "resultado": "直後にバグだらけのクソゲーと判明し、企業の手先と叩かれる。"
+        }
+      ]
+    },
+    "gam_torneo": {
+      "titulo": "配信者招待トーナメント",
+      "desc": "賞金総額500万円の招待制クリエイター大会への出場枠を獲得した。",
+      "opciones": [
+        {
+          "texto": "勝ち負けにこだわらず、お祭り気分で配信する。",
+          "tweet": "大会本番！勝ち負けよりみんなで楽しむぞー！応援よろしく！",
+          "resultado": "和やかな空気で配信は大盛況。"
+        },
+        {
+          "texto": "ガチ特訓を重ねて上位入賞を勝ち取る。",
+          "tweet": "GG！大会3位入賞！！毎日12時間練習した成果が出た。チームのみんなありがとう！",
+          "resultado": "実力派ストリーマーとしての地位を確立し、フォロワー急増。"
+        },
+        {
+          "texto": "配信中に裏技・グリッチを使って無双する。",
+          "tweet": "ただの神エイムと立ち回り。負け惜しみ乙〜。",
+          "resultado": "生配信中に不正が発覚し即失格。大炎上に見舞われる。"
+        }
+      ]
+    },
+    "gam_boicot_empresa": {
+      "titulo": "大手メーカーへのボイコット",
+      "desc": "新作タイトルに露骨なガチャ課金と集金システムが導入され、ユーザーの怒りが頂点に達している。",
+      "opciones": [
+        {
+          "texto": "正当な論理でユーザー側のボイコットに賛同する。",
+          "tweet": "定価8000円のゲームでコア要素を有料ガチャにするのはおかしい。アンインストールしました。",
+          "resultado": "ゲーマーの権利を守る旗手として絶大な支持を獲得。"
+        },
+        {
+          "texto": "どちらの味方もせず中立を保つ。",
+          "tweet": "今後の公式アップデートの対応を見てから判断したいですね。",
+          "resultado": "日和見主義と見なされ、どちらの陣営からも冷めた反応。"
+        },
+        {
+          "texto": "裏で優遇を受ける見返りにメーカーを擁護する。",
+          "tweet": "開発費もかかってるんだから当然。嫌なら買わなきゃいいだけ。ゲーム自体は最高。",
+          "resultado": "即座にクソリプの嵐。完全に企業の回し者扱いされる。"
+        }
+      ]
+    },
+    "gam_acoso_fan": {
+      "titulo": "厄介ファンの暴走",
+      "desc": "ある熱狂的ファンが境界線を越え、DMやチャット欄で過激な執着を見せ始めた。",
+      "opciones": [
+        {
+          "texto": "騒ぎ立てずに静かにブロック・通報する。",
+          "tweet": "健全なコミュニティ維持のために対処しました。いつもマナーを守ってくれるみんなありがとう！",
+          "resultado": "スマートかつ冷静な対応でトラブルを未然に防いだ。"
+        },
+        {
+          "texto": "配信者とリスナーの距離感について啓蒙動画を出す。",
+          "tweet": "配信者は友達でも恋人でもありません。境界線についての動画を出しました。",
+          "resultado": "同業者からも共感の嵐。配信界隈全体の話題に。"
+        },
+        {
+          "texto": "DMのやり取りを晒してリスナーに叩かせる。",
+          "tweet": "見てこのキモいDMの数々。みんなこいつのアカウント通報して晒し上げて。",
+          "resultado": "プラットフォームから規約違反警告を受け、泥沼の抗争へ。"
+        }
+      ]
+    },
+    "cons_ovni": {
+      "titulo": "夜空を裂く怪光",
+      "desc": "全国各地の夜空に、謎の発光体が編隊を組んで飛行する映像がSNSに次々投稿されている。",
+      "opciones": [
+        {
+          "texto": "「真実は目の前にある」と動画を拡散して考察を煽る。",
+          "tweet": "この軌道と飛行速度を見てほしい。人工衛星の破片ではない。真実は目の前にある🛸",
+          "resultado": "信奉者たちが大興奮。考察クラスタの結束が深まる。"
+        },
+        {
+          "texto": "ドローンショーや天体イベントの可能性を冷静に検証する。",
+          "tweet": "興奮する前にまず事実確認。近隣のドローン実証実験と衛星軌道データを照合中 🧵",
+          "resultado": "理性的で信用できる考察班として一般層からの信頼を獲得。"
+        },
+        {
+          "texto": "「エイリアンの地球侵略が始まった」と核シェルターの販売リンクを貼る。",
+          "tweet": "ついに侵略が始まった！今すぐ地下シェルターを確保しろ！緊急防災セットの購入はこちら🚨",
+          "resultado": "恐怖を煽って金を稼ぐ悪質業者として通報が殺到。"
+        }
+      ]
+    },
+    "cons_luz": {
+      "titulo": "首都圏の大停電",
+      "desc": "原因不明の大規模停電が発生し、数百万世帯の電力が突然遮断された。",
+      "opciones": [
+        {
+          "texto": "「サイバー攻撃の予行演習かもしれない」と意味深に呟く。",
+          "tweet": "主要変電所が同時にダウン。ただの設備点検ミスで説明がつくと思う？ 疑問を持ち続けろ。",
+          "resultado": "定番のミステリー調で好奇心旺盛なフォロワーを惹きつける。"
+        },
+        {
+          "texto": "過去のインフラ予算削減と送電網老朽化のデータを掘り起こす。",
+          "tweet": "10年前からのインフラ補修費削減のデータ。放置された結果がこれです。人災の証拠まとめ 🧵",
+          "resultado": "現実的な調査報道として、大手メディア記者からもリツイートされる。"
+        },
+        {
+          "texto": "「世界リセット計画の第一段階だ」と銀行預金の全額引き出しを煽る。",
+          "tweet": "グレートリセット開始！次は預金封鎖が来るぞ！今すぐ銀行から全財産を引き出せ！！",
+          "resultado": "不安を煽るデマ発信源として警告ラベルを貼られる。"
+        }
+      ]
+    },
+    "cons_debate": {
+      "titulo": "主流派科学者からの公開討論要求",
+      "desc": "著名な宇宙物理学教授から、あなたの地球平面説・古代文明論への公開討論が申し込まれた。",
+      "opciones": [
+        {
+          "texto": "「御用学者と馴れ合う気はない」と挑戦を拒否する。",
+          "tweet": "象牙の塔に閉じこもった学者先生と議論する時間はない。私は真実を求める民衆と対話する。",
+          "resultado": "孤高の反体制ヒーローとして信者からの忠誠心が強固に。"
+        },
+        {
+          "texto": "独自の研究データと文献を携えて堂々と対決に応じる。",
+          "tweet": "公開討論、受けて立ちます。主流派の常識がいかに狭いか、証拠を持ってお見せしましょう。",
+          "resultado": "白熱した議論を展開し、意外な健闘ぶりに評価が集まる。"
+        },
+        {
+          "texto": "科学者の所属組織やスポンサー企業を調べて人格攻撃で逃げる。",
+          "tweet": "あの教授の研究室、大手軍需企業から助成金貰ってるじゃん。御用学者のポジショントーク乙。",
+          "resultado": "論点のすり替えと逃げ腰の態度をネット中で笑われる。"
+        }
+      ]
+    },
+    "cons_prediccion_fallida": {
+      "titulo": "外れた世界終末予言",
+      "desc": "あなたが「重大な世界的異変が起きる」と予言していた運命の日が、何事もなく平穏に過ぎ去った。",
+      "opciones": [
+        {
+          "texto": "予言が外れたことを素直に認め、計算をやり直すと謝罪する。",
+          "tweet": "本日何も起きませんでした。私の読みが外れたことを認めます。期待してくれた皆様、申し訳ない。",
+          "resultado": "界隈では異例の潔い謝罪に、アンチも毒気を抜かれる。"
+        },
+        {
+          "texto": "「物質界ではなく高次元の精神世界で変革が起きた」と言い張る。",
+          "tweet": "目に見える崩壊ではなく、霊的な周波数のシフトが完了しました。覚醒した人には分かるはずです。",
+          "resultado": "スピリチュアル界隈特有の言い訳で、熱狂的信者を繋ぎ止める。"
+        },
+        {
+          "texto": "「我々が事前に告発したことで奴らの計画が阻止された」と手柄にする。",
+          "tweet": "私たちが直前に世界に警告を発したため、支配層は作戦を中止せざるを得なかったのだ！大勝利！",
+          "resultado": "あまりの往生際の悪さに、まとめサイトで一生イジられる。"
+        }
+      ]
+    },
+    "cons_medios_infiltran": {
+      "titulo": "潜入取材のジャーナリスト",
+      "desc": "大手ドキュメンタリー番組のディレクターから、あなたの活動に密着したいと連絡が入った。",
+      "opciones": [
+        {
+          "texto": "「ノーカット版の映像を自分も公開する」条件をつけて受ける。",
+          "tweet": "取材を受けます。ただし悪意ある切り抜きを防ぐため、こちらも全編同時録画・公開します。",
+          "resultado": "巧みな自衛策により、偏向報道を封じる。"
+        },
+        {
+          "texto": "どうせ悪質な印象操作をされると見抜いてキッパリ断る。",
+          "tweet": "大手メディアがまた「危険なネット陰謀論者」というレッテル貼りをしたいそうです。お断り。",
+          "resultado": "ブレない姿勢が支持層の団結を固める。"
+        },
+        {
+          "texto": "取材現場でディレクターをスパイ扱いして怒鳴り散らす。",
+          "tweet": "取材に来たディレクターを問い詰めたら目を泳がせて逃げた！これぞメディアの闇！",
+          "resultado": "番組で「狂信的集団」として放送され、社会的な孤立が深まる。"
+        }
+      ]
+    },
+    "tec_SaaS": {
+      "titulo": "新サービスのローンチ",
+      "desc": "4ヶ月間徹夜で開発した個人開発の業務効率化SaaSが、ついにリリース当日を迎えた。",
+      "opciones": [
+        {
+          "texto": "初期ユーザー向けに永久割引プランを用意して手堅く公開する。",
+          "tweet": "個人開発SaaSをついにローンチ！今週登録いただいた方限定で永久50%OFFでお届けします🚀",
+          "resultado": "着実な初期ユーザーと課金者を獲得。幸先の良いスタート。"
+        },
+        {
+          "texto": "収益や開発の苦労を全公開する「Build in Public」で発信する。",
+          "tweet": "アイデアからローンチまでのMRR、サーバー構成、失敗した点すべて公開します 🧵",
+          "resultado": "エンジニア界隈で熱狂的にシェアされ、技術ブランディングに成功。"
+        },
+        {
+          "texto": "単なるAPIのラッパーなのに「世界初の量子AI搭載」と大風呂敷を広げる。",
+          "tweet": "既存の業務ソフトはすべて過去の遺物。独自開発の量子ニューラルAIが世界を変えます。",
+          "resultado": "中身がただのAPI連携だと秒速で見破られ、エンジニアから袋叩きに。"
+        }
+      ]
+    },
+    "tec_lenguajes": {
+      "titulo": "プログラミング言語の宗教戦争",
+      "desc": "タイムラインで「Rust vs Go vs TypeScript」の泥沼の宗教戦争が勃発している。",
+      "opciones": [
+        {
+          "texto": "開発者の不毛な争いを笑い飛ばすネタツイートを投下する。",
+          "tweet": "シニアエンジニアがメモリ安全性で6時間レスバしてる横で、クライアントはボタンを左に2px動かせと言っている。",
+          "resultado": "全エンジニアの共感を呼び、数万いいねを獲得。"
+        },
+        {
+          "texto": "各言語のトレードオフと適材適所の設計論を冷静に解説する。",
+          "tweet": "適材適所：低レイヤはRust、マイクロサービスはGo、UIはTS。宗教論争をやめて適材適所で語ろう 🧵",
+          "resultado": "技術顧問クラスの知見としてテックリードたちから絶賛される。"
+        },
+        {
+          "texto": "「2026年にもなってRust以外で書いてる奴は全員無能」と煽る。",
+          "tweet": "いまだにガベージコレクションのある言語でバックエンド書いてる連中、エンジニア名乗るのやめてくれない？",
+          "resultado": "界隈のあらゆるエンジニアを敵に回し、採用界隈でブラックリスト入り。"
+        }
+      ]
+    },
+    "tec_oferta": {
+      "titulo": "VCからの大型出資オファー",
+      "desc": "名門ベンチャーキャピタルから、2億円のシードラウンド投資のタームシートが提示された。",
+      "opciones": [
+        {
+          "texto": "調達を受け入れ、爆速での事業拡大に舵を切る。",
+          "tweet": "トップVCより2億円の資金調達を実施しました。ここから一気に採用と開発を加速させます！",
+          "resultado": "潤沢な資金を獲得し、注目スタートアップの仲間入り。"
+        },
+        {
+          "texto": "出資を断り、100%自己資本での黒字経営（ブートストラップ）を貫く。",
+          "tweet": "2億円の出資提案を辞退しました。誰の指図も受けず、顧客のために100%自己資本で黒字を極めます。",
+          "resultado": "インディー開発者界隈で伝説のカリスマとして崇拝される。"
+        },
+        {
+          "texto": "売上ゼロなのに「時価総額20億円」とSNSでドヤり散らかす。",
+          "tweet": "プレレベニューで評価額20億。ビジョンにお金が集まる時代。労働者諸君、お疲れ様。",
+          "resultado": "実体のない虚業イキリ起業家としてテック界隈の笑い者に。"
+        }
+      ]
+    },
+    "tec_bug_critico": {
+      "titulo": "本番環境の大炎上バグ",
+      "desc": "深夜のデプロイミスにより、数万件のユーザーのメールアドレスが外部に露出する事故が発生。",
+      "opciones": [
+        {
+          "texto": "即座にサーバーを止め、15分で原因調査と再発防止策を全公開する。",
+          "tweet": "【重要なお知らせ】個人情報露出インシデントに関する経緯、原因、修正完了の全ログを公開します。",
+          "resultado": "迅速かつ透明な神対応と称賛され、かえって信頼が増加。"
+        },
+        {
+          "texto": "誰にも気づかれていないと信じて、深夜のうちにサイレント修正する。",
+          "tweet": "定期メンテナンスを完了し、パフォーマンスを改善しました。",
+          "resultado": "ホワイトハッカーに隠蔽を告発され、信頼が完全に失墜。"
+        },
+        {
+          "texto": "「クラウド事業者の障害だ」とログも確認せずに外部ベンダーのせいにする。",
+          "tweet": "外部インフラの不具合によりご迷惑をおかけしました。ベンダー側に厳重抗議します。",
+          "resultado": "自社のSQLミスであることがバレて大恥をかく。"
+        }
+      ]
+    },
+    "tec_competencia_copia": {
+      "titulo": "競合による丸パクリ",
+      "desc": "潤沢な資金を持つ大手テック企業が、あなたのプロダクトのUIと機能を丸ごとコピーしてリリースした。",
+      "opciones": [
+        {
+          "texto": "機能は真似できても開発速度は真似できないと、新機能を爆速デプロイする。",
+          "tweet": "機能はパクれても、私たちの開発スピードはパクれない。今週さらに3つの新機能をリリースします🚀",
+          "resultado": "圧倒的な開発力と開発スピードで競合を突き放し、ファンを魅了。"
+        },
+        {
+          "texto": "デザインや仕様が完全に一致している比較画像を並べて告発する。",
+          "tweet": "大手が個人開発プロダクトを丸パクリした証拠比較。これがあなたたちのイノベーションですか？ 🧵",
+          "resultado": "ネット上で大炎上し、大手企業側が謝罪と機能取り下げに追い込まれる。"
+        },
+        {
+          "texto": "「幹部全員を破産させる」と根拠のない法的脅迫をツイートする。",
+          "tweet": "顧問弁護士が動いている。関わった役員全員を私財差し押さえまで追い込んでやるから覚悟しろ。",
+          "resultado": "法的に無理筋な脅迫として呆れられ、大人の対応ができないと失笑される。"
+        }
+      ]
+    },
+    "pod_clip": {
+      "titulo": "切り抜き動画の爆発的バズ",
+      "desc": "最新エピソードの刺激的な30秒の切り抜きが、TikTokとXでミリオン再生を突破した。",
+      "opciones": [
+        {
+          "texto": "見やすい字幕付きで公式から本編への誘導リンクを貼る。",
+          "tweet": "いま話題の切り抜きはこちら🎙️ 議論の全体像と本当の結末は本編でチェックしてみてね 👇",
+          "resultado": "本編の再生数が爆増し、新規リスナーが一気に定着。"
+        },
+        {
+          "texto": "切り抜きの前後の文脈を含めたノーカット5分版を公開する。",
+          "tweet": "一部の言葉だけ切り取られて誤解が広まっています。前後の文脈を含むノーカット版をどうぞ。",
+          "resultado": "誠実な情報発信の姿勢が評価され、質の高いファンが集まる。"
+        },
+        {
+          "texto": "ゲストが犯罪自白したかのように悪意ある再編集をしてさらに煽る。",
+          "tweet": "生配信でまさかの衝撃告白！？ これ放送事故だろwww",
+          "resultado": "ゲストから猛烈な抗議を受け、絶縁される。"
+        }
+      ]
+    },
+    "pod_auspicio": {
+      "titulo": "地味なB2Bスポンサー案件",
+      "desc": "お堅いクラウド会計ソフトの企業から、高額なスポンサーCM読みのオファーが届いた。",
+      "opciones": [
+        {
+          "texto": "誠実に、かつ聴きやすいプロのトーンで企業CMを読み上げる。",
+          "tweet": "番組を支えてくださる素敵なスポンサー様をご紹介！ 詳細はリンクからチェックしてね🤝",
+          "resultado": "スポンサーが大満足し、長期継続契約が決定。"
+        },
+        {
+          "texto": "お堅い会計ソフトのCMをコント仕立てにして爆笑CMに変える。",
+          "tweet": "今週の提供クレジット、どうやってもコントになってしまう問題😂 ぜひ聴いてみて！",
+          "resultado": "リスナー大絶賛。スポンサーのサービスへのアクセスも過去最高に。"
+        },
+        {
+          "texto": "「こんな地味なソフト誰も使わないけど金のために読みます」とディスる。",
+          "tweet": "会計ソフトとか一番興味ないけど機材代のために読みまーすw",
+          "resultado": "契約即時解除。違約金を請求される。"
+        }
+      ]
+    },
+    "pod_invitado": {
+      "titulo": "炎上タレントの出演希望",
+      "desc": "大スキャンダルを起こして世間から大バッシング中の有名タレントから、「番組で弁明したい」と逆オファー。",
+      "opciones": [
+        {
+          "texto": "番組のブランドイメージを守るため、丁寧に辞退する。",
+          "tweet": "当番組は煽りや炎上を目的としたメディアではありません。今回の出演は見送らせていただきました。",
+          "resultado": "リスナーから「信頼できる番組」とブランド価値を守り抜く。"
+        },
+        {
+          "texto": "忖度なし・台本なしのガチの追求を行う条件で出演を許可する。",
+          "tweet": "言い訳は一切通用しません。疑惑のすべてをノーカットで2時間問い詰めました。配信開始。",
+          "resultado": "歴史的な神回インタビューとなり、報道メディアからも賞賛される。"
+        },
+        {
+          "texto": "相手にペコペコ媚びを売り、白々しいイメージロンダリングに協力する。",
+          "tweet": "世間は誤解している！本当はこんなに素晴らしい人なんです！みんな聴いてあげて！",
+          "resultado": "リスナーから「魂を売った」と激怒され、大炎上。"
+        }
+      ]
+    },
+    "pod_numero_bajo": {
+      "titulo": "気合いを入れた回の再生数爆死",
+      "desc": "1ヶ月かけて綿密にリサーチした渾身の特集回が、普段の10分の1しか聴かれず大爆死。",
+      "opciones": [
+        {
+          "texto": "数字に一喜一憂せず、質の高いアーカイブは必ず資産になると信じる。",
+          "tweet": "数字は悪かったけど、このエピソードを作れたことを誇りに思う。一生残る良い番組を作りたい。",
+          "resultado": "熱心なコアリスナーから熱い応援メッセージが殺到。"
+        },
+        {
+          "texto": "エッセンスを図解スレッドにしてX上で再発信する。",
+          "tweet": "本編の最も重要なエッセンスを3分で読める図解スレッドにまとめました 🧵",
+          "resultado": "図解がXで大バズりし、遅れて本編の再生数が跳ね上がる。"
+        },
+        {
+          "texto": "「お前らには難しすぎたか」とリスナーの理解力のせいにしてキレる。",
+          "tweet": "浅いバカ騒ぎしか聴けないリスナーばっかりで絶望した。もう二度と真面目な企画やらない。",
+          "resultado": "リスナーに八つ当たりしたことで愛想を尽かされ、登録解除が続出。"
+        }
+      ]
+    },
+    "pod_crossover": {
+      "titulo": "業界No.1ポッドキャストとのコラボ",
+      "desc": "国内ポッドキャストランキング1位のカリスマ番組から、合同コラボ配信のオファーが舞い込んだ。",
+      "opciones": [
+        {
+          "texto": "入念に下準備をして、お互いの良さを引き出す最高のコラボ回を収録する。",
+          "tweet": "ついに実現しました！ 最高の先輩との夢のコラボ回、2時間喋り倒しました🎙️🔥",
+          "resultado": "爆発的な新規リスナーが流入し、番組の規模が一気に全国区へ。"
+        },
+        {
+          "texto": "「お互いのスタジオの空気感を大事にしたい」と丁寧にお断りする。",
+          "tweet": "光栄すぎるお誘いでしたが、今は自分の番組の足元を固める時期と判断しました。",
+          "resultado": "芯の通った自主自立の姿勢に、相手番組のファンからも一目置かれる。"
+        },
+        {
+          "texto": "コラボ中ずっと相手をマウントし、自分の自慢話だけで時間を潰す。",
+          "tweet": "天下のトップ番組を完全に食ってやったわw 俺の方が喋り上手いでしょ？",
+          "resultado": "相手のリスナーから総叩きに遭い、人間性を疑われて大失敗。"
+        }
+      ]
+    },
+    "super_hab_opinologo_0": {
+      "titulo": "最初から知っていた男",
+      "desc": "重大な航空機事故が発生。公式発表が出る前に、地政学的な背景を完璧に解説したあなたのスレッドが的中する。"
+    },
+    "super_hab_opinologo_1": {
+      "titulo": "言った通りになっただろ",
+      "desc": "紛争勃発の1ヶ月前に警鐘を鳴らしていた過去ツイートを自己引用。タイムライン全体があなたの先見の明にひれ伏す。"
+    },
+    "super_hab_futbolero_0": {
+      "titulo": "代表選手からの引用RT",
+      "desc": "代表のエース選手があなたの戦術批評を引用リポストで絶賛。通知欄が一生鳴り止まない状態に。"
+    },
+    "super_hab_futbolero_1": {
+      "titulo": "完全的中スコア",
+      "desc": "決勝戦の試合前、スコアと得点者を寸分違わず完全的中。そのスクショが全国のサッカーファンの間で神話となる。"
+    },
+    "super_hab_militante_0": {
+      "titulo": "党首直々の公式お墨付き",
+      "desc": "党の最高指導者があなたの発信を公式引用し、長年の闘争を称賛。味方の支持層が一夜にして数万人規模で雪崩れ込む。"
+    },
+    "super_hab_militante_1": {
+      "titulo": "予期せぬ社会的正当性",
+      "desc": "保守派・リベラル双方の重鎮ジャーナリストがあなたの分析をテレビで引用。ただの論客から「信頼できる有識者」へ。"
+    },
+    "super_hab_humor_0": {
+      "titulo": "収拾不能の大バズり",
+      "desc": "何気なく放った一言ネタがコントロール不能の爆発的拡散。テレビのワイドショーでパロディされる社会現象に。"
+    },
+    "super_hab_humor_1": {
+      "titulo": "元ツイを食い殺した引用RT",
+      "desc": "大物著名人の傲慢なツイートに完璧なツッコミを入れ、相手の20倍以上のいいねをかっさらう痛快な大勝利。"
+    },
+    "super_hab_periodista_0": {
+      "titulo": "特ダネ独占スクープ",
+      "desc": "主要新聞社すら掴んでいない内部告発の独占スクープを炸裂させ、大手メディアがあなたのツイートを後追い取材。"
+    },
+    "super_hab_periodista_1": {
+      "titulo": "大手メディアからの情報源指定",
+      "desc": "あなたの調査報道が世界的な通信社に情報源として公式クレジットされ、国際的なジャーナリストとしての名声を得る。"
+    },
+    "super_hab_cryptobro_0": {
+      "titulo": "暴騰を完全予知",
+      "desc": "無名だった銘柄の爆発的急騰を誰よりも早く予告。チャートが垂直上昇し、界隈の生き神様として崇められる。"
+    },
+    "super_hab_cryptobro_1": {
+      "titulo": "激推し銘柄の爆発的急騰",
+      "desc": "公開推奨したトークンが一晩で10倍に跳ね上がる。フォロワー全員が歓喜し、あなたの信者へと昇華。"
+    },
+    "super_hab_gamer_0": {
+      "titulo": "超大物配信者からのレイド襲来",
+      "desc": "同接8万人のスーパースター配信者から配信終了時にレイドが直撃。チャット欄が光の速さで流れていく。"
+    },
+    "super_hab_gamer_1": {
+      "titulo": "世界最速リーク的中",
+      "desc": "次世代ゲーム機の発表日とスペックを完全的中。世界中のゲーマーから「内部関係者」として注目される。"
+    },
+    "super_hab_conspiranoico_0": {
+      "titulo": "ほら見ろ、俺の言った通りだ",
+      "desc": "狂気の陰謀論と笑われていた仮説が、情報公開請求で開示された公文書により事実と証明。ネットが騒然。"
+    },
+    "super_hab_conspiranoico_1": {
+      "titulo": "点と点を最初に繋いだ男",
+      "desc": "世間が見落としていた事件の奇妙な一致をいち早く暴き、大手メディアが何週間も遅れて追随する。"
+    },
+    "super_hab_influencer_0": {
+      "titulo": "限定プロモコード配布",
+      "desc": "世界的ハイブランドからあなた専用の無制限コミッションコードが発行され、数時間で完売の伝説を作る。"
+    },
+    "super_hab_influencer_1": {
+      "titulo": "VIPレセプションへの招待",
+      "desc": "パリコレの最前列VIP席に招待され、現地からのラグジュアリーな発信でフォロワーを圧倒する。"
+    },
+    "super_hab_onlyfans_0": {
+      "titulo": "思わぬ大物からの援護射撃",
+      "desc": "道徳派からの激しいバッシングの中、著名な文化人があなたの自立心と表現の自由を公然と擁護してくれる。"
+    },
+    "super_hab_onlyfans_1": {
+      "titulo": "ストライサンド効果の奇跡",
+      "desc": "アンチによるアカウント通報運動が裏目に出て話題沸騰。有料会員数が一晩で5倍に膨れ上がる。"
+    },
+    "super_hab_techie_0": {
+      "titulo": "プロダクトが世界中で大爆発",
+      "desc": "海外のテック系掲示板で世界1位を獲得。世界中からアクセスが殺到し、サーバーが悲鳴を上げる。"
+    },
+    "super_hab_techie_1": {
+      "titulo": "伝説的投資家からの太鼓判",
+      "desc": "シリコンバレーの伝説的VCがあなたのアーキテクチャ設計を引用し「10年に1人の逸材」と大絶賛。"
+    },
+    "super_hab_podcaster_0": {
+      "titulo": "歴史に残る神回インタビュー",
+      "desc": "メディアに一切出ない時代の寵児をブースに招き、3時間の濃密な独占対談。全プラットフォームで歴代1位を記録。"
+    },
+    "super_hab_podcaster_1": {
+      "titulo": "一人歩きしたバズり動画",
+      "desc": "何気ない40秒の雑談が世界規模のミームとなり、あなたの声を知らないネットユーザーがいない状態に。"
+    }
+  }
+};
+
+const SUPER_HAB_OPTIONS_TRANSLATIONS = {
+  en: [
+  {
+    "texto": "Capitalize on the historic moment",
+    "tweet": "Seizing this defining milestone to chart the path forward for our community. Endless gratitude to everyone riding with me.",
+    "resultado": "You harness the spotlight to cement leadership and lasting authority."
+  },
+  {
+    "texto": "Monetize the surge immediately",
+    "tweet": "Opening slots for select commercial partnerships and sponsored projects. DMs open for serious inquiries.",
+    "resultado": "You convert viral attention into lucrative commercial deals before it cools down."
+  },
+  {
+    "texto": "Protect reputation and earn respect",
+    "tweet": "Amid the noise and hysteria, I will always choose depth and composure. Substance over cheap spectacle.",
+    "resultado": "You prioritize dignity and substance. Your reputation emerges untouchable and elevated."
+  }
+],
+  ja: [
+  {
+    "texto": "歴史的瞬間を最大限に活かす",
+    "tweet": "この歴史的な節目を機に、コミュニティの未来を切り拓いていきます。いつも信じてついてきてくれるみんな、本当にありがとう。",
+    "resultado": "集まった注目を一気に味方につけ、界隈の絶対的リーダーとしての地位を確立。"
+  },
+  {
+    "texto": "この爆発的露出を即座にマネタイズする",
+    "tweet": "【企業様へ】タイアップ案件・スポンサー枠を少数限定で募集します。ご興味のある企業様はDMまで。",
+    "resultado": "熱が冷める前に素早く大型広告契約をまとめ、莫大な現金を獲得。"
+  },
+  {
+    "texto": "目先の利益より信頼と品格を守る",
+    "tweet": "喧騒と狂乱のネット社会において、私は常に誠実さと冷静さの道を選びます。すべては見せかけのショーではない。",
+    "resultado": "品格と節度を最優先。周囲の尊敬を集め、ブランド価値が大幅に向上。"
+  }
+]
+};
+
+function getLocalizedEvent(ev, lang, archId) {
+  if (!ev || lang === "es") return ev;
+  const isSuperHab = ev.color === "purple" || ev.id?.startsWith("super_hab");
+  const archKey = typeof getArchKey === "function" ? getArchKey(archId) : (archId || "");
+  const archName = (typeof i18n !== "undefined" && i18n.t("archetypes." + archKey + ".nombre")) || "";
+
+  let localizedTag = ev.tag;
+  if (isSuperHab) {
+    localizedTag = lang === "ja" ? "⚡ アカウント系統・固有特殊スキル" : "⚡ ARCHETYPE SPECIAL ABILITY";
+  } else {
+    localizedTag = lang === "ja" ? `🎭 特別イベント: ${archName.toUpperCase()}` : `🎭 SPECIAL EVENT: ${archName.toUpperCase()}`;
+  }
+
+  let trans = EVENT_TRANSLATIONS[lang]?.[ev.id];
+  // Check super hab pattern
+  if (!trans && isSuperHab) {
+    trans = EVENT_TRANSLATIONS[lang]?.[`super_hab_${archKey}_0`] || EVENT_TRANSLATIONS[lang]?.[`super_hab_${archKey}_1`];
+  }
+
+  const superOpts = SUPER_HAB_OPTIONS_TRANSLATIONS[lang];
+
+  const localizedOptions = (ev.opciones || []).map((opt, idx) => {
+    let optTrans = trans?.opciones?.[idx];
+    if (!optTrans && isSuperHab && superOpts && superOpts[idx]) {
+      optTrans = superOpts[idx];
+    }
+    return {
+      ...opt,
+      texto: optTrans?.texto || opt.texto,
+      tweet: optTrans?.tweet || opt.tweet,
+      resultado: optTrans?.resultado || opt.resultado
+    };
+  });
+
+  return {
+    ...ev,
+    tag: localizedTag,
+    titulo: trans?.titulo || ev.titulo,
+    desc: trans?.desc || ev.desc,
+    opciones: localizedOptions
+  };
+}
+
+
+// ─────────────────────────────────────────────────────────────
+// LOCALIZED FORTUITOUS EVENTS (Medios, Famoso VIP, Algoritmo)
+// ─────────────────────────────────────────────────────────────
+
+const FORTUITOUS_TRANSLATIONS = {
+  en: {
+    // ── MEDIOS_EVENTOS ──
+    "CITADO EN RADIO LOCAL": {
+      titulo: "CITED ON LOCAL RADIO",
+      desc: "A columnist read your latest tweet on air during the morning drive and the panel debated your take for 10 minutes.",
+      consecuencia_tpl: (v) => v
+    },
+    "PORTADA EN DIARIO REGIONAL": {
+      titulo: "REGIONAL NEWSPAPER FRONT PAGE",
+      desc: "A provincial news portal picked up your statements as the lead story in their society section.",
+      consecuencia_tpl: (v) => v
+    },
+    "PANTALLA DIVIDIDA EN TV DE CABLE": {
+      titulo: "SPLIT SCREEN ON CABLE NEWS",
+      desc: "They put your tweet on a giant screen while four panelists shouted over each other analyzing it.",
+      consecuencia_tpl: (v) => v
+    },
+    "COLUMNA EN PRENSA NACIONAL": {
+      titulo: "COLUMN IN NATIONAL PRESS",
+      desc: "The country's most-read newspaper quoted your full thread in their Sunday print and digital edition.",
+      consecuencia_tpl: (v) => v
+    },
+    "REACCIÓN EN STREAMING MASIVO": {
+      titulo: "MASSIVE STREAMER REACTION",
+      desc: "The biggest Spanish-language streamer read your account live to 80,000 simultaneous viewers.",
+      consecuencia_tpl: (v) => v
+    },
+    "PRIMETIME EN TV ABIERTA": {
+      titulo: "PRIMETIME BROADCAST TV",
+      desc: "Your tweet opened the most-watched evening news in the country. Everyone saw it.",
+      consecuencia_tpl: (v) => v
+    },
+    "IMPACTO GLOBAL EN PRENSA INTERNACIONAL": {
+      titulo: "GLOBAL IMPACT IN INTERNATIONAL PRESS",
+      desc: "International outlets translated your content to illustrate the social phenomenon of the moment.",
+      consecuencia_tpl: (v) => v
+    },
+    // ── FAMOSO_VIP_GENERALES ──
+    "¡EL PRESIDENTE TE DIO RETWEET!": {
+      titulo: "THE PRESIDENT RETWEETED YOU!",
+      desc: "The head of state retweeted your post, highlighting your stance in the middle of a national broadcast.",
+      consecuencia_tpl: (v) => v
+    },
+    "¡EL PRESIDENTE CITÓ TU TWEET!": {
+      titulo: "THE PRESIDENT QUOTED YOUR TWEET!",
+      desc: "The president quoted your tweet saying: 'This is exactly right. Brilliant analysis.'",
+      consecuencia_tpl: (v) => v
+    },
+    "¡EL DUEÑO DE LA PLATAFORMA TE HIZO QUOTE!": {
+      titulo: "THE PLATFORM OWNER QUOTED YOU!",
+      desc: "The owner of the platform quoted your post with a single emoji ('🎯') and the entire feed collapsed.",
+      consecuencia_tpl: (v) => v
+    },
+    "¡UN JUGADOR DE PRIMERA TE RETWEITEÓ!": {
+      titulo: "A TOP-FLIGHT PLAYER RETWEETED YOU!",
+      desc: "The biggest name in the national championship shared your tweet on their verified account.",
+      consecuencia_tpl: (v) => v
+    },
+    "¡UN CONDUCTOR DE PRIMETIME CITÓ TU TWEET!": {
+      titulo: "A PRIMETIME HOST QUOTED YOUR TWEET!",
+      desc: "The most-watched TV presenter read your tweet on air and quoted it verbatim on their account.",
+      consecuencia_tpl: (v) => v
+    },
+    "¡UNA CELEBRIDAD TE DIO LIKE Y RT!": {
+      titulo: "A CELEBRITY LIKED AND RT'D YOU!",
+      desc: "One of the most-followed entertainment figures reposted you and your notifications won't stop.",
+      consecuencia_tpl: (v) => v
+    },
+    // ── ALGORITMO ──
+    "EL ALGORITMO TE BENDICE (x2 INGRESOS)": {
+      titulo: "THE ALGORITHM BLESSES YOU (x2 INCOME)",
+      desc: "Platform engineers tweaked the 'For You' feed weights and your account is now classified as high-value content.",
+      consecuencia_tpl: (v) => v
+    },
+    "SHADOWBAN DEL ALGORITMO (x0.5 INGRESOS)": {
+      titulo: "ALGORITHM SHADOWBAN (x0.5 INCOME)",
+      desc: "A silent algorithm update tanked your account's reach due to alleged spam or excessive controversy.",
+      consecuencia_tpl: (v) => v
+    }
+  },
+  ja: {
+    // ── MEDIOS_EVENTOS ──
+    "CITADO EN RADIO LOCAL": {
+      titulo: "地方ラジオに引用される",
+      desc: "コラムニストが朝の番組中にあなたの最新ツイートを読み上げ、パネリストたちが10分間あなたの意見を議論しました。",
+      consecuencia_tpl: (v) => v
+    },
+    "PORTADA EN DIARIO REGIONAL": {
+      titulo: "地方紙の一面トップ",
+      desc: "地方ニュースポータルがあなたの発言を社会面の主要記事として取り上げました。",
+      consecuencia_tpl: (v) => v
+    },
+    "PANTALLA DIVIDIDA EN TV DE CABLE": {
+      titulo: "ケーブルニュースで分割画面に登場",
+      desc: "4人のパネリストが怒鳴り合いながら分析する横で、あなたのツイートが大画面に表示されました。",
+      consecuencia_tpl: (v) => v
+    },
+    "COLUMNA EN PRENSA NACIONAL": {
+      titulo: "全国紙のコラムに掲載",
+      desc: "最も読まれている全国紙が、日曜版の紙面とデジタル版であなたのスレッド全文を引用しました。",
+      consecuencia_tpl: (v) => v
+    },
+    "REACCIÓN EN STREAMING MASIVO": {
+      titulo: "大手ストリーマーのリアクション動画に登場",
+      desc: "最大手のストリーマーが8万人同時視聴者の前でリアルタイムにあなたのアカウントを読み上げました。",
+      consecuencia_tpl: (v) => v
+    },
+    "PRIMETIME EN TV ABIERTA": {
+      titulo: "地上波ゴールデンタイムに登場",
+      desc: "あなたのツイートが最も視聴された夜のニュース番組で取り上げられました。国中が見ていました。",
+      consecuencia_tpl: (v) => v
+    },
+    "IMPACTO GLOBAL EN PRENSA INTERNACIONAL": {
+      titulo: "海外メディアで国際的に拡散",
+      desc: "海外メディアがあなたのコンテンツを翻訳し、現在の社会現象を解説するために使用しました。",
+      consecuencia_tpl: (v) => v
+    },
+    // ── FAMOSO_VIP_GENERALES ──
+    "¡EL PRESIDENTE TE DIO RETWEET!": {
+      titulo: "大統領がリツイート！",
+      desc: "国家元首が、国営放送の最中にあなたの立場を強調しながらあなたの投稿をリツイートしました。",
+      consecuencia_tpl: (v) => v
+    },
+    "¡EL PRESIDENTE CITÓ TU TWEET!": {
+      titulo: "大統領がツイートを引用！",
+      desc: "大統領があなたのツイートを引用し「まさにその通り。見事な分析だ」とコメントしました。",
+      consecuencia_tpl: (v) => v
+    },
+    "¡EL DUEÑO DE LA PLATAFORMA TE HIZO QUOTE!": {
+      titulo: "プラットフォームオーナーが引用！",
+      desc: "プラットフォームのオーナーがあなたの投稿を絵文字1つ（「🎯」）で引用し、タイムライン全体が混乱しました。",
+      consecuencia_tpl: (v) => v
+    },
+    "¡UN JUGADOR DE PRIMERA TE RETWEITEÓ!": {
+      titulo: "トップリーガーがリツイート！",
+      desc: "国内リーグ最大のスター選手が認証アカウントであなたのツイートをシェアしました。",
+      consecuencia_tpl: (v) => v
+    },
+    "¡UN CONDUCTOR DE PRIMETIME CITÓ TU TWEET!": {
+      titulo: "ゴールデンタイムのMCがツイートを引用！",
+      desc: "最も視聴率の高いTV司会者がオンエア中にあなたのツイートをそのまま読み上げ、アカウントでも引用しました。",
+      consecuencia_tpl: (v) => v
+    },
+    "¡UNA CELEBRIDAD TE DIO LIKE Y RT!": {
+      titulo: "有名人がいいね＆リツイート！",
+      desc: "最もフォロワーの多いエンタメ系インフルエンサーがあなたをリポストし、通知が止まりません。",
+      consecuencia_tpl: (v) => v
+    },
+    // ── ALGORITMO ──
+    "EL ALGORITMO TE BENDICE (x2 INGRESOS)": {
+      titulo: "アルゴリズムに祝福される（収入×2）",
+      desc: "プラットフォームのエンジニアが「おすすめ」フィードの重みを調整し、あなたのアカウントは高価値コンテンツとして分類されました。",
+      consecuencia_tpl: (v) => v
+    },
+    "SHADOWBAN DEL ALGORITMO (x0.5 INGRESOS)": {
+      titulo: "アルゴリズムのシャドウバン（収入×0.5）",
+      desc: "アルゴリズムのサイレントアップデートにより、スパムや過度な炎上を理由としてリーチが大幅に低下しました。",
+      consecuencia_tpl: (v) => v
+    }
+  }
+};
+
+/**
+ * Localizes a fortuitous event object for non-ES languages.
+ * @param {object} fort - The fort object from checkFortuitousEvents()
+ * @param {string} lang - "en" or "ja"
+ * @returns {object} Localized fort object (or original if no translation found)
+ */
+function getLocalizedFortuitousEvent(fort, lang) {
+  if (!fort || !lang || lang === "es") return fort;
+  const langMap = FORTUITOUS_TRANSLATIONS[lang];
+  if (!langMap) return fort;
+  const trans = langMap[fort.titulo];
+  if (!trans) return fort;
+  return {
+    ...fort,
+    titulo: trans.titulo,
+    desc: trans.desc
+    // consecuencia is dynamically built with numbers in game-engine.js — keep as-is
+  };
+}
+
+if (typeof module !== "undefined" && module.exports) {
+  
+}
+
+
+/* ?? M?DULO: content/i18n/translations-cards.js ?? */
+/**
+ * Tuitero v19 — Localización Integral de Cartas, Títulos y Tweets
+ * Adaptación auténtica para Español, Inglés y Japonés
+ */
+
+const CARD_TITLE_TRANSLATIONS = {
+  "en": {
+    "Publicar meme viral": "Post a Viral Meme",
+    "LA PRIMERA CITA": "The First Date Debate",
+    "La primera cita": "The First Date Debate",
+    "SOBREMESA Y MATE LEJOS DE LA RED": "Screen-Free Afternoon",
+    "Sobremesa y mate lejos de la red": "Screen-Free Afternoon",
+    "SETUP NUEVO EN CAMINO": "New Battle Station Incoming",
+    "Setup nuevo en camino": "New Battle Station Incoming",
+    "ANÁLISIS PROFUNDO DEL JUEGO": "Deep Game Analysis",
+    "Análisis profundo del juego": "Deep Game Analysis",
+    "EL MISTERIO DE LOS SPONSORS FANTASMA": "The Ghost Sponsor Mystery",
+    "El misterio de los sponsors fantasma": "The Ghost Sponsor Mystery",
+    "Reseña honesta sin spoilers": "Honest Spoiler-Free Review",
+    "La build definitiva": "The Ultimate Meta Build",
+    "El meta cambió": "The Meta Has Shifted",
+    "Speedrun récord roto": "Speedrun PB Smashed",
+    "El bug que los devs no van a parchar": "The Bug Devs Won't Patch",
+    "Análisis de diseño profundo": "Level Design Philosophy",
+    "Conectando los puntos": "Connecting the Dots",
+    "Lo que los medios no muestran": "What Media Won't Show",
+    "La investigación que censuran": "The Suppressed Investigation",
+    "La reunión que no existió": "The Secret Private Meeting",
+    "El documento desclasificado": "The Declassified Document",
+    "El patrón que se repite": "The Repeating Historical Pattern",
+    "Mi rutina de la semana": "My Weekly Routine",
+    "Haul de la temporada": "Seasonal Wardrobe Haul",
+    "El teaser misterioso": "The Mystery Teaser",
+    "El pronóstico del clásico": "Derby Day Prediction",
+    "Guerra de partidarios": "Fan Channel Civil War",
+    "Adiós a la leyenda": "Farewell to a Legend",
+    "El chiste robado": "The Stolen Meme",
+    "La trend del momento": "Viral Trend of the Day",
+    "El debut en vivo": "Live Comedy Debut",
+    "El sobre anónimo": "The Anonymous Leak",
+    "Cobertura de la marcha": "Live Protest Coverage",
+    "La nota patrocinada": "The Sponsored Editorial",
+    "El tema país": "The National Crisis Take",
+    "El hilo cultural": "Cultural Masterpiece Essay",
+    "El tropiezo viral": "The Parody AI Stumble",
+    "El show del Halving": "The Halving Spectacle",
+    "Buscando Advisor": "Seeking Web3 Advisor",
+    "El exchange en llamas": "Exchange on Fire",
+    "El crossover del año": "Collab of the Year",
+    "El troll de las menciones": "The Timeline Troll",
+    "El regalo misterioso": "The Mysterious Gift",
+    "Lanzando el producto": "Product Hunt Launch",
+    "La guerra de lenguajes": "The Programming Holy War",
+    "La oferta del fondo": "VC Term Sheet Offer",
+    "El clip de oro": "The Viral Soundbite",
+    "El sponsor aburrido": "The Boring B2B Sponsor",
+    "El invitado problemático": "The Problematic Guest",
+    "Desconexión total": "Digital Detox & Rest",
+    "Tweet patrocinado": "Sponsored Brand Post"
+  },
+  "ja": {
+    "Publicar meme viral": "バズりミームを投稿",
+    "LA PRIMERA CITA": "初デート割り勘論争",
+    "La primera cita": "初デート割り勘論争",
+    "SOBREMESA Y MATE LEJOS DE LA RED": "画面から離れて一服",
+    "Sobremesa y mate lejos de la red": "画面から離れて一服",
+    "SETUP NUEVO EN CAMINO": "新配信環境のセットアップ",
+    "Setup nuevo en camino": "新配信環境のセットアップ",
+    "ANÁLISIS PROFUNDO DEL JUEGO": "ゲームシステムの深掘り分析",
+    "Análisis profundo del juego": "ゲームシステムの深掘り分析",
+    "EL MISTERIO DE LOS SPONSORS FANTASMA": "怪しいスポンサーの謎",
+    "El misterio de los sponsors fantasma": "怪しいスポンサーの謎",
+    "Reseña honesta sin spoilers": "ネタバレなし本音レビュー",
+    "La build definitiva": "最強メタビルド完成",
+    "El meta cambió": "アプデで環境崩壊",
+    "Speedrun récord roto": "RTA自己ベスト更新",
+    "El bug que los devs no van a parchar": "運営が放置する致命的バグ",
+    "Análisis de diseño profundo": "ゲームデザイン哲学の徹底解説",
+    "Conectando los puntos": "点と点を繋ぐ考察",
+    "Lo que los medios no muestran": "メディアが隠す不都合な真実",
+    "La investigación que censuran": "圧力がかかった調査記録",
+    "La reunión que no existió": "存在しないはずの密会",
+    "El documento desclasificado": "機密解除された公文書",
+    "El patrón que se repite": "繰り返される歴史の法則",
+    "Mi rutina de la semana": "今週のモーニングルーティン",
+    "Haul de la temporada": "今シーズンの購入品紹介",
+    "El teaser misterioso": "謎の重大告知匂わせ",
+    "El pronóstico del clásico": "伝統の一戦スコア予想",
+    "Guerra de partidarios": "サポ同士の代理戦争",
+    "Adiós a la leyenda": "宿敵レジェンドへの敬意",
+    "El chiste robado": "ネタの丸パクリ被害",
+    "La trend del momento": "爆発的バズトレンドへの便乗",
+    "El debut en vivo": "リアルお笑いライブ出演",
+    "El sobre anónimo": "政財界の匿名内部告発",
+    "Cobertura de la marcha": "緊迫するデモ現場の生中継",
+    "La nota patrocinada": "企業タイアップの甘い罠",
+    "El tema país": "国論を二分する大激論",
+    "El hilo cultural": "往年の名作映画批評",
+    "El tropiezo viral": "生成AIデマへの引っかかり",
+    "El show del Halving": "半減期狂騒曲",
+    "Buscando Advisor": "アドバイザー就任オファー",
+    "El exchange en llamas": "取引所ハッキング騒動",
+    "El crossover del año": "超大物コラボの打診",
+    "El troll de las menciones": "執拗な説教アンチ",
+    "El regalo misterioso": "謎の高額プレゼント",
+    "Lanzando el producto": "新サービスのローンチ",
+    "La guerra de lenguajes": "プログラミング言語の宗教戦争",
+    "La oferta del fondo": "VCからの大型出資オファー",
+    "El clip de oro": "切り抜き動画の爆発的バズ",
+    "El sponsor aburrido": "地味なB2Bスポンサー案件",
+    "El invitado problemático": "炎上タレントの出演希望",
+    "Desconexión total": "デジタルデトックス",
+    "Tweet patrocinado": "スポンサー付き広告投稿"
+  }
+};
+
+const RIVAL_TRANSLATIONS = {
+  "en": {
+    "El diputado del joystick": "The Anti-Gaming Politician",
+    "El que te dice salí al sol": "The 'Touch Grass' Guy",
+    "El avatar anime sin rank": "The Unranked Anime Avatar",
+    "El excampeón de la replay": "The Washed-Up Ex-Pro",
+    "El streamer tóxico": "The Toxic Streamer",
+    "El de las frases de calendario": "The Inspirational Quote Guy",
+    "El huevito sin cara": "The Default Avatar Egg",
+    "El ministro del speech": "The Soundbite Politician",
+    "El doctor de cátedra": "The Tenured Professor",
+    "El operador de siempre": "The Political Operative",
+    "El troll de guardia sub-20": "The Teenage Reply Guy",
+    "El avatar de estatua griega": "The Marble Bust Avatar",
+    "El columnista del establishment": "The Legacy Op-Ed Writer",
+    "El de confiá en el sistema": "The 'Trust the System' Guy",
+    "El debunkeador sin fuentes": "The Wikipedia Debunker",
+    "El pro player del meta viejo": "The Old Meta Veteran",
+    "El streamer con viewers bots": "The View-Botted Streamer"
+  },
+  "ja": {
+    "El diputado del joystick": "ゲーム規制派の政治家",
+    "El que te dice salí al sol": "「たまには外に出ろ」おじさん",
+    "El avatar anime sin rank": "ランクなしアニメアイコン",
+    "El excampeón de la replay": "過去の栄光にすがる元プロ",
+    "El streamer tóxico": "毒舌配信者",
+    "El de las frases de calendario": "自己啓発名言ポエマー",
+    "El huevito sin cara": "たまごアイコンの捨て垢",
+    "El ministro del speech": "テンプレ答弁の政治家",
+    "El doctor de cátedra": "大学の御意見番教授",
+    "El operador de siempre": "いつもの世論工作員",
+    "El troll de guardia sub-20": "若手レスバキッズ",
+    "El avatar de estatua griega": "石膏像アイコンの批評家",
+    "El columnista del establishment": "大手メディアの御用記者",
+    "El de confiá en el sistema": "体制全肯定おじさん",
+    "El debunkeador sin fuentes": "Wikiコピペ論破マン",
+    "El pro player del meta viejo": "過去環境にすがる元プロ",
+    "El streamer con viewers bots": "同接水増し配信者"
+  }
+};
+
+const STORY_HEADLINES_LOCALIZED = {
+  "en": {
+    "gamer": "Luxury sports cars and a Delaware LLC",
+    "podcaster": "The model and her mysterious billionaire friend",
+    "influencer": "A private photoshoot with an imported hypercar",
+    "techie": "The crypto exchange was breached",
+    "humor": "A nationwide digital bank run",
+    "conspiranoico": "Shadow operatives in the deep state",
+    "periodista": "Judicial raids and phantom offshore shell companies",
+    "futbolero": "Whispers in the football federation executive suites",
+    "onlyfans": "The secret midnight ride in the bulletproof luxury sedan",
+    "cryptobro": "The corrupt politician's exposed cold wallet",
+    "militante": "The government housing units that were never built",
+    "opinologo": "The hidden truth surfacing two years later"
+  },
+  "ja": {
+    "gamer": "高級スーパーカーとデラウェア州のペーパーカンパニー",
+    "podcaster": "有名モデルと正体不明の実業家の密会",
+    "influencer": "輸入高級車と謎の撮影ロケ",
+    "techie": "暗号資産取引所の極秘ハッキング被害",
+    "humor": "ネット銀行の預金引き出し封鎖騒動",
+    "conspiranoico": "闇の巨大組織の暗躍記録",
+    "periodista": "家宅捜索とペーパーカンパニーの資金洗浄",
+    "futbolero": "サッカー連盟VIP席の密談疑惑",
+    "onlyfans": "防弾仕様の超高級セダンでの深夜ドライブ",
+    "cryptobro": "汚職政治家のコールドウォレット特定",
+    "militante": "着工すらされなかった公営住宅の闇",
+    "opinologo": "2年後に暴かれた事件の真相"
+  }
+};
+
+// Authentic contextual tweet translations by suit and archetype
+
+const CONTEXTUAL_TWEETS_BY_ARCH = {
+  "en": {
+    "gamer": {
+      "meme": "Me: 'One more match and then sleep.' Clock: 6:30 AM. Dropped two ranks, left eye twitching, running purely on spite.",
+      "tema": "40-hour playthrough complete with zero spoilers: visuals 10/10, story falls off hard in Act 3. Here is my honest breakdown.",
+      "pelea": "Some unranked anime avatar is lecturing me on my build when they've never touched the game. Show match history or sit down.",
+      "hilo": "Why this title feels fundamentally different from modern releases: a 10-tweet breakdown on level design philosophy 🧵",
+      "quote": "Imagine blaming the netcode when you missed your entire combo by three business days.",
+      "live": "FINAL BOSS PHASE 3 LIVE ON STREAM RIGHT NOW! NO HEALING ITEMS LEFT, HANDS SHAKING!",
+      "temaDelDia": "Everyone arguing over the GOTY nominees while I'm still trying to finish backlog games from 2021.",
+      "politica": "When game publishers charge $70 for unfinished betas and wonder why consumer trust collapsed.",
+      "bait": "PC vs Console in 2026: if you're still buying consoles just for exclusives, you're paying full price for nostalgia.",
+      "descanso": "Logging off for the night. Turning off Discord, muting Twitter, and letting my wrists rest. GG.",
+      "patrocinio": "Big thanks to [Brand] for gearing up the studio with these insane monitors! Check the link in bio for 20% off."
+    },
+    "podcaster": {
+      "meme": "Spent 3 hours discussing philosophy with a Nobel laureate and the only clip that went viral is us debating cereal milk.",
+      "tema": "The guest everyone asked for is finally in the studio. 120 minutes of raw, unfiltered conversation dropping tonight.",
+      "pelea": "A podcast host with fake bought reviews is calling our numbers inflated. Drop your Spotify retention graph right now.",
+      "hilo": "What 200 long-form interviews taught me about human psychology, discipline, and modern burnout 🧵",
+      "quote": "Cutting a 2-hour nuanced discussion into an 8-second outrage clip is peak modern media illiteracy.",
+      "live": "Microphones hot in 5 minutes! Special mystery guest in the green room. Drop your questions below!",
+      "temaDelDia": "Diving headfirst into the story dominating the headlines this week. We have the internal perspective tonight.",
+      "politica": "Real democracy isn't shouting slogans on social platforms—it's having difficult, uncomfortable conversations.",
+      "bait": "Most modern university degrees are just a 4-year subscription to networking events. Change my mind.",
+      "descanso": "Studio mics off for the weekend. Going completely offline to recharge the mind.",
+      "patrocinio": "Support the sponsors who keep this show 100% free and independent. Exclusive discount code in show notes."
+    },
+    "cryptobro": {
+      "meme": "Me checking charts every 30 seconds during a family dinner like I have nuclear launch codes in my pocket.",
+      "tema": "On-chain metrics don't lie: long-term holders are accumulating while retail panics. Here is the data breakdown 🧵",
+      "pelea": "A legacy financial analyst who missed the entire 1000% rally is lecturing me on risk management. Classic.",
+      "hilo": "Comprehensive deep dive into Layer-2 scaling: rollup architectures, transaction costs, and decentralization tradeoffs 🧵",
+      "quote": "Calling math and decentralized protocols 'a bubble' for 15 straight years while your currency loses 7% annually.",
+      "live": "LIVE: BREAKING RESISTANCE LEVEL! 100M LIQUIDATIONS IN 15 MINUTES! HOLD YOUR BAGS!",
+      "temaDelDia": "Global banking turbulence only validates why peer-to-peer sovereign money was created in the first place.",
+      "politica": "Regulators don't fear market fraud; they fear an open financial system they cannot manipulate at will.",
+      "bait": "If you're still keeping 100% of your savings in depreciating fiat currency, you are actively losing purchasing power daily.",
+      "descanso": "Closing TradingView. Turning off chart alerts for 24 hours. Mental health always comes before market volatility.",
+      "patrocinio": "Partnering with [Platform] for zero-fee swaps this week. Use the link in bio to claim your sign-up bonus."
+    },
+    "influencer": {
+      "meme": "Took 400 selfies to find the one where the lighting looks 'effortless and natural'. The influencer struggle is real 😂",
+      "tema": "My morning wellness ritual: 20 minutes of mindfulness, hydration, and clean skin before the day begins ✨",
+      "pelea": "Some faceless hater saying my life is fake. I work 14 hours a day creating content, but keep watching anyway 💅",
+      "hilo": "Curated aesthetic guide: my favorite secret spots, clean beauty favorites, and everyday mindful habits 🧵",
+      "quote": "Projection is free, but staying moisturized and minding your own business is priceless ✨",
+      "live": "GRWM LIVE: doing hair and makeup before the fashion gala! Answering all your questions right now 💄",
+      "temaDelDia": "The trend of the week is everywhere on my feed, so here is my aesthetic interpretation of it 🤍",
+      "politica": "Kindness and empathy shouldn't be partisan politics. Protecting our shared environment begins with daily choices.",
+      "bait": "Unpopular opinion: iced matcha lattes with oat milk are objectively superior to traditional espresso. Don't fight me.",
+      "descanso": "Digital detox weekend starts now. Putting the phone away to be fully present with loved ones 🌿",
+      "patrocinio": "Thrilled to partner with [Brand] to show you my absolute holy-grail skincare essentials! Link in bio ✨"
+    },
+    "opinologo": {
+      "meme": "Nobody asked for my take on this international crisis, but here is my 15-tweet doctoral thesis anyway.",
+      "tema": "The real structural problem is what legacy media refuses to mention. Here is the macroeconomic reality.",
+      "pelea": "You don't understand basic constitutional law and it shows in every single word of your reply. Read a book.",
+      "hilo": "Why the current cultural debate is built on a fundamental misunderstanding: full historical context 🧵",
+      "quote": "Fascinating how confidently wrong some people can be when repeating slogans they heard five minutes ago.",
+      "live": "Live-tweeting the presidential address: minute 4 and the spin has already begun. Buckle up.",
+      "temaDelDia": "Everyone reacting emotionally to today's headline. Let's look at the cold hard data instead.",
+      "politica": "Both sides of the aisle are complicit in this disaster. Partisan fanbases just refuse to see the mirror.",
+      "bait": "90% of current political discourse on this platform is just emotional validation disguised as intellectual debate.",
+      "descanso": "Closing this toxic echo chamber for the evening. Reality exists outside of the algorithms.",
+      "patrocinio": "Essential read: analyzing societal trends with the latest analytics platform. Link below for subscribers."
+    },
+    "periodista": {
+      "meme": "Editor: 'Is the source 100% verified?' Me: 'They have a badge and an anonymous handle, chief.'",
+      "tema": "EXCLUSIVE: Internal documents confirm what officials denied for six months. Full report on our portal.",
+      "pelea": "Official spokespeople calling this 'misinformation' without refuting a single fact in our documentation.",
+      "hilo": "THE CHRONOLOGY: Step-by-step reconstruction of the closed-door meeting where the deal was approved 🧵",
+      "quote": "What a polite and corporate way to admit that our original reporting was completely accurate.",
+      "live": "BREAKING NEWS: Police raid underway at ministry headquarters. Sirens sounding, reporters gathering outside.",
+      "temaDelDia": "We are tracking the developing story from multiple verified angles. Updates every 10 minutes.",
+      "politica": "Power only respects transparency when it has no other choice. That is why independent press matters.",
+      "bait": "If government officials had nothing to hide, they wouldn't classify public budget contracts under national security.",
+      "descanso": "Filing deadline met. Phone on silent. Even investigative reporters need sleep.",
+      "patrocinio": "Supported by the Independent Journalism Fund. Your subscriptions keep our investigations completely free from bias."
+    },
+    "futbolero": {
+      "meme": "Watching our central defender attempt a clearance in the 93rd minute gave me five new gray hairs.",
+      "tema": "Tactical breakdown: why shifting our midfield pivot completely changed our defensive transition.",
+      "pelea": "You conceded four goals in a derby and you have the audacity to talk about referee bias? Sit down.",
+      "hilo": "From academy prospect to league champion: the complete tactical evolution of our captain 🧵",
+      "quote": "Imagine crying about offside lines when your striker missed three open goals inside the six-yard box.",
+      "live": "GOOOOOAL IN THE 89TH MINUTE! THE ENTIRE STADIUM IS SHAKING! WHAT A FINISH!",
+      "temaDelDia": "Transfer deadline day madness: rumors flying, private jets tracked, medicals booked.",
+      "politica": "Modern football ownership has sold the soul of historic clubs to foreign corporations without conscience.",
+      "bait": "Most modern tactical managers are just overcomplicating a sport that has always been about heart and hunger.",
+      "descanso": "Full-time whistle. Three points in the bag. Heart rate returning to normal. Turning off notifications.",
+      "patrocinio": "Gearing up for the season with official club kits from [Brand]! Grab yours with discount code GOAL."
+    },
+    "onlyfans": {
+      "meme": "Someone unsubscribed after 6 months because I didn't reply to their 4 AM goodnight text in 2 minutes 😂",
+      "tema": "New exclusive set just went live on the feed ✨ Golden hour lighting and completely uncensored gallery.",
+      "pelea": "Leaking exclusive creator content is a legal violation, not a flex. My legal team is already filing.",
+      "hilo": "The business of independent digital content: taxes, LLC setups, safety, and brand building 🧵",
+      "quote": "Judging women for monetizing their beauty while consuming free porn in incognito mode daily. Make it make sense.",
+      "live": "VIP Q&A starting in 10 minutes on the private stream! Answering your spiciest DMs live.",
+      "temaDelDia": "Jumping on today's viral photoshoot trend! You decide which picture gets pinned to my profile.",
+      "politica": "Financial autonomy for women terrifies puritanical institutions. We aren't asking for permission.",
+      "bait": "If paying $10 a month for exclusive creator content ruins your budget, focus on your career first.",
+      "descanso": "Cameras off, robe on, phone in another room. Self-care evening starts now.",
+      "patrocinio": "Partnering with [Brand] for this luxury lingerie drop. Use my VIP link for complimentary access."
+    },
+    "techie": {
+      "meme": "Pushed to production at 4:59 PM on a Friday. What could possibly go wrong?",
+      "tema": "Benchmarked Rust vs Go concurrency under 100k req/sec load. The memory overhead numbers are shocking.",
+      "pelea": "You're writing raw SQL queries inside client components and lecturing me about scalable architecture?",
+      "hilo": "How we scaled our distributed database from 10k to 5M daily active users without downtime 🧵",
+      "quote": "Adding 14 layers of AI microservices to solve what could be done with a 5-line bash script.",
+      "live": "INCIDENT ALERT: AWS US-EAST-1 DEGRADED! Debugging live, spinning up failover nodes in Europe.",
+      "temaDelDia": "Today's open-source controversy proves once again why permissive licensing requires sustainable funding.",
+      "politica": "Proprietary algorithmic monopolies shouldn't govern public digital infrastructure. Open source or bust.",
+      "bait": "If your startup can be replaced by a single wrapper prompt, you don't have a tech company.",
+      "descanso": "Terminals closed. Slack notifications muted until Monday. Touching actual grass now.",
+      "patrocinio": "Deploy container clusters in 30 seconds with [Platform]. Get $200 free cloud credits via link in bio."
+    },
+    "humor": {
+      "meme": "My therapist: 'And what do we say when things get tough?' Me: 'It is what it is, we move.'",
+      "tema": "A comprehensive scientific classification of the 7 types of people you encounter on this cursed website.",
+      "pelea": "Getting death threats over a pun about refrigerated butter. Never change, internet.",
+      "hilo": "The most absurd things that have actually happened in public transport: a horrifying comedy thread 🧵",
+      "quote": "Taking a joke so personally that you write an 8-paragraph open letter is a diagnosable medical condition.",
+      "live": "Live-tweeting my dentist appointment. The drill has started. Tell my followers I loved them.",
+      "temaDelDia": "Jumping on today's trending outrage before everyone realizes it was completely fabricated by 2 PM.",
+      "politica": "Politics would be much funnier if we weren't forced to live under the direct consequences of the clowns.",
+      "bait": "Adults who bring acoustic guitars to outdoor barbecues should be tried in international court.",
+      "descanso": "Ran out of dopamine and punchlines. Shutting down the clown factory for 24 hours. Bye.",
+      "patrocinio": "This joke was legally sponsored by [Brand]. They paid me enough money to pretend I care about their product."
+    },
+    "conspiranoico": {
+      "meme": "Coincidence? I think NOT. Look at the triangles in the official municipal building blueprints.",
+      "tema": "Declassified 1974 documents prove the financial reset was planned 50 years ago. Read before they delete this.",
+      "pelea": "Debunk me with official government links? You are literally citing the perpetrators of the agenda.",
+      "hilo": "Connecting the fiber-optic submarine cables, solar flare anomalies, and secret offshore shell corporations 🧵",
+      "quote": "They call it 'crazy' right up until the official whistleblower leaks the exact documents 10 years later.",
+      "live": "ANOMALOUS LIGHTS OVER THE AIRPORT RUNWAY RIGHT NOW! Radar tracking turned off! They are hiding something!",
+      "temaDelDia": "Today's viral media distraction was specifically orchestrated to bury the budget vote passed at 3 AM.",
+      "politica": "Both political parties take orders from the same non-elected shadow committees. Wake up.",
+      "bait": "Most people would rather believe a comfortable televised lie than confront an inconvenient classified truth.",
+      "descanso": "Switching off devices and placing the phone in a faraday cage. Clearing bio-frequencies for 12 hours.",
+      "patrocinio": "Protect your personal telemetry data. Exclusive encrypted hardware storage available through link below."
+    },
+    "militante": {
+      "meme": "Opposing party when they ruin the economy: 'It was the previous administration's fault.' Classic playbook.",
+      "tema": "Defending public infrastructure, workers' rights, and collective solidarity against austerity measures.",
+      "pelea": "Trolls in the replies defending corporate tax cuts while struggling to pay their own electric bills.",
+      "hilo": "The real impact of the newly proposed labor deregulation: who wins, who loses, and why we resist 🧵",
+      "quote": "Notice how they preach free-market competition until their billionaire donors demand a public bailout.",
+      "live": "ON THE STREETS: Thousands marching right now in peaceful protest! The people will not be silenced!",
+      "temaDelDia": "Today's scandal confirms what grassroots movements have been saying for years. Accountability now.",
+      "politica": "Neutrality in times of moral crisis only favors the oppressor. Choose your side with dignity.",
+      "bait": "If you think politics doesn't affect you, check your grocery bill and your monthly rent.",
+      "descanso": "A long day of organizing and community work. Stepping back tonight to recharge for the struggles ahead.",
+      "patrocinio": "Support independent cooperative publishers. Pick up this month's critical edition through the link below."
+    }
+  },
+  "ja": {
+    "gamer": {
+      "meme": "『あと1戦だけやって寝る』→ 午前6時半。2ランク降格して左目が痙攣してる。復讐か死か。",
+      "tema": "ネタバレなしクリア後レビュー（プレイ時間40h）：グラフィックは神、ただし第3章のシナリオ崩壊が痛すぎる。これが本音です。",
+      "pelea": "未プレイのアニメアイコンが俺のビルドに偉そうに口出ししてきた。まず戦績見せてから出直してこい。",
+      "hilo": "なぜこのゲームは圧倒的なのか？ 開発者のレベルデザイン哲学を解剖する10連投スレッド 🧵",
+      "quote": "コンボを3営業日ぶん豪快に外しておいて『ラグのせい』はさすがに草。",
+      "live": "【配信中】ラスボス第3形態突入！！ 回復アイテム枯渇、手汗と心拍数が限界突破！",
+      "temaDelDia": "GOTYノミネートでTLが大荒れしてるけど、俺はまだ2021年の積みゲーを崩すのに必死。",
+      "politica": "フルプライスで未完成のバグゲー売りつけて、ユーザーの信頼が失墜したとか驚いてる業界の闇。",
+      "bait": "正直PS5とゲーミングPC論争って、もう勝敗ついてるよね。独占タイトル目当てで買う時代は終わった。",
+      "descanso": "今日は完全ログアウト。Discordを落として手首を休めます。対戦ありがとうございました！ GG。",
+      "patrocinio": "【PR】最高峰のゲーミングモニターを頂きました！ 視認性がダンチ。固定リンクから20%オフで購入できます！"
+    },
+    "podcaster": {
+      "meme": "ノーベル賞受賞者と3時間ガチ哲学対談したのに、バズったのはシリアルに牛乳を先に入れるか論争の切り抜きだけだった。",
+      "tema": "フォロワーから最もリクエストの多かったゲストがついにスタジオに降臨。全編ノーカット2時間のガチ対談、今夜公開。",
+      "pelea": "サクラレビューで底上げしてるポッドキャスターがうちの再生数を水増し扱いしてきた。今すぐSpotifyの維持率グラフ公開しろ。",
+      "hilo": "過去200人のトップランナーにインタビューして分かった、人間の心理・自己規律・燃え尽き症候群の真実 🧵",
+      "quote": "2時間の丁寧な対話をたった8秒の炎上クリップに切り取るの、現代メディアリテラシーの完全な敗北でしょ。",
+      "live": "生収録開始まであと5分！ 控え室にとんでもないシークレットゲストが来てます。質問はリプ欄へ！",
+      "temaDelDia": "今週のトレンドを独占しているあのニュース、渦中の当事者視点で今夜のポッドキャストにて徹底解剖します。",
+      "politica": "本当の対話とは、TLでスローガンを叫ぶことではなく、居心地の悪い議論に耳を傾けることです。",
+      "bait": "現代の大学の学位の大半って、ただの人脈作りパーティーの4年定期購読権だよね。反論ある？",
+      "descanso": "今週末はスタジオのマイクをオフにして、完全にオフラインでデジタルデトックスします。",
+      "patrocinio": "【PR】番組を完全無料で独立配信し続けるためのスポンサー様です！ 概要欄の限定コードをお使いください。"
+    },
+    "cryptobro": {
+      "meme": "家族との食事中に、核ミサイルの発射コード持ってる要人みたいな顔で30秒おきにチャート確認してる。",
+      "tema": "オンチェーンデータは嘘をつかない。イナゴが投げ売りする陰で大口クジラが爆買い中。データ分析まとめ 🧵",
+      "pelea": "1000%の上昇相場を全部乗り遅れたオールド金融マンが、リスク管理について講釈垂れてきた。笑える。",
+      "hilo": "L2スケーリング完全解説：ロールアップアーキテクチャ、ガス代の最適化、分散性のトレードオフ 🧵",
+      "quote": "法定通貨が年7%目減りしてる間に、15年間ずっと暗号資産を『バブル』と呼び続けてる人たちへ。",
+      "live": "【緊急速報】レジスタンス突破！ 15分で1億ドル規模のショート強制ロスカット発生！ 握力試されるぞ！",
+      "temaDelDia": "世界的な金融機関の動揺を見るたび、なぜ自己主権型の分散型通貨が必要だったのか再確認させられる。",
+      "politica": "規制当局が本当に恐れているのは詐欺ではなく、自分たちの裁量で操作できない開かれた金融システムだ。",
+      "bait": "資産の100%を減価し続ける法定通貨で銀行に預けてる人、実質毎日資産を燃やしてるのと一緒だよ。",
+      "descanso": "TradingViewを閉じてアラートを全ミュート。メンタルヘルスはチャートのボラティリティより大事。",
+      "patrocinio": "【PR】今週手数料ゼロのスワップを提供する[Platform]と提携！ 固定リンクから登録ボーナスを受け取れます。"
+    },
+    "influencer": {
+      "meme": "『自然体で飾らない私』の1枚を撮るために400枚自撮り連写した。インフルエンサーの現実はこれです😂",
+      "tema": "朝のウェルネスルーティン：20分の瞑想、水分補給、そして素肌ケアから始まる最高の1日✨",
+      "pelea": "裏アカから『全部フェイク』って嫉妬リプ届いたけど、1日14時間コンテンツ作ってるの。見に来てくれてありがとね💅",
+      "hilo": "誰にも教えたくなかった秘密の隠れ家カフェと、肌治安を守る神コスメまとめ 🧵",
+      "quote": "他人にケチつけるのはタダだけど、自分をご機嫌にして保湿する時間の方が100万倍尊いよ✨",
+      "live": "【生配信】ガラパーティー前のGRWM！ メイクしながらみんなの質問にリアルタイムで答えるよ💄",
+      "temaDelDia": "今週のトレンドがTLを埋め尽くしてるから、私なりのこだわりビジュアルで解釈してみたよ🤍",
+      "politica": "優しさと共感は政治的な対立じゃないはず。身近な暮らしから地球にやさしい選択をしていきたいな。",
+      "bait": "正直オーツミルクのアイス抹茶ラテ、普通のエスプレッソより圧倒的に上だよね。異論は認めません。",
+      "descanso": "週末のデジタルデトックス開始。スマホを置いて、大切な人たちとの時間を味わいます🌿",
+      "patrocinio": "【PR】愛用しすぎて手放せない[Brand]の神コスメ！ 数量限定クーポンはプロフのリンクから✨"
+    },
+    "opinologo": {
+      "meme": "誰にも頼まれてないけど、話題の国際問題について僕の博士論文級15連投解説を置いておきますね。",
+      "tema": "大手メディアが決して触れない構造的欠陥の本質。これが今起きているマクロ経済の冷徹な現実です。",
+      "pelea": "憲法と基礎法学の初歩すら理解してないことがリプの1行目から透けて見えてますよ。まず本を読みましょう。",
+      "hilo": "なぜ現在の文化的論争は前提から間違っているのか？ 歴史的経緯から紐解く決定版スレッド 🧵",
+      "quote": "5分前に聞きかじったスローガンを、ここまで自信満々に間違えて連呼できる人間の心理、実に興味深い。",
+      "live": "【緊急実況】記者会見開始からわずか4分、早くも露骨な論点ずらしが始まりました。メモを取りながら検証します。",
+      "temaDelDia": "感情論だけで今日のトップニュースを消費してる人たちへ。冷静な統計データを見て現実を直視しましょう。",
+      "politica": "与野党双方がこの失政の共犯者です。党派性に盲目な支持者たちだけが鏡を見ようとしない。",
+      "bait": "このプラットフォームの政治議論の9割は、知的な議論に擬態したただの承認欲求と感情の垂れ流し。",
+      "descanso": "今夜はこの不毛なエコーチェンバーを閉じます。アルゴリズムの外にこそ本物の現実がある。",
+      "patrocinio": "【PR】社会トレンドを可視化する最新分析ツール。言論活動に必須のプラットフォームです。詳細は固定リプへ。"
+    },
+    "periodista": {
+      "meme": "デスク『裏取りは100%取れてるんだろうな？』 私『青バッジ持ちの鍵アカからのDMです（白目）』",
+      "tema": "【独自スクープ】当局が半年間否定し続けた事実を裏付ける内部文書を入手。全文を速報します。",
+      "pelea": "広報室は『誤報』とレッテルを貼るだけで、文書に記載された事実関係には一行たりとも反論できていません。",
+      "hilo": "【時系列検証】密室会談で何が決まり、誰が署名したのか。徹底検証ドキュメント 🧵",
+      "quote": "我々のスクープが完全に正確だったことを、実に官僚的で丁寧な言葉遣いで追認していただき感謝します。",
+      "live": "【速報】省庁本部ビルに捜査員が突入。現場前より緊迫の状況を緊急実況中継します。",
+      "temaDelDia": "本日の重大ニュース、複数の取材源から裏付けを取りつつ10分刻みで最新情報を更新中。",
+      "politica": "権力が透明性を尊重するのは、追い詰められて他に選択肢がない時だけです。だから報道の自由が必要なのです。",
+      "bait": "やましいことが何もないなら、なぜ公共予算の契約書を国家機密指定で非公開にするのでしょうか。",
+      "descanso": "原稿入稿完了。通知をサイレントにして仮眠を取ります。どんな記者にも休息は必要。",
+      "patrocinio": "【PR】調査報道を支える独立サブスクリプション。真実を追求し続けるためのご支援を。"
+    },
+    "futbolero": {
+      "meme": "後半ロスタイム93分、うちのCBの雑なクリアを見て白髪が5本増えた。",
+      "tema": "戦術分析：中盤のアンカー変更がどのようにトランジションの守備崩壊を食い止めたのか徹底解説。",
+      "pelea": "ダービーで4失点ボコボコにされておいて審判の買収アピールとか恥ずかしくないの？ 黙って順位表見ろ。",
+      "hilo": "下部組織の無名少年からリーグ制覇のキャプテンへ：その軌跡とプレースタイルの進化 🧵",
+      "quote": "決定機を3本も宇宙開発シュートしておいて、VARのオフサイド判定に泣きついてるの滑稽すぎる。",
+      "live": "ゴォォォォル！！ 後半89分の劇的決勝弾！！ スタジアムが揺れてる！ これだからフットボールはやめられない！",
+      "temaDelDia": "移籍市場最終日の狂気：プライベートジェットの航路が特定され、メディカルチェックの噂でTL沸騰中。",
+      "politica": "伝統あるクラブの魂を外資系ファンドに売り渡したフロント陣に、サポーターの怒りが爆発するのは当然だ。",
+      "bait": "現代の戦術オタク監督たち、フットボールの本質である『気迫と泥臭さ』を難しく語りすぎ。",
+      "descanso": "試合終了のホイッスル。勝ち点3ゲット。心拍数を落ち着かせてTLから離脱します。お疲れ！",
+      "patrocinio": "【PR】今シーズンの公式ユニフォーム！ [Brand]とのコラボで限定セール実施中。コードは『GOAL』！"
+    },
+    "onlyfans": {
+      "meme": "深夜4時の『おやすみ』DMに2分で返信しなかっただけで6ヶ月のサブスク解約されたのウケる😂",
+      "tema": "新作の限定グラビアをフィードに公開しました✨ 夕暮れの光に包まれた完全ノーカット版です。",
+      "pelea": "有料コンテンツの無断転載は犯罪ですよ。すでに弁護士から開示請求の手続きに入りました。",
+      "hilo": "個人クリエイターの知られざるビジネス裏側：確定申告、法人化、安全対策、ブランディング戦略 🧵",
+      "quote": "裏で無料アダルト見まくってるくせに、自分の美しさをマネタイズしてる女性を叩くの、ダブスタすぎて草。",
+      "live": "【限定生配信】あと10分でプライベートQ&A開始！ 秘密の質問にリアルタイムで答えます。",
+      "temaDelDia": "今日流行りの撮影トレンドに乗ってみたよ！ 固定ポストにする写真をみんなの投票で決めてね。",
+      "politica": "女性が経済的自立を果たすことを恐れる旧態依然の社会制度。私たちは誰の許可も必要としません。",
+      "bait": "月1500円のサブスク代で家計が崩壊するなら、SNSで文句言う前にまず本業頑張った方がいいよ。",
+      "descanso": "カメラの電源を落としてバスタイム。今夜はスマホを別室に置いて自分を労わります。",
+      "patrocinio": "【PR】愛用のラグジュアリーランジェリー[Brand]とタイアップ！ 特別割引リンクはプロフから。"
+    },
+    "techie": {
+      "meme": "金曜の16時59分に本番環境へ直デプロイ完了。何も問題が起きるはずないよね？",
+      "tema": "秒間10万リクエスト負荷におけるRustとGoの並行処理ベンチマーク。メモリ使用量の差が衝撃的でした。",
+      "pelea": "フロントエンドコンポーネントの中で生SQL直書きしてる人が、スケーラブルなアーキテクチャ語らないで。",
+      "hilo": "ダウンタイムゼロで分散DBをDAU 1万人から500万人へスケールさせたインフラ設計の全記録 🧵",
+      "quote": "たった5行のbashスクリプトで済む処理に、AIマイクロサービスを14層も重ねて複雑化させる現代の病理。",
+      "live": "【緊急障害】AWS障害発生！ 本番環境のフェイルオーバーを欧州リージョンへ緊急切り替え中！",
+      "temaDelDia": "本日のOSS炎上騒動、オープンソース開発者の持続可能な資金モデルの必要性を改めて浮き彫りにした。",
+      "politica": "巨大テック企業の独占アルゴリズムが公共インフラを支配するべきではない。オープンソースこそ正義。",
+      "bait": "APIを1枚ラップしただけのプロンプトで代替できるプロダクト、それはテック企業とは呼ばない。",
+      "descanso": "全ターミナル終了。Slackの通知を月曜までミュート。本物の自然と触れ合ってきます。",
+      "patrocinio": "【PR】30秒でコンテナクラスタをデプロイできる[Platform]。限定200ドルの無料クレジット配布中！"
+    },
+    "humor": {
+      "meme": "カウンセラー『辛い時は何て言うんだっけ？』 私『まあ死ぬわけじゃないし、知らんけどで乗り切る』",
+      "tema": "この呪われたSNSに生息する要注意アカウント7選を、民俗学的に徹底分類してみました。",
+      "pelea": "冷蔵庫のバターについてのダジャレひとつで殺害予告届いた。ネット社会、今日も通常運転で最高。",
+      "hilo": "終電の車内で目撃した、人間の限界を超えたシュールすぎる珍事件まとめ 🧵",
+      "quote": "ただのギャグにマジレスして8段落の抗議文送りつけてくる人、病院行った方がいいよ。",
+      "live": "【決死の実況】歯医者の治療台に乗りました。キュイーンというドリル音が鳴り響いてます。遺言はリプ欄へ。",
+      "temaDelDia": "午後2年にはデマだとバレて鎮火するであろう今日のお祭り炎上に、今のうちに便乗ボケかましときます。",
+      "politica": "政治家たちの茶番劇、自分たちがそのピエロの政策に巻き込まれて実生活被害を受けなければ爆笑できるのに。",
+      "bait": "BBQにアコースティックギター持ってきて勝手に弾き語り始める大人、国際法廷で裁かれるべき。",
+      "descanso": "脳内ドーパミンと持ちネタが底をつきました。道化師工場は24時間休業します。解散！",
+      "patrocinio": "【PR】このボケは[Brand]の提供でお送りしました。案件料を頂いたので全力で宣伝させていただきます。"
+    },
+    "conspiranoico": {
+      "meme": "これが単なる偶然だと？ 市役所の設計図に隠された三角形の配列を見れば、誰でも気づくはずだ。",
+      "tema": "【極秘指定解除】1974年の公文書が証明する、半世紀前から計画されていた世界金融リセットの全貌。消される前に読め。",
+      "pelea": "政府の公式発表を根拠に論破した気になってるのか？ お前が引用してるのは黒幕側のプロパガンダそのものだ。",
+      "hilo": "海底光ケーブル網、太陽フレアの異常観測、そしてタックスヘイブンの幽霊会社を繋ぐ見えない糸 🧵",
+      "quote": "内部告発者が文書をリークして公認されるまでの10年間、彼らはいつもそれを『陰謀論』と呼ぶ。",
+      "live": "【緊急目撃】空港上空に謎の発光体が静止中！ レーダー追跡が意図的に切断された！ 何かを隠蔽している！",
+      "temaDelDia": "今日TLで騒がれている芸能スキャンダルは、未明3時に強行採決された裏法案から目を逸らすための目くらましだ。",
+      "politica": "選挙で選ばれてすらいない影の委員会から、左右両党が同じ指示を受けている。目を覚ませ。",
+      "bait": "大半の人間は、不都合な機密の真実と向き合うより、テレビが流す心地よい嘘を信じたがる。",
+      "descanso": "全端末の電源を切り、ファラデーバッグに収納。生体周波数をリセットするため12時間隔離する。",
+      "patrocinio": "【PR】個人の生体データと通信を守れ。電磁波遮断・暗号化ハードウェアストレージの詳細はこちら。"
+    },
+    "militante": {
+      "meme": "経済を崩壊させた野党『前政権の遺産ガー』。いつものテンプレ言い訳、聞き飽きました。",
+      "tema": "緊縮財政の波から、市民のインフラと労働者の権利、そして連帯の精神を断固として守り抜く。",
+      "pelea": "自分の電気代の支払いに四苦八苦してるネトサポが、リプ欄で大企業の減税を必死に擁護してるの滑稽すぎる。",
+      "hilo": "強行採決されようとしている規制緩和法案の真実：誰が得をし、誰が切り捨てられるのか 🧵",
+      "quote": "庶民には自己責任と競争を説くくせに、自分たちの大口献金者には公金ジャブジャブで救済するダブスタ政権。",
+      "live": "【現場実況】数万人の市民が広場を埋め尽くしました！ 不当な政策に抗議する民衆の声を力で封じることはできない！",
+      "temaDelDia": "今日の汚職スキャンダルは、市民運動が長年指摘してきた構造的腐敗そのものです。徹底究明を求めます。",
+      "politica": "危機の時代における『中立』は、常に強者と抑圧者に味方する。誇りを持って立場を明らかにせよ。",
+      "bait": "『政治に関心がない』と言ってる人、毎月の食料品レシートと家賃の明細をよく見てみなよ。",
+      "descanso": "街宣と集会の一日が終わりました。明日からの闘争に備えて、今夜は心身を休めます。",
+      "patrocinio": "【PR】草の根の声を届ける独立系出版組合の季刊誌。定期購読で市民メディアを応援してください。"
+    }
+  }
+};
+
+const GENERIC_SUIT_TWEETS = {
+  "en": {
+    "meme": "Can't stop laughing at this meme. The timeline is undefeated today 😂",
+    "tema": "Sharing some deep thoughts on my specialty today. Honest perspectives matter.",
+    "pelea": "If you're going to come into my mentions, at least bring real arguments and not insults.",
+    "hilo": "A detailed breakdown of everything happening behind the scenes: open thread 🧵",
+    "quote": "What a hilarious way to confess you have no idea what you're talking about.",
+    "live": "LIVE UPDATES: following the key moments in real time as they unfold!",
+    "temaDelDia": "Checking out the trending topic of the day. The timeline never sleeps.",
+    "politica": "Taking a clear stance on today's events. Silence is never neutral.",
+    "bait": "A spicy take that is bound to trigger some very loud replies in the comments.",
+    "descanso": "Logging off today. Stepping away from the timeline for mental peace. Take care, everyone!",
+    "patrocinio": "Proud to partner with our incredible sponsors on this release! Check link in bio for details."
+  },
+  "ja": {
+    "meme": "このミーム何回見ても腹筋崩壊する。今日のTL最高すぎる😂",
+    "tema": "専門テーマについてじっくり書きました。本音の視点こそが価値を生む。",
+    "pelea": "リプ欄に突撃してくるなら、悪口じゃなくてちゃんとした根拠を持ってきてね。",
+    "hilo": "水面下で起きていることの全貌を徹底解説：ツリーを開いて読んでください 🧵",
+    "quote": "何も理解してないことをこんなに面白く告白してくれるの、もはや親切まである。",
+    "live": "【リアルタイム実況】今起きている決定的瞬間を速報中！",
+    "temaDelDia": "本日のトレンドトピックをチェック。今日もTLは眠らない。",
+    "politica": "今日の情勢に対して断固とした態度を表明する。沈黙は中立ではない。",
+    "bait": "賛否両論を巻き起こすこと必至の辛口ポスト。反論はリプ欄へどうぞ。",
+    "descanso": "今日は完全ログアウト。メンタル回復のために画面から離れて休みます。みんなもお疲れ様！",
+    "patrocinio": "【PR】素敵なスポンサー様とのパートナーシップ！ 詳細リンクは固定ポストにて。"
+  }
+};
+
+function getLocalizedCardTitle(card, lang, archId) {
+  if (!card || lang === "es") return card.titulo;
+  
+  // 0. Story card title check
+  if (typeof getLocalizedStoryCard === "function") {
+    const sc = getLocalizedStoryCard(card, lang) || getLocalizedStoryCard(card.storyId || card.contradiccion_id || card.id, lang);
+    if (sc && sc.titulo) return sc.titulo;
+  }
+
+  // Direct dictionary hit
+  if (CARD_TITLE_TRANSLATIONS[lang]?.[card.titulo]) {
+    return CARD_TITLE_TRANSLATIONS[lang][card.titulo];
+  }
+
+  // Handle clash titles: "Pelea vs. [Rival]"
+  if (card.id === "pelea") {
+    let rivalName = card.titulo.replace(/^Pelea vs\. /i, "").trim();
+    if (RIVAL_TRANSLATIONS[lang]?.[rivalName]) {
+      rivalName = RIVAL_TRANSLATIONS[lang][rivalName];
+    }
+    return lang === "ja" ? `レスバトル vs. ${rivalName}` : `Clash vs. ${rivalName}`;
+  }
+
+  // Handle common generic suits
+  const archKey = typeof getArchKey === "function" ? getArchKey(archId) : (archId || "");
+  const suitTitles = {
+    en: {
+      meme: "Post a Viral Meme",
+      descanso: "Digital Detox & Rest",
+      patrocinio: "Sponsored Brand Post",
+      hilo: "In-Depth Analysis Thread",
+      quote: "Sharp Quote-Tweet",
+      live: "Live-Tweet Commentary",
+      temaDelDia: "Trending Topic Take",
+      politica: "Political Stance Post",
+      tema: "Niche Specialty Post",
+      bait: "High-Engagement Bait"
+    },
+    ja: {
+      meme: "バズりミームを投稿",
+      descanso: "デジタルデトックス",
+      patrocinio: "スポンサー付き広告投稿",
+      hilo: "深掘り解説スレッド",
+      quote: "辛口引用リポスト",
+      live: "リアルタイム実況",
+      temaDelDia: "トレンドへの言及",
+      politica: "政治的主張",
+      tema: "得意分野の専門ツイート",
+      bait: "議論を呼ぶ釣り投稿"
+    }
+  };
+
+  if (suitTitles[lang]?.[card.id]) {
+    return suitTitles[lang][card.id];
+  }
+
+  return card.titulo;
+}
+
+function getLocalizedCardTweet(card, lang, archId) {
+  if (!card || lang === "es") return card.texto || card.titulo || "";
+  const archKey = typeof getArchKey === "function" ? getArchKey(archId) : (archId || "gamer");
+
+  // 0. Story card tweet check
+  if (typeof getLocalizedStoryCard === "function") {
+    const sc = getLocalizedStoryCard(card, lang) || getLocalizedStoryCard(card.storyId || card.contradiccion_id || card.id, lang);
+    if (sc && sc.texto) return sc.texto;
+  }
+
+  const suitKey = card.id || card.palo?.id || card.palo || "";
+
+  // Check contextual pool for this archetype
+  const pool = CONTEXTUAL_TWEETS_BY_ARCH[lang]?.[archKey] || CONTEXTUAL_TWEETS_BY_ARCH[lang]?.gamer;
+  if (pool && pool[suitKey]) {
+    return pool[suitKey];
+  }
+
+  // Check generic suit fallback
+  if (GENERIC_SUIT_TWEETS[lang]?.[suitKey]) {
+    return GENERIC_SUIT_TWEETS[lang][suitKey];
+  }
+
+  // Specific suit fallbacks
+  if (suitKey === "descanso") {
+    return lang === "ja" 
+      ? "今日は完全ログアウト。メンタル回復のために画面から離れて休みます。みんなもお疲れ様！"
+      : "Logging off today. Stepping away from the timeline for mental peace. Take care, everyone!";
+  }
+  if (suitKey === "patrocinio") {
+    return lang === "ja"
+      ? "【PR】素敵なスポンサー様とのパートナーシップ！ 詳細リンクは固定ポストにて。"
+      : "Proud to partner with our incredible sponsors on this release! Check link in bio for details.";
+  }
+
+  return card.texto || card.titulo || "";
+}
+
+function getLocalizedStoryHeadline(archId, lang) {
+  const archKey = typeof getArchKey === "function" ? getArchKey(archId) : (archId || "");
+  if (lang === "es" || !STORY_HEADLINES_LOCALIZED[lang]) {
+    const DEFAULT_ES = {
+      gamer: "Autos caros y una LLC de Delaware",
+      podcaster: "La modelo y su amigo misterioso",
+      influencer: "Sesión de fotos con una nave importada",
+      techie: "Hackearon el exchange",
+      humor: "Corralito digital cripto",
+      conspiranoico: "Comando Fierro en las sombras",
+      periodista: "Allanamiento judicial y sociedad fantasma",
+      futbolero: "Murmullos en los palcos de la AFA",
+      onlyfans: "El paseo secreto en el auto de lujo",
+      cryptobro: "La wallet expuesta del político",
+      militante: "Las casas que nunca se hicieron",
+      opinologo: "La verdad oculta dos años después"
+    };
+    return DEFAULT_ES[archKey] || "Revelación clave de la trama en el timeline.";
+  }
+  return STORY_HEADLINES_LOCALIZED[lang]?.[archKey] || (lang === "ja" ? "タイムラインに浮かぶ事件の真相。" : "Crucial plot revelation on the timeline.");
+}
+
+if (typeof module !== "undefined" && module.exports) {
+  
+}
+
+
+/* ?? M?DULO: content/i18n/translations-story.js ?? */
+/**
+ * translations-story.js — Tuitero v19
+ * Localización de Narrativa (Story Cards) y Cancelaciones
+ * Idiomas: Español (ES original), Inglés (EN), Japonés (JA)
+ */
+
+const STORY_CARDS_TRANSLATIONS = {
+  en: {
+    // ─── 1. GAMER / STREAMER ──────────────────────────────────────────
+    gamer_act: {
+      titulo: "Shooting the Special",
+      texto: "bro made me redo the stream intro three times lmao, we shot at my place, footage came out insane",
+      replies: [
+        {
+          autor: "Anonymous Follower",
+          handle: "@patentes_arg",
+          texto: "Quit capping. That imported hypercar peeking out of your garage wouldn't be paid off with 50 years of streaming. Whose shell company is it under?"
+        }
+      ]
+    },
+    gamer_01: {
+      titulo: "The Beast in the Garage",
+      texto: "y'all see the whip I bought? top-tier import, literally only TWO of these in the entire country. my old man helped me out with the financing haha",
+      replies: [
+        {
+          autor: "Timeline Sleuth",
+          handle: "@patentes_arg",
+          texto: "What financing exactly? What corporate entity is registered as the owner?"
+        }
+      ]
+    },
+    gamer_02: {
+      titulo: "BBQ with the Striker",
+      texto: "having barbecue with my day-one brother, Boca's #9 striker. haters on the outside talk cheap, we celebrate in silence 🥩🔥",
+      replies: [
+        {
+          autor: "Twitch Sub",
+          handle: "@pibe_stream",
+          texto: "Take the striker for a spin in that whip bro, you'll break the internet"
+        }
+      ]
+    },
+    gamer_03: {
+      titulo: "Subpoena Papers",
+      texto: "got a court summons from a federal prosecutor asking for testimony on who owns the car, I know zero legal jargon so I just told my old man to deal with it",
+      replies: [
+        {
+          autor: "Twitch Sub",
+          handle: "@pibe_stream",
+          texto: "Be careful king, get your own lawyer and don't sign a damn thing blindly"
+        }
+      ]
+    },
+    gamer_cierre_2026: {
+      titulo: "Rules of the Game",
+      texto: "two years later and people still bring up that same crap about my old man. he takes it all on the chin solo, like always. rules of the game, not surprised",
+      replies: [
+        {
+          autor: "Twitch Sub",
+          handle: "@pibe_stream",
+          texto: "go live king, haters only talk because they have mouths"
+        }
+      ]
+    },
+
+    // ─── 2. PODCASTER ────────────────────────────────────────────────
+    podcaster_act: {
+      titulo: "Garage Teaser",
+      texto: "tomorrow the full interview with @gamer_stream drops, filmed at his crib. there's a shot in the garage that will blow your minds",
+      replies: [
+        {
+          autor: "Indignant User",
+          handle: "@feed_watcher",
+          texto: "How much ad money are they slipping you to keep that crypto exchange that rugged all our savings out of your podcast?"
+        }
+      ]
+    },
+    podcaster_01: {
+      titulo: "Coffee Shop Gossip",
+      texto: "grabbing coffee with @lifestyle_arg and we ended up talking more about @gamer_stream's car than the actual episode. people love an expensive ride more than good content",
+      replies: [
+        {
+          autor: "Lifestyle Influencer",
+          handle: "@lifestyle_arg",
+          texto: "I swear I literally cannot stop thinking about that whip, the energy it commands"
+        }
+      ]
+    },
+    podcaster_02: {
+      titulo: "Episode Fallout",
+      texto: "the garage clip just passed a million views on reels. even investigative journalists are DMing me asking where that footage came from",
+      replies: [
+        {
+          autor: "Loyal Listener",
+          handle: "@oyente_fiel",
+          texto: "Careful who you give the mic to, shrapnel hits everyone nearby when it blows"
+        }
+      ]
+    },
+    podcaster_03: {
+      titulo: "Production Dilemma",
+      texto: "heated internal debate with production: do we delete the garage clip or pour ad spend into it to monetize the hype? ethics vs vanity metrics",
+      replies: [
+        {
+          autor: "Producer",
+          handle: "@onda_media",
+          texto: "If we take it down now we look complicit. Keep it live and let prosecutors do their job"
+        }
+      ]
+    },
+    podcaster_cierre_2026: {
+      titulo: "200 Episodes",
+      texto: "hit 200 episodes this week. who would've thought back when we were recording on my living room couch",
+      replies: [
+        {
+          autor: "Regular Listener",
+          handle: "@radio_fan",
+          texto: "huge congrats man, been listening since you recorded into phone earphones"
+        }
+      ]
+    },
+
+    // ─── 3. INFLUENCER ───────────────────────────────────────────────
+    influencer_act: {
+      titulo: "Manifesting Abundance",
+      texto: "manifesting the energy to buy a whip just like @gamer_stream's, a hypercar so rare you never see it on the streets, registered under a company too, pure wealth mindset 🙏👀",
+      replies: [
+        {
+          autor: "VIP Stalker",
+          handle: "@chisme_digital",
+          texto: "Hey queen, care to share your thoughts on the Delaware shell company that actually owns that car?"
+        }
+      ]
+    },
+    influencer_01: {
+      titulo: "Silently Missing Someone",
+      texto: "some days I really miss someone who doesn't talk to me anymore, even though I keep seeing them pop up in other people's stories. still, endless gratitude for the present 🙏✨",
+      replies: [
+        {
+          autor: "Follower",
+          handle: "@vivi_zen",
+          texto: "Let go of what wasn't meant for you queen, the universe has something brighter waiting"
+        }
+      ]
+    },
+    influencer_02: {
+      titulo: "Filters and Facades",
+      texto: "sometimes I post the picture-perfect life while deep down I'm thinking about people who walked away. the algorithm doesn't know that",
+      replies: [
+        {
+          autor: "Palermo Friend",
+          handle: "@sofia_fit",
+          texto: "Love you babe, brunch this week so you can tell me everything"
+        }
+      ]
+    },
+    influencer_03: {
+      titulo: "Energy and Breaking News",
+      texto: "watching today's headlines and feeling such heavy vibrations from certain faces plastered across every media outlet. some energies drain your light even from afar ✨🧘‍♀️",
+      replies: [
+        {
+          autor: "Follower",
+          handle: "@vivi_zen",
+          texto: "Stay strong queen, smudge your space with palo santo and turn off the news"
+        }
+      ]
+    },
+    influencer_cierre_2026: {
+      titulo: "New Morning Routine",
+      texto: "my new morning routine literally changed my entire life, breaking it all down in today's video 🙏✨",
+      replies: [
+        {
+          autor: "Devoted Follower",
+          handle: "@lucia_style",
+          texto: "obsessed with that matcha brand! drop the link for the ceramic mug please"
+        }
+      ]
+    },
+
+    // ─── 4. TECHIE / STARTUP BRO ─────────────────────────────────────
+    techie_act: {
+      titulo: "City Tech Rumors",
+      texto: "rumors of a local underground hacker collective circling the crypto hub have been swirling for weeks. credible sources say it's no joke",
+      replies: [
+        {
+          autor: "Crypto Dev",
+          handle: "@rust_coder",
+          texto: "Stop flexing your startup badges and tell the truth: when are withdrawals reopening on the hacked exchange?"
+        }
+      ]
+    },
+    techie_01: {
+      titulo: "Ticking Time Bomb",
+      texto: "I know of a massive bombshell about to detonate in the coming weeks. connects big money with high-profile figures. can't disclose more, strict NDA",
+      replies: [
+        {
+          autor: "Angel Investor",
+          handle: "@seed_fund",
+          texto: "Hit me on Signal with a hint, I've got liquidity sitting in two local exchanges"
+        }
+      ]
+    },
+    techie_02: {
+      titulo: "The Crypto Corralito",
+      texto: "confirmed: the bombshell was the breach on the local exchange. whoever held funds in there, my condolences, I took a heavy hit too",
+      replies: [
+        {
+          autor: "Stand-Up Comic",
+          handle: "@humor_arg",
+          texto: "Wait hold on hold on, are you telling me all my savings in $PEPEARG just vanished into thin air?"
+        }
+      ]
+    },
+    techie_03: {
+      titulo: "Decoded Manifest",
+      texto: "just finished reviewing the raw data dump and the Comando Fierro manifesto. the exchange exploit wasn't random—they targeted bridge wallets laundering public taxpayer funds",
+      replies: [
+        {
+          autor: "Crypto Dev",
+          handle: "@solidity_dev",
+          texto: "Saw it on GitHub before the repo was nuked. Smart contracts were directly linked to the government housing trust."
+        }
+      ]
+    },
+    techie_cierre_2026: {
+      titulo: "Series A Closed",
+      texto: "officially closed the largest Series A round of the year in our vertical. historic day for the whole team 🚀",
+      replies: [
+        {
+          autor: "Venture Capitalist",
+          handle: "@latam_vc",
+          texto: "Proud to have backed this vision since day zero. Let's conquer the market!"
+        }
+      ]
+    },
+
+    // ─── 5. HUMOR / MEMES ────────────────────────────────────────────
+    humor_act: {
+      titulo: "The Hypercar Punchline",
+      texto: "saw her hop out of a priceless imported hypercar—one of only two in the entire country—right outside the government building. something tells me her 'buddy' in the driver's seat isn't a junior dev 💀",
+      replies: [
+        {
+          autor: "Corralito Victim",
+          handle: "@sin_ahorros",
+          texto: "Laugh all you want with your little jokes, but haven't seen you post a single meme about our life savings vanishing in the crypto freeze."
+        }
+      ]
+    },
+    humor_01: {
+      titulo: "The Hacker Joke",
+      texto: "Peronist hackers sounds like an oxymoron, what do they hack from, an iPhone 18 Pro Max?",
+      replies: [
+        {
+          autor: "Anonymous User",
+          handle: "@fierro_fan",
+          texto: "Keep laughing clown, once you see the exchange database leak you're gonna choke on that tweet"
+        }
+      ]
+    },
+    humor_02: {
+      titulo: "Crypto Freeze Victim",
+      texto: "wait... did I have bags in the exchange Comando Fierro just hacked? asking for a friend who is me and just watched his life savings in $PEPEARG evaporate 😭💀",
+      replies: [
+        {
+          autor: "Comedy Buddy",
+          handle: "@guionista_x",
+          texto: "Please tell me this is a bit for Friday's standup set and you didn't actually go dead broke"
+        }
+      ]
+    },
+    humor_03: {
+      titulo: "Bitter Laughter",
+      texto: "I crack jokes about inflation and cheap soup but for real I'm at absolute zero because of this crypto freeze. it ain't funny begging my mom for cash at age 30",
+      replies: [
+        {
+          autor: "Comedy Buddy",
+          handle: "@guionista_x",
+          texto: "Hang in there brother, we'll pass around the hat at Friday's bar show to help you out"
+        }
+      ]
+    },
+    humor_cierre_2026: {
+      titulo: "The Old Tweet",
+      texto: "every now and then someone tags me in that old joke. doesn't make me laugh like it used to. life shifts your sense of humor over time",
+      replies: [
+        {
+          autor: "Stand-Up Fan",
+          handle: "@standup_fan",
+          texto: "you grew up a ton man, it really shows in your new comedy specials"
+        }
+      ]
+    },
+
+    // ─── 6. CONSPIRANOICO ────────────────────────────────────────────
+    conspiranoico_act: {
+      titulo: "On-Chain Breadcrumbs",
+      texto: "the wallet moving $PEPEARG (the memecoin I've tracked for months) links directly to another address funded by a Delaware LLC. zero coincidences here (thread 🧵)",
+      replies: [
+        {
+          autor: "Cyber Rebel",
+          handle: "@fierro_fan",
+          texto: "You act all woke talking about UFOs, but when Comando Fierro dropped the database leak you totally went blind."
+        }
+      ]
+    },
+    conspiranoico_04: {
+      titulo: "Ignored Warnings",
+      texto: "I've flagged suspicious transactions on that wallet since JANUARY, long before the hypercar photo blew up online. nobody listened to me, as usual",
+      replies: [
+        {
+          autor: "Investigative Journalist",
+          handle: "@periodista_indie",
+          texto: "MS Paint diagrams and screenshots without cryptographic signatures aren't evidence. Learn how to investigate."
+        }
+      ]
+    },
+    conspiranoico_02: {
+      titulo: "The Hacker Warning",
+      texto: "there's a homegrown hacker syndicate orchestrating all of this behind the scenes. I've been shouting it for months while people laugh in my face. YOU WILL SEE",
+      replies: [
+        {
+          autor: "Timeline Troll",
+          handle: "@bot_argento",
+          texto: "Take your meds bro, the aliens are hacking your Wi-Fi router again"
+        }
+      ]
+    },
+    conspiranoico_03: {
+      titulo: "From Delaware to the Wastelands",
+      texto: "the money trail flows from the Delaware LLC straight into the empty lots designated for public housing, but NASA satellite radar detects electromagnetic interference at those exact coordinates",
+      replies: [
+        {
+          autor: "Paranoid Trader",
+          handle: "@whale_tracker",
+          texto: "You were cooking pure gold with the financial triangulation until you dragged NASA into this..."
+        }
+      ]
+    },
+    conspiranoico_cierre_2026: {
+      titulo: "The Congressional Revelation",
+      texto: "what they're preparing to reveal in Congress this week is going to vindicate EVERYTHING I've been preaching for months",
+      replies: [
+        {
+          autor: "True Believer",
+          handle: "@ojo_abierto",
+          texto: "we are ready, open your eyes people, the masks are finally coming off"
+        }
+      ]
+    },
+
+    // ─── 7. PERIODISTA ───────────────────────────────────────────────
+    periodista_act: {
+      titulo: "The Government Trail",
+      texto: "a luxury hypercar—one of only two nationwide—registered under a ghost shell company, a streamer clueless about the money's origin, and a surname echoing through cabinet offices. stay tuned",
+      replies: [
+        {
+          autor: "Disenchanted Reader",
+          handle: "@sin_filtro",
+          texto: "Why so quiet about the Cabinet Secretary's Delaware LLC? Did the envelope arrive, making you vanish from the investigation?"
+        }
+      ]
+    },
+    periodista_02: {
+      titulo: "Chasing the Source",
+      texto: "relentlessly pursuing a pivotal source in this saga even as they refuse to speak with me. the truth doesn't stay hidden forever",
+      replies: [
+        {
+          autor: "OnlyFans Creator",
+          handle: "@vip_content",
+          texto: "Stop harassing me in my DMs dude, I have nothing to do with your crooked politicians"
+        }
+      ]
+    },
+    periodista_04: {
+      titulo: "Unraveling the Thread",
+      texto: "all of this started with a photo of a car back in February. we haven't stopped pulling the thread until we reached the very top",
+      replies: [
+        {
+          autor: "Politics Editor",
+          handle: "@diario_central",
+          texto: "Tomorrow's front page confirmed. Exceptional, rigorous investigative work."
+        }
+      ]
+    },
+    periodista_03: {
+      titulo: "The Delaware Org Chart",
+      texto: "exclusive: full structural chart of the Delaware offshore shell company. the strawman and sole authorized signatory on the bank accounts is a 24-year-old local crypto trader",
+      replies: [
+        {
+          autor: "Politics Editor",
+          handle: "@diario_central",
+          texto: "Explosive scoop. It's already the lead banner across our digital edition."
+        }
+      ]
+    },
+    periodista_cierre_2026: {
+      titulo: "The Career-Defining Case",
+      texto: "two-year anniversary of the case that completely transformed my career. people still stop me on the street because of that scoop. worth every sleepless night",
+      replies: [
+        {
+          autor: "Newsroom Colleague",
+          handle: "@cronista_arg",
+          texto: "a true before-and-after benchmark in national investigative journalism"
+        }
+      ]
+    },
+
+    // ─── 8. FUTBOLERO ────────────────────────────────────────────────
+    futbolero_act: {
+      titulo: "Bombonera Connection",
+      texto: "Boca's #9 striker is childhood best friends with that streaming kid. those two are operating on a completely different wealth bracket",
+      replies: [
+        {
+          autor: "Furious Fan",
+          handle: "@anti_casta_boca",
+          texto: "Hey, didn't you snap a selfie at the Bombonera with that hypercar kid? Convenient how you stay dead silent on the raid against the Secretary in the VIP suites."
+        }
+      ]
+    },
+    futbolero_01: {
+      titulo: "The Car Outside the Ministry",
+      texto: "THAT imported hypercar they posted months back—one of only two in the entire country—is the EXACT SAME ONE I saw parked outside a government official's mansion. no doubt in my mind",
+      replies: [
+        {
+          autor: "Investigative Journalist",
+          handle: "@periodista_indie",
+          texto: "Do you recall the exact date and street address? Check your DMs right now, urgent"
+        }
+      ]
+    },
+    futbolero_02: {
+      titulo: "Talking to the Reporter",
+      texto: "a reporter interviewed me about that imported hypercar I spotted. told him everything I know—turns out there's a heavy politician tangled up in this. I only said what I saw",
+      replies: [
+        {
+          autor: "Stadium Buddy",
+          handle: "@bostero_12",
+          texto: "Don't get mixed up in dirty politics brother, what if they revoke your club membership card?"
+        }
+      ]
+    },
+    futbolero_03: {
+      titulo: "Whispers in the VIP Suite",
+      texto: "at halftime I went up for a coffee near the executive suites and overheard two football federation bosses panicking over the raid on the Secretary. looking like they were at a funeral",
+      replies: [
+        {
+          autor: "Boca Socio",
+          handle: "@xeneize_puro",
+          texto: "They're all dirty up to their necks brother, the hammer is about to fall on plenty of them"
+        }
+      ]
+    },
+    futbolero_cierre_2026: {
+      titulo: "20 Years as a Club Member",
+      texto: "officially hit 20 years as a club socio this month. already setting up the pre-match asado for the upcoming derby. nothing beats this life",
+      replies: [
+        {
+          autor: "Lifetime Member",
+          handle: "@boca_amor",
+          texto: "Cheers brother! Bringing the red wine and the banner for the pre-game tailgate"
+        }
+      ]
+    },
+
+    // ─── 9. ONLYFANS ─────────────────────────────────────────────────
+    onlyfans_act: {
+      titulo: "The Rumor and the Subscriptions",
+      texto: "neither confirming nor denying whose ride I was seen getting into 👀 (if you know, you know) [link in bio]",
+      replies: [
+        {
+          autor: "Timeline Moralist",
+          handle: "@moralista_x",
+          texto: "Hey, weren't you the one stepping out of that hypercar with the Cabinet Secretary's partner? Not gonna talk about where that money came from?"
+        }
+      ]
+    },
+    onlyfans_01: {
+      titulo: "Stop the Harassment",
+      texto: "okay for real: stop sending me DMs at 4 AM asking for my address 'just to talk'. it's not cute, stop",
+      replies: [
+        {
+          autor: "VIP Subscriber",
+          handle: "@mica_love",
+          texto: "Block those creeps queen, they're completely sick and obsessed with you"
+        }
+      ]
+    },
+    onlyfans_02: {
+      titulo: "The Truth About the Streamer",
+      texto: "done. I already lost my friendship with @gamer_stream over this toxic rumor, so let me state it loud and clear: I never had anything to do with any politician. he is my friend, full stop.",
+      replies: [
+        {
+          autor: "Stand-Up Comic",
+          handle: "@humor_arg",
+          texto: "Met her recently and she is an absolute gem. The joke I tweeted months ago was out of line, genuinely sorry."
+        }
+      ]
+    },
+    onlyfans_03: {
+      titulo: "Screenshots and Apologies",
+      texto: "here are just a few of the 400 death threats I received this week [screenshots]. at least @gamer_stream sent a voice note apologizing for not clearing the air sooner",
+      replies: [
+        {
+          autor: "VIP Subscriber",
+          handle: "@mica_love",
+          texto: "You are incredible queen, let the police handle these violent psychos"
+        }
+      ]
+    },
+    onlyfans_cierre_2026: {
+      titulo: "Specialty Coffee Era",
+      texto: "tasted the finest single-origin specialty roast in the entire city this week, full review is live now ☕",
+      replies: [
+        {
+          autor: "Coffee Enthusiast",
+          handle: "@flat_white_fan",
+          texto: "drop the shop coordinates, that Ethiopian roast looks unreal"
+        }
+      ]
+    },
+
+    // ─── 10. CRYPTO BRO ──────────────────────────────────────────────
+    cryptobro_act: {
+      titulo: "The Delaware Entity",
+      texto: "there's this corporate entity I set up for someone a while back that has been eating me alive for weeks. can't speak on it yet. DYOR, protect each other out there",
+      replies: [
+        {
+          autor: "Liquidated Trader",
+          handle: "@liquidado_eth",
+          texto: "How much did the politician pay you to launder his cash before Comando Fierro blasted your wallet in broad daylight?"
+        }
+      ]
+    },
+    cryptobro_01: {
+      titulo: "Risks of the Heart",
+      texto: "no risk no reward, that's what finance tells you. sometimes the real risk isn't capital—it's trusting the wrong person",
+      replies: [
+        {
+          autor: "Crypto Follower",
+          handle: "@hodl_pibe",
+          texto: "Did you close your position in the red king? The market always gives you another shot"
+        }
+      ]
+    },
+    cryptobro_02: {
+      titulo: "The LLC Confession",
+      texto: "I incorporated that LLC myself, for him. not for commission fees, not for bags. I did it out of love, and if I had to do it all over again, I would",
+      replies: [
+        {
+          autor: "Anonymous User",
+          handle: "@feed_watcher",
+          texto: "wait... THIS wasn't about the hacked exchange, this was the Cabinet Secretary's partner?!"
+        }
+      ]
+    },
+    cryptobro_03: {
+      titulo: "Sole Signatory",
+      texto: "found out through his defense lawyer that their court filings claim the company was entirely my solo venture. he pinned the whole disaster on me as the sole signatory",
+      replies: [
+        {
+          autor: "Alpha Trader",
+          handle: "@cripto_alfa",
+          texto: "They used you as a sacrificial lightning rod brother. Hire a criminal defense attorney before the subpoena hits."
+        }
+      ]
+    },
+    cryptobro_cierre_2026: {
+      titulo: "Two Years Later",
+      texto: "two years on and I still don't know what I miss more: him, or the person I was before I ever met him. still, zero regrets",
+      replies: [
+        {
+          autor: "Trader Friend",
+          handle: "@defi_sur",
+          texto: "stay strong brother, time puts everything in perspective even when it hurts to accept"
+        }
+      ]
+    },
+
+    // ─── 11. MILITANTE POLÍTICO ──────────────────────────────────────
+    militante_act: {
+      titulo: "The Bitter Memory",
+      texto: "two years passed and comrades still ask why I defended our Secretary so fiercely back then. he was one of us—I was the first person who refused to believe the accusations",
+      replies: [
+        {
+          autor: "Neighborhood Resident",
+          handle: "@barrio_pie",
+          texto: "Oh but you stay dead silent on the 200 public housing units that never got built, right? Accomplice to the Secretary."
+        }
+      ]
+    },
+    militante_01: {
+      titulo: "Critique of the Method",
+      texto: "people told me they sympathized with our movement's ideals, but truth be told, they completely lost their way with their methods",
+      replies: [
+        {
+          autor: "Anonymous User",
+          handle: "@fierro_fan",
+          texto: "If Comando Fierro hadn't breached that database, not a single soul would have exposed those phantom ghost homes"
+        }
+      ]
+    },
+    militante_02: {
+      titulo: "The Housing Racket",
+      texto: "a public housing development that was never built is a direct betrayal of the working class. a scam orchestrated by our own comrades, not by our usual political rivals",
+      replies: [
+        {
+          autor: "Neighborhood Resident",
+          handle: "@barrio_pie",
+          texto: "The concrete foundations are still rotting in the weeds. They lied right to our faces, comrade."
+        }
+      ]
+    },
+    militante_03: {
+      titulo: "The Price of Silence",
+      texto: "several comrades who initially demanded internal ethics hearings against the Secretary are now sitting comfortably in government ministries with fat paychecks. silence trades in US dollars",
+      replies: [
+        {
+          autor: "Grassroots Comrade",
+          handle: "@militante_leal",
+          texto: "The betrayal of comrades selling out for political posts stung way harder than the original embezzlement."
+        }
+      ]
+    },
+    militante_04: {
+      titulo: "The Empty Lots",
+      texto: "walked past the vacant field where the 200 affordable homes were supposed to be built. just overgrown brush, stray dogs, and a rusted construction billboard that fills me with pure shame",
+      replies: [
+        {
+          autor: "Neighborhood Resident",
+          handle: "@barrio_pie",
+          texto: "My kids are 5 years old now and we're still squeezing into a rented single room. We will never forget."
+        }
+      ]
+    },
+    militante_cierre_2026: {
+      titulo: "The Final Disillusionment",
+      texto: "it still hurts to accept that while we knocked on doors campaigning for homes that were never built, he already knew they never would be. he was our comrade. I was wrong, and I write this here so it remains on the record",
+      replies: [
+        {
+          autor: "Grassroots Comrade",
+          handle: "@militancia_viva",
+          texto: "courageous self-criticism comrade. true activism means speaking the unvarnished truth to each other"
+        }
+      ]
+    },
+
+    // ─── 12. OPINÓLOGO ───────────────────────────────────────────────
+    opinologo_act: {
+      titulo: "Rewriting History",
+      texto: "two years after the hypercar, the Delaware LLC, and the Cabinet Secretary, I maintain nobody truly grasped what actually transpired. I did. Thread below 🧵",
+      replies: [
+        {
+          autor: "Longtime Follower",
+          handle: "@memoria_red",
+          texto: "Plenty of cardboard geopolitics, but regarding the corruption probe they covered up two years ago, I didn't hear you utter a single syllable."
+        }
+      ]
+    },
+    opinologo_01: {
+      titulo: "The Love Dimension",
+      texto: "everyone got distracted by the hypercar and the stolen funds. the pivotal core was the love story, and almost nobody saw it coming back then",
+      replies: [
+        {
+          autor: "Thread Addict",
+          handle: "@hilo_adicto",
+          texto: "Spot on. The crypto kid literally sacrificed his personal freedom to shield the Secretary."
+        }
+      ]
+    },
+    opinologo_02: {
+      titulo: "The Distance of Time",
+      texto: "surreal to think that two years ago this was just coffee shop gossip, and today it's ancient history to everyone except those who survived it",
+      replies: [
+        {
+          autor: "Casual Observer",
+          handle: "@timeline_sur",
+          texto: "That's Twitter/X for you: canceled today, and two years later nobody even remembers your handle"
+        }
+      ]
+    },
+    opinologo_03: {
+      titulo: "The Federal Court Slumber",
+      texto: "two years after the scandal, the criminal case sleeps the sleep of the just in Federal Court 4. not a single indicted suspect in pre-trial detention. the judicial machinery operates flawlessly",
+      replies: [
+        {
+          autor: "Skeptical Reader",
+          handle: "@lector_x",
+          texto: "Federal courts doing what they do best: sitting on cases until the statute of limitations runs out."
+        }
+      ]
+    },
+    opinologo_04: {
+      titulo: "The Anatomy of Forgetting",
+      texto: "the social media outrage cycle lasts precisely 72 hours. after that, the mob needs a new villain to hate or a dancing dog video to laugh at. nobody preserves collective memory",
+      replies: [
+        {
+          autor: "Thread Addict",
+          handle: "@hilo_adicto",
+          texto: "Depressing yet 100% accurate. We consume sociopolitical causes like ephemeral Instagram stories."
+        }
+      ]
+    },
+    opinologo_cierre_2026: {
+      titulo: "The Final Verdict",
+      texto: "Argentine politics is the only ecosystem on earth where a casual photo in a streamer's garage can dismantle an entire government ministry. End of thread.",
+      replies: [
+        {
+          autor: "Politics Enthusiast",
+          handle: "@politica_arg",
+          texto: "Masterclass thread, doctor. A surgical post-mortem of the madness of 2024"
+        }
+      ]
+    }
+  },
+
+  ja: {
+    // ─── 1. GAMER / STREAMER ──────────────────────────────────────────
+    gamer_act: {
+      titulo: "特番の収録風景",
+      texto: "配信のオープニングだけで3回も撮り直しさせられた草。うちのリビングで撮ったんだけど神映像になったわ",
+      replies: [
+        {
+          autor: "匿名のフォロワー",
+          handle: "@patentes_arg",
+          texto: "イキるのも大概にしろ。ガレージにチラ見えしてる外車、50年配信しても買えないだろ。どこのペーパーカンパニー名義だよ？"
+        }
+      ]
+    },
+    gamer_01: {
+      titulo: "ガレージのモンスターマシン",
+      texto: "俺の新しい愛車見た？国内に2台しかない超ド級の輸入車。親父がローン組むの手伝ってくれたわ笑",
+      replies: [
+        {
+          autor: "詮索民",
+          handle: "@patentes_arg",
+          texto: "具体的にどういう融資？その車、どこの法人名義で登録されてるんですかね？"
+        }
+      ]
+    },
+    gamer_02: {
+      titulo: "エースストライカーとBBQ",
+      texto: "親友であるボカの9番エースとBBQ中。外野は好きなだけ吠えてろ、俺たちは静かに祝杯をあげるだけ🥩🔥",
+      replies: [
+        {
+          autor: "Twitchキッズ",
+          handle: "@pibe_stream",
+          texto: "エース乗せてその車でドライブ配信してくれ！ネットが爆発するぞ"
+        }
+      ]
+    },
+    gamer_03: {
+      titulo: "検察からの召喚状",
+      texto: "車の所有者名義について証言しろって検察から通知届いたんだけど。法律用語マジで分からんから親父に丸投げした",
+      replies: [
+        {
+          autor: "Twitchキッズ",
+          handle: "@pibe_stream",
+          texto: "おい王、ガチで気をつけろ。親父じゃなくて自分専属の弁護士雇って何もサインするなよ"
+        }
+      ]
+    },
+    gamer_cierre_2026: {
+      titulo: "ゲームの掟",
+      texto: "2年経った今でも親父の件をネチネチ言ってくる奴がいる。親父はいつだって全部1人で背負い込む。これが業界の掟、驚きもしない",
+      replies: [
+        {
+          autor: "Twitchキッズ",
+          handle: "@pibe_stream",
+          texto: "配信つけてくれ王！アンチなんてただ口がついてるから喋ってるだけのNPCだ"
+        }
+      ]
+    },
+
+    // ─── 2. PODCASTER ────────────────────────────────────────────────
+    podcaster_act: {
+      titulo: "ガレージの予告編",
+      texto: "明日@gamer_streamの自宅ロングインタビュー完全版を公開。ガレージでのワンシーン、度肝抜かれるぞ",
+      replies: [
+        {
+          autor: "憤怒のウォッチャー",
+          handle: "@feed_watcher",
+          texto: "俺たちの金を全額奪い去った暗号資産取引所の件に触れない見返りに、いくら裏金もらってんだ？"
+        }
+      ]
+    },
+    podcaster_01: {
+      titulo: "カフェでの裏話",
+      texto: "@lifestyle_argとお茶したけど、番組の中身より@gamer_streamの車の話で持ちきりだった。みんなコンテンツより高級車が大好物だな",
+      replies: [
+        {
+          autor: "キラキラ系女子",
+          handle: "@lifestyle_arg",
+          texto: "本当にあの車の残像が頭から離れないの、放ってるオーラが別格すぎて"
+        }
+      ]
+    },
+    podcaster_02: {
+      titulo: "反響と余波",
+      texto: "例の車の切り抜き動画、リールで100万再生超えた。事件記者から「あのカットどこで撮ったのか」って問い合わせDMまで来てる",
+      replies: [
+        {
+          autor: "古参リスナー",
+          handle: "@oyente_fiel",
+          texto: "誰にマイク渡すか気をつけろよ。爆発したとき破片食らうのはお前だぞ"
+        }
+      ]
+    },
+    podcaster_03: {
+      titulo: "制作陣の葛藤",
+      texto: "制作チームで激論中。ガレージの切り抜きを消すべきか、それとも広告費ブーストして再生数稼ぎまくるべきか。倫理か数字か",
+      replies: [
+        {
+          autor: "プロデューサー",
+          handle: "@onda_media",
+          texto: "今消したら共犯に見える。残しておいて司法の判断に任せるのが正解だ"
+        }
+      ]
+    },
+    podcaster_cierre_2026: {
+      titulo: "通算200回記念",
+      texto: "今週で通算200エピソード達成。自分のリビングで録音始めた頃は想像もつかなかったな",
+      replies: [
+        {
+          autor: "常連リスナー",
+          handle: "@radio_fan",
+          texto: "おめでとう！スマホのイヤホンマイクで録ってた最初期からずっと追ってるよ"
+        }
+      ]
+    },
+
+    // ─── 3. INFLUENCER ───────────────────────────────────────────────
+    influencer_act: {
+      titulo: "豊かさの引き寄せ",
+      texto: "@gamer_streamみたいな車を買うエネルギーを引き寄せ中🙏街で見かけない超ド級の輸入車、しかも法人名義にしてる富豪マインドが最高🙏👀",
+      replies: [
+        {
+          autor: "VIPストーカー",
+          handle: "@chisme_digital",
+          texto: "なぁ女王様、その高級車の持ち主になってるデラウェア州のペーパーカンパニーについてコメントしないの？"
+        }
+      ]
+    },
+    influencer_01: {
+      titulo: "言葉にならない喪失感",
+      texto: "もう口をきいてくれないあの人が恋しくなる日がある。他人の写真に写り込んでるのを見かけるたびに。それでも、今ある全てに無限の感謝🙏✨",
+      replies: [
+        {
+          autor: "信者フォロワー",
+          handle: "@vivi_zen",
+          texto: "合わなかったご縁は手放して女王様！宇宙はもっと素敵なギフトを用意してるよ"
+        }
+      ]
+    },
+    influencer_02: {
+      titulo: "フィルター越しの虚構",
+      texto: "完璧な日常を投稿しながら、心の中ではもう二度と会えない誰かのことばかり考えてる。アルゴリズムにはそんなの分からないよね",
+      replies: [
+        {
+          autor: "カフェ友",
+          handle: "@sofia_fit",
+          texto: "大好きだよ！今週お茶して全部話聞かせて"
+        }
+      ]
+    },
+    influencer_03: {
+      titulo: "ニュースと重いエネルギー",
+      texto: "今日のニュースを見てると、報道されまくってる某人物たちからすごく重い気を感じる。遠く離れてても光を奪う波動ってあるよね✨🧘‍♀️",
+      replies: [
+        {
+          autor: "信者フォロワー",
+          handle: "@vivi_zen",
+          texto: "女王様わかる！ホワイトセージで空間浄化してテレビ消そ！"
+        }
+      ]
+    },
+    influencer_cierre_2026: {
+      titulo: "新しい朝のルーティン",
+      texto: "人生が劇的に整った新しいモーニングルーティン、今日の動画で全部シェアしてます🙏✨",
+      replies: [
+        {
+          autor: "熱心なファン",
+          handle: "@lucia_style",
+          texto: "紹介してた抹茶最高だった！マグカップの購入リンク教えてほしい！"
+        }
+      ]
+    },
+
+    // ─── 4. TECHIE / STARTUP BRO ─────────────────────────────────────
+    techie_act: {
+      titulo: "金融街の不穏な噂",
+      texto: "国内のハッカー集団がクリプト界隈を嗅ぎ回ってる噂がここ数週間絶えない。ガチ筋からの情報だし冗談じゃないぞ",
+      replies: [
+        {
+          autor: "クリプト開発者",
+          handle: "@rust_coder",
+          texto: "起業家気取りはやめて本音を言えよ。ハッキングされた取引所の出金再開はいつなんだ？"
+        }
+      ]
+    },
+    techie_01: {
+      titulo: "炸裂寸前の特大爆弾",
+      texto: "ここ数週間以内に特大の爆弾が炸裂する情報を掴んでる。巨額の資金と有名人絡み。NDA結んでるからこれ以上は言えない",
+      replies: [
+        {
+          autor: "エンジェル投資家",
+          handle: "@seed_fund",
+          texto: "Signalでヒントくれ。現地の2つの取引所に流動性置きっぱなしなんだ"
+        }
+      ]
+    },
+    techie_02: {
+      titulo: "仮想通貨の預金封鎖",
+      texto: "確定：特大爆弾とは現地取引所のハッキングだった。あそこに資産預けてた人たち、本当に気の毒だ。俺もやられた",
+      replies: [
+        {
+          autor: "ネタ芸人",
+          handle: "@humor_arg",
+          texto: "ちょ待て待て待て、俺の$PEPEARG貯金が全額消滅したってことか？？"
+        }
+      ]
+    },
+    techie_03: {
+      titulo: "解読された声明文",
+      texto: "Comando Fierroのデータダンプと犯行声明を読み終えた。取引所への攻撃は無差別じゃない。公金の洗浄ブリッジウォレットを狙い撃ちにしてる",
+      replies: [
+        {
+          autor: "Solidity開発者",
+          handle: "@solidity_dev",
+          texto: "リポジトリ消される前にGitHubで見た。公営住宅信託に紐づくスマートコントラクトがあったぞ"
+        }
+      ]
+    },
+    techie_cierre_2026: {
+      titulo: "シリーズA調達完了",
+      texto: "業界内で今年最大規模となるシリーズAラウンドの調達を完了。チーム全員にとって歴史的な日だ🚀",
+      replies: [
+        {
+          autor: "VC担当者",
+          handle: "@latam_vc",
+          texto: "Day 0から伴走してきた身として誇らしい。世界を取りに行こう！"
+        }
+      ]
+    },
+
+    // ─── 5. HUMOR / MEMES ────────────────────────────────────────────
+    humor_act: {
+      titulo: "高級外車ネタ",
+      texto: "国内に2台しかない超高級外車から政府庁舎前で降りてくるのを目撃したんだけど、「運転手の友達」はどう見ても平社員プログラマーじゃないだろ草💀",
+      replies: [
+        {
+          autor: "資産全損民",
+          handle: "@sin_ahorros",
+          texto: "お気楽にネタにしてろよ。仮想通貨封鎖で俺たちの金が消えた件はダンマリのくせにな"
+        }
+      ]
+    },
+    humor_01: {
+      titulo: "ハッカーいじり",
+      texto: "労働者階級の革命派ハッカーとか矛盾の極みだろ。最新のiPhone 18 Pro Maxからハッキングしてんのか？",
+      replies: [
+        {
+          autor: "匿名のアジテーター",
+          handle: "@fierro_fan",
+          texto: "今のうちに笑っとけ。流出した取引所のデータベース見たらそのツイート喉に詰まるぞ"
+        }
+      ]
+    },
+    humor_02: {
+      titulo: "預金封鎖の被害者",
+      texto: "待って…Comando Fierroにハックされた取引所に俺金預けてたっけ？友達の代わりに聞いてるんだけど、その友達って俺自身で$PEPEARG貯金全部溶けました😭💀",
+      replies: [
+        {
+          autor: "芸人仲間",
+          handle: "@guionista_x",
+          texto: "頼むから金曜のライブのネタフリだって言ってくれ。マジで破産したんじゃないよな？"
+        }
+      ]
+    },
+    humor_03: {
+      titulo: "苦笑いの現実",
+      texto: "物価高やインフレをネタにして笑い取ってきたけど、取引所封鎖でガチの無一文になったわ。30歳にもなって母親に生活費無心するの笑えねぇよ",
+      replies: [
+        {
+          autor: "芸人仲間",
+          handle: "@guionista_x",
+          texto: "耐えろよ相棒。金曜のライブでカンパ募ってカンパ箱回すからな"
+        }
+      ]
+    },
+    humor_cierre_2026: {
+      titulo: "昔のネタツイ",
+      texto: "たまにあの昔のネタツイにメンションが飛んでくる。前みたいに笑えないな。生きてると笑いのツボも変わるもんだ",
+      replies: [
+        {
+          autor: "お笑いファン",
+          handle: "@standup_fan",
+          texto: "人間として深みが出たよ。新しい漫談にそれがめちゃくちゃ表れてる"
+        }
+      ]
+    },
+
+    // ─── 6. CONSPIRANOICO ────────────────────────────────────────────
+    conspiranoico_act: {
+      titulo: "ブロックチェーンに残る足跡",
+      texto: "俺が数ヶ月追ってる草コイン$PEPEARGを動かしてるウォレット、デラウェアの合同会社から送金受けてる別アドレスと直結してる。偶然なわけがない（ツリー🧵）",
+      replies: [
+        {
+          autor: "サイバー反逆者",
+          handle: "@fierro_fan",
+          texto: "UFOの話で目覚めた気になってるくせに、Comando Fierroのデータベース流出はガン無視かよ。"
+        }
+      ]
+    },
+    conspiranoico_04: {
+      titulo: "無視され続けた警告",
+      texto: "あのウォレットの異常な動き、車の写真がバズる遥か前の1月から指摘してたんだが？いつだって誰も俺の話を聞かない",
+      replies: [
+        {
+          autor: "調査報道記者",
+          handle: "@periodista_indie",
+          texto: "ペイントの落書きと署名なしスクショは証拠とは言わない。取材の基本を学べ"
+        }
+      ]
+    },
+    conspiranoico_02: {
+      titulo: "ハッカー組織の予兆",
+      texto: "この裏には国内のハッカー集団が潜んでる。何ヶ月も言い続けてきたのにみんな俺を笑いものにした。今に見とけよ！！",
+      replies: [
+        {
+          autor: "煽りボット",
+          handle: "@bot_argento",
+          texto: "薬飲んで寝ろ。宇宙人にWi-Fiルーターハッキングされてんぞ"
+        }
+      ]
+    },
+    conspiranoico_03: {
+      titulo: "デラウェアから空き地へ",
+      texto: "資金ルートはデラウェアの合同会社から公営住宅予定地の空き地に流れてる。だがNASAの衛星レーダーはその同座標で電磁気異常を感知してるんだ",
+      replies: [
+        {
+          autor: "疑心暗鬼トレーダー",
+          handle: "@whale_tracker",
+          texto: "資金洗浄の三角測量までは完璧だったのに、NASAをぶち込んだ瞬間台無しだよ…"
+        }
+      ]
+    },
+    conspiranoico_cierre_2026: {
+      titulo: "議会での重大発表",
+      texto: "今週議会で発表される内容は、俺が何ヶ月も主張し続けてきた全ての正しさを証明することになる",
+      replies: [
+        {
+          autor: "熱心な信奉者",
+          handle: "@ojo_abierto",
+          texto: "準備はできた。目を覚ませ、奴らの仮面が剥がれ落ちる瞬間だ"
+        }
+      ]
+    },
+
+    // ─── 7. PERIODISTA ───────────────────────────────────────────────
+    periodista_act: {
+      titulo: "政府へ繋がる手がかり",
+      texto: "国内に2台しかない超高級外車、ペーパーカンパニー名義、資金源を知らない配信者、そして政権中枢に響くある苗字。目を離すな",
+      replies: [
+        {
+          autor: "幻滅した読者",
+          handle: "@sin_filtro",
+          texto: "事務次官のペーパーカンパニーについて急に静かになったな？口止め料もらって調査から逃げたのか？"
+        }
+      ]
+    },
+    periodista_02: {
+      titulo: "情報源への猛追",
+      texto: "事件の鍵を握る重要人物を全力で追尾取材中。相手は取材拒否を貫いているが、真実は決して隠し通せない",
+      replies: [
+        {
+          autor: "裏垢クリエイター",
+          handle: "@vip_content",
+          texto: "DMでつきまとうのやめてよ。あんたの政治スキャンダルなんて私は一切関係ないから"
+        }
+      ]
+    },
+    periodista_04: {
+      titulo: "真実の糸を手繰り寄せて",
+      texto: "全ての始まりは2月の車の写真1枚だった。あの日から糸を手繰り続け、ついにここまで辿り着いた",
+      replies: [
+        {
+          autor: "政治部デスク",
+          handle: "@diario_central",
+          texto: "明日の朝刊1面トップ確定。緻密で徹底的な裏付け取材、見事だ。"
+        }
+      ]
+    },
+    periodista_03: {
+      titulo: "デラウェア法人の組織図スクープ",
+      texto: "独占スクープ：デラウェア州オフショア企業の全体相関図。銀行口座のダミー名義人かつ唯一の署名権者は、国内の24歳の暗号資産トレーダーだ",
+      replies: [
+        {
+          autor: "政治部デスク",
+          handle: "@diario_central",
+          texto: "衝撃の特ダネだ。ウェブ版のトップ速報で即時配信した。"
+        }
+      ]
+    },
+    periodista_cierre_2026: {
+      titulo: "記者人生を変えた大スクープ",
+      texto: "記者人生を一変させたあの大事件から2年。今でもあの記事のことで街で声をかけられる。眠れない夜を越えた価値があった",
+      replies: [
+        {
+          autor: "報道部の同僚",
+          handle: "@cronista_arg",
+          texto: "この国の調査報道における歴史的な分水嶺だったよ"
+        }
+      ]
+    },
+
+    // ─── 8. FUTBOLERO ────────────────────────────────────────────────
+    futbolero_act: {
+      titulo: "ボンボネーラのコネクション",
+      texto: "ボカの9番エースと配信者のあいつ、幼馴染らしいな。あの2人の金回りは住む世界が違いすぎる",
+      replies: [
+        {
+          autor: "過激派サポ",
+          handle: "@anti_casta_boca",
+          texto: "お前あの外車のガキとスタジアムで写真撮ってただろ？VIP席の事務次官への家宅捜索にはダンマリか？"
+        }
+      ]
+    },
+    futbolero_01: {
+      titulo: "高官邸前のあの車",
+      texto: "数ヶ月前に上がってたあの輸入車、国内に2台しかないやつ、政府高官の屋敷の外に停まってたのと完全に一致してる。間違いない",
+      replies: [
+        {
+          autor: "調査報道記者",
+          handle: "@periodista_indie",
+          texto: "正確な日付と通りの名前を覚えてますか？DM送りました、至急返信を"
+        }
+      ]
+    },
+    futbolero_02: {
+      titulo: "記者との接触",
+      texto: "記者から目撃した車について聞かれたから知ってること全部話した。大物政治家が噛んでるらしい。俺は見えた事実を話しただけだ",
+      replies: [
+        {
+          autor: "スタジアム仲間",
+          handle: "@bostero_12",
+          texto: "政治のゴタゴタに首突っ込むなよ相棒。ソシオ会員証剥奪されたらどうすんだ"
+        }
+      ]
+    },
+    futbolero_03: {
+      titulo: "VIPラウンジの囁き",
+      texto: "ハーフタイムに貴賓席の近くへコーヒー買いに行ったら、連盟の重鎮2人が事務次官の家宅捜索について葬式みたいな顔で密談してた",
+      replies: [
+        {
+          autor: "熱心なソシオ",
+          handle: "@xeneize_puro",
+          texto: "全員ズブズブなんだよ。これから何人も首が飛ぶぞ"
+        }
+      ]
+    },
+    futbolero_cierre_2026: {
+      titulo: "ソシオ歴20周年",
+      texto: "今月でソシオ会員歴20年達成。次のクラシコに向けた決起BBQを企画中。やっぱりこのクラブが人生の全てだわ",
+      replies: [
+        {
+          autor: "終身会員",
+          handle: "@boca_amor",
+          texto: "乾杯だ相棒！赤ワインと応援旗持って前夜祭に駆けつけるぜ"
+        }
+      ]
+    },
+
+    // ─── 9. ONLYFANS ─────────────────────────────────────────────────
+    onlyfans_act: {
+      titulo: "噂とサブスク誘導",
+      texto: "私が乗り込むところを目撃されたあの車が誰のか、肯定も否定もしないでおくね👀（わかる人にはわかる）[プロフのリンク]",
+      replies: [
+        {
+          autor: "道徳アンチ",
+          handle: "@moralista_x",
+          texto: "おい、事務次官の愛人と一緒にあの外車から降りてきたのお前だろ？その汚い金については口を噤むのか？"
+        }
+      ]
+    },
+    onlyfans_01: {
+      titulo: "ストーカー行為はやめて",
+      texto: "マジで言ってるんだけど：深夜4時に「話したいから」って住所聞き出すDM送ってくるのやめて。全然笑えないし迷惑",
+      replies: [
+        {
+          autor: "VIPファン",
+          handle: "@mica_love",
+          texto: "そんなストーカー即ブロックして女王様！みんな異常に執着してる"
+        }
+      ]
+    },
+    onlyfans_02: {
+      titulo: "配信者との真相",
+      texto: "この噂のせいで@gamer_streamとの友情まで壊れたからハッキリ言うね。政治家なんて一切関わりない。彼はただの友達、それ以上でも以下でもない",
+      replies: [
+        {
+          autor: "ネタ芸人",
+          handle: "@humor_arg",
+          texto: "最近直接会ったけど最高にいい子だった。数ヶ月前にいじったネタツイは完全に俺が悪かった、本当にすまん"
+        }
+      ]
+    },
+    onlyfans_03: {
+      titulo: "届いた脅迫と謝罪",
+      texto: "今週届いた400件以上の脅迫メッセージの一部がこれ[スクショ]。少なくとも@gamer_streamはもっと早く釈明しなかったことを音声で謝罪してくれた",
+      replies: [
+        {
+          autor: "VIPファン",
+          handle: "@mica_love",
+          texto: "負けないで女王様！脅迫してきた連中は警察に突き出して処罰させよ"
+        }
+      ]
+    },
+    onlyfans_cierre_2026: {
+      titulo: "スペシャリティコーヒー巡り",
+      texto: "今週、街で一番美味しいスペシャリティコーヒーに出会えた。詳しいレビュー動画アップしたよ☕",
+      replies: [
+        {
+          autor: "コーヒーマニア",
+          handle: "@flat_white_fan",
+          texto: "お店の場所教えて！そのエチオピアの浅煎り豆めちゃくちゃ美味そう"
+        }
+      ]
+    },
+
+    // ─── 10. CRYPTO BRO ──────────────────────────────────────────────
+    cryptobro_act: {
+      titulo: "デラウェアのペーパーカンパニー",
+      texto: "昔ある人のために立ち上げた会社の件で、ここ数週間ずっと胃が痛い。まだ詳細は話せない。DYOR、みんな身を守れよ",
+      replies: [
+        {
+          autor: "ロスカット民",
+          handle: "@liquidado_eth",
+          texto: "Comando Fierroにウォレット晒される前に、政治家のマネロン請け負っていくら貰ったんだよ？"
+        }
+      ]
+    },
+    cryptobro_01: {
+      titulo: "心のリスク管理",
+      texto: "「リスクを取らなきゃ勝てない」金融界ではそう言う。でも本当のリスクは金じゃなくて、信じる相手を間違えることだった",
+      replies: [
+        {
+          autor: "信者トレーダー",
+          handle: "@hodl_pibe",
+          texto: "損切りしたのか王？相場はいつだってリベンジのチャンスをくれるぞ"
+        }
+      ]
+    },
+    cryptobro_02: {
+      titulo: "ペーパーカンパニーの告白",
+      texto: "あのデラウェア法人を作ったのは俺だ。あいつのために。手数料や金目当てじゃない。愛のためにやった。もう一度やり直すとしても同じ道を選ぶ",
+      replies: [
+        {
+          autor: "野次馬ウォッチャー",
+          handle: "@feed_watcher",
+          texto: "待て…これ取引所ハックの話じゃなくて、事務次官の恋人の告白だったのか？！"
+        }
+      ]
+    },
+    cryptobro_03: {
+      titulo: "切り捨てられた単独署名",
+      texto: "あいつの弁護士から聞いたが、法廷資料にはあの会社は俺個人の単独事業だって書かれてるらしい。大惨事の全責任を俺1人に押し付けて逃げやがった",
+      replies: [
+        {
+          autor: "界隈の古参",
+          handle: "@cripto_alfa",
+          texto: "トカゲの尻尾切りにされたな。検察に連行される前に腕利きの刑事弁護士雇え"
+        }
+      ]
+    },
+    cryptobro_cierre_2026: {
+      titulo: "2年後の独白",
+      texto: "あれから2年。あいつが恋しいのか、あいつに出会う前の自分が恋しいのか、今も分からない。それでも何ひとつ後悔はしていない",
+      replies: [
+        {
+          autor: "戦友トレーダー",
+          handle: "@defi_sur",
+          texto: "前を向け相棒。受け入れるのは辛くても、時間が全てを正しい場所へ導いてくれる"
+        }
+      ]
+    },
+
+    // ─── 11. MILITANTE POLÍTICO ──────────────────────────────────────
+    militante_act: {
+      titulo: "苦い記憶",
+      texto: "2年経った今でも、なぜ当時あんなに事務次官を擁護したのかと仲間から問われる。あいつは同志だった。誰よりも信じたくなかったのは俺だった",
+      replies: [
+        {
+          autor: "地元の住民",
+          handle: "@barrio_pie",
+          texto: "着工すらされなかった200戸の公営住宅計画には一切触れないんだな？次官の共犯者め。"
+        }
+      ]
+    },
+    militante_01: {
+      titulo: "手法への批判",
+      texto: "俺たちの理念に共鳴してくれた人たちがいたのは知ってる。だが率直に言って、そのやり方は完全に間違っていた",
+      replies: [
+        {
+          autor: "匿名の義賊信奉者",
+          handle: "@fierro_fan",
+          texto: "Comando Fierroがあのデータベースを暴かなければ、幻の公営住宅詐欺を告発する奴なんて誰一人いなかっただろ"
+        }
+      ]
+    },
+    militante_02: {
+      titulo: "住宅計画という名の利権",
+      texto: "一棟も建たなかった公営住宅計画、それは国民への許されざる詐欺だ。いつもの政敵ではなく、俺たち自身の陣営が仕組んだ裏切りだ",
+      replies: [
+        {
+          autor: "地元の住民",
+          handle: "@barrio_pie",
+          texto: "基礎工事のコンクリートは雑草に埋もれたままだ。俺たちは真正面から騙されたんだよ、同志。"
+        }
+      ]
+    },
+    militante_03: {
+      titulo: "沈黙の対価",
+      texto: "当時、次官の内部調査を声高に叫んでいた同志たちの多くが、今や省庁の要職に収まり高給を貪っている。沈黙はドル建てで買われたわけだ",
+      replies: [
+        {
+          autor: "現場の党員",
+          handle: "@militante_leal",
+          texto: "ポストに目が眩んで魂を売った仲間の裏切りは、最初の横領事件よりも深く胸に突き刺さる。"
+        }
+      ]
+    },
+    militante_04: {
+      titulo: "放置された空き地",
+      texto: "200戸の公営住宅が建つはずだった予定地を歩いてみた。生い茂る雑草、野良犬、そして錆びついた看板だけ。恥ずかしさで前を向けない",
+      replies: [
+        {
+          autor: "地元の住民",
+          handle: "@barrio_pie",
+          texto: "うちの子はもう5歳になったが、今も狭いワンルームを間借りしてる。この恨みは絶対に忘れない。"
+        }
+      ]
+    },
+    militante_cierre_2026: {
+      titulo: "最後の幻滅",
+      texto: "俺たちが戸別訪問して一軒一軒頭を下げていた時、あいつは最初から家なんて建たないと知っていた。信じた仲間だった。俺が間違っていた。後世のためにここに記しておく",
+      replies: [
+        {
+          autor: "党支部の女性同志",
+          handle: "@militancia_viva",
+          texto: "勇敢な自己批判だよ同志。本当の信念とは、互いに誤魔化しのない真実を突きつけ合うことだ"
+        }
+      ]
+    },
+
+    // ─── 12. OPINÓLOGO ───────────────────────────────────────────────
+    opinologo_act: {
+      titulo: "歴史の再構築",
+      texto: "あの車、デラウェアの会社、事務次官の一連の騒動から2年。何が起きたのか誰も本質を理解していない。私だけが知っている。スレッドを開く🧵",
+      replies: [
+        {
+          autor: "古参フォロワー",
+          handle: "@memoria_red",
+          texto: "薄っぺらい地政学分析はご立派だけど、2年前に隠蔽された汚職事件には一言も触れなかったよな。"
+        }
+      ]
+    },
+    opinologo_01: {
+      titulo: "愛の側面",
+      texto: "誰もが派手な外車と消えた金ばかりに目を奪われていた。本質は愛の物語だったのだ。当時それに気づいた者はほぼ皆無だった",
+      replies: [
+        {
+          autor: "スレッド中毒者",
+          handle: "@hilo_adicto",
+          texto: "完全に同意。あの暗号資産青年は事務次官を守るために己の自由を犠牲にしたんだ。"
+        }
+      ]
+    },
+    opinologo_02: {
+      titulo: "時間の隔たり",
+      texto: "2年前はカフェの噂話に過ぎなかったものが、今や当事者以外にとっては遠い昔話になっている。奇妙な感覚だ",
+      replies: [
+        {
+          autor: "通りすがりの住人",
+          handle: "@timeline_sur",
+          texto: "それがTwitter/Xだろ。今日炎上しても、2年後には誰も名前すら覚えてない。"
+        }
+      ]
+    },
+    opinologo_03: {
+      titulo: "連邦裁判所の深い眠り",
+      texto: "スキャンダルから2年、刑事事件は第4連邦裁判所で永遠の眠りについている。勾留された起訴者はゼロ。司法の根回しは見事に機能している",
+      replies: [
+        {
+          autor: "懐疑的な読者",
+          handle: "@lector_x",
+          texto: "連邦地裁の十八番だな。時効が成立するまで事件をアイロンがけして引き延ばす。"
+        }
+      ]
+    },
+    opinologo_04: {
+      titulo: "忘却の構造",
+      texto: "SNSにおける怒りの賞味期限は正確に72時間だ。その後大衆は別の標的に怒るか、踊る犬の動画で笑うことを求める。誰も記憶を保持できない",
+      replies: [
+        {
+          autor: "スレッド中毒者",
+          handle: "@hilo_adicto",
+          texto: "悲しいが100%事実。俺たちは社会運動すらインスタのストーリー感覚で消費してる。"
+        }
+      ]
+    },
+    opinologo_cierre_2026: {
+      titulo: "最終判決",
+      texto: "アルゼンチン政治とは、配信者のガレージで撮られた1枚の写真から省庁丸ごとひとつが暴かれる世界で唯一の場所である。スレッド完。",
+      replies: [
+        {
+          autor: "論壇ウォッチャー",
+          handle: "@politica_arg",
+          texto: "素晴らしい解説スレッドでした先生。2024年の狂乱を見事に解剖した名文です。"
+        }
+      ]
+    }
+  }
+};
+
+const CANCELLATION_INCIDENTS_TRANSLATIONS = {
+  en: {
+    // ── GENERAL CANCELLATIONS ─────────────────────────────────────────
+    canc_gen_medida_gobierno: {
+      titulo: "DEFENDING AN UNPOPULAR LAW",
+      motivo: "You zealously defended a government policy reviled by 90% of the public."
+    },
+    "APOYO A MEDIDA IMPOPULAR": {
+      titulo: "DEFENDING AN UNPOPULAR LAW",
+      motivo: "You zealously defended a government policy reviled by 90% of the public."
+    },
+
+    canc_gen_alabar_persona: {
+      titulo: "THE ROTTEN OLD TWEET",
+      motivo: "They unearthed a 2017 tweet where you praised a public figure who was just criminally convicted."
+    },
+    "EL TWEET VIEJO INCORRECTO": {
+      titulo: "THE ROTTEN OLD TWEET",
+      motivo: "They unearthed a 2017 tweet where you praised a public figure who was just criminally convicted."
+    },
+
+    canc_gen_like_filtrado: {
+      titulo: "THE 3 AM COMPROMISING LIKE",
+      motivo: "You accidentally liked a truly despicable post, and a screenshot-hunting account caught you red-handed."
+    },
+    "EL LIKE COMPROMETEDOR A LAS 3 AM": {
+      titulo: "THE 3 AM COMPROMISING LIKE",
+      motivo: "You accidentally liked a truly despicable post, and a screenshot-hunting account caught you red-handed."
+    },
+
+    canc_gen_tragedia_marketing: {
+      titulo: "TRAGEDY MARKETING",
+      motivo: "You tried plugging your promo link or cracking a self-absorbed joke inside the hashtag of a deadly disaster."
+    },
+    "MARKETING EN MEDIO DE LA TRAGEDIA": {
+      titulo: "TRAGEDY MARKETING",
+      motivo: "You tried plugging your promo link or cracking a self-absorbed joke inside the hashtag of a deadly disaster."
+    },
+
+    canc_gen_audio_filtrado: {
+      titulo: "LEAKED PRIVATE VOICE NOTE",
+      motivo: "A private audio note leaked where you trash-talked your own community and mocked your brand sponsors."
+    },
+    "AUDIO PRIVADO FILTRADO": {
+      titulo: "LEAKED PRIVATE VOICE NOTE",
+      motivo: "A private audio note leaked where you trash-talked your own community and mocked your brand sponsors."
+    },
+
+    canc_gen_estafa_piramidal: {
+      titulo: "THE PONZI SCHEME SHILL",
+      motivo: "You recommended a shady investment platform or meme token that rug-pulled hundreds of your followers' life savings."
+    },
+    "LA PROMO DE LA ESTAFA": {
+      titulo: "THE PONZI SCHEME SHILL",
+      motivo: "You recommended a shady investment platform or meme token that rug-pulled hundreds of your followers' life savings."
+    },
+
+    canc_gen_plagio_descubierto: {
+      titulo: "WORD-FOR-WORD PLAGIARISM",
+      motivo: "A user discovered your most viral thread of the week was a word-for-word translation of a 2022 English post."
+    },
+    "PLAGIO PALABRA POR PALABRA": {
+      titulo: "WORD-FOR-WORD PLAGIARISM",
+      motivo: "A user discovered your most viral thread of the week was a word-for-word translation of a 2022 English post."
+    },
+
+    canc_gen_clasismo_meme: {
+      titulo: "THE OUT-OF-TOUCH SNOB",
+      motivo: "You made an unhinged complaint about public transit that sounded brutally classist, tone-deaf, and condescending."
+    },
+    "EL COMENTARIO DESUBICADO": {
+      titulo: "THE OUT-OF-TOUCH SNOB",
+      motivo: "You made an unhinged complaint about public transit that sounded brutally classist, tone-deaf, and condescending."
+    },
+
+    // ── OPINÓLOGO ────────────────────────────────────────────────────
+    canc_opi_peritaje: {
+      titulo: "FACT-CHECKED LIVE BY EXPERTS",
+      motivo: "An official scientific audit and three certified experts completely dismantled the report you claimed was gospel truth."
+    },
+    "DESMENTIDA TECNICA EN VIVO": {
+      titulo: "FACT-CHECKED LIVE BY EXPERTS",
+      motivo: "An official scientific audit and three certified experts completely dismantled the report you claimed was gospel truth."
+    },
+
+    canc_opi_opereta: {
+      titulo: "PAID PROPAGANDA SCRIPT EXPOSED",
+      motivo: "An internal party PDF leaked showing word-for-word the exact talking points of your latest opinion column."
+    },
+    "LA OPERETA DESCUBIERTA": {
+      titulo: "PAID PROPAGANDA SCRIPT EXPOSED",
+      motivo: "An internal party PDF leaked showing word-for-word the exact talking points of your latest opinion column."
+    },
+
+    canc_opi_dolares: {
+      titulo: "MOCKING THE POOR DURING CRISIS",
+      motivo: "You tweeted 'if you earn local currency it's because you lack hustle' on the very day of a 30% currency crash."
+    },
+    "BURLA ECONOMICA EN PLENA CRISIS": {
+      titulo: "MOCKING THE POOR DURING CRISIS",
+      motivo: "You tweeted 'if you earn local currency it's because you lack hustle' on the very day of a 30% currency crash."
+    },
+
+    // ── FUTBOLERO ────────────────────────────────────────────────────
+    canc_fut_palco_dirigente: {
+      titulo: "PHOTO IN THE VIP BOX",
+      motivo: "A high-def photo surfaced of you hugging the corrupt club president you repeatedly swore you never met."
+    },
+    "FOTOGRAFIADO EN EL PALCO VIP": {
+      titulo: "PHOTO IN THE VIP BOX",
+      motivo: "A high-def photo surfaced of you hugging the corrupt club president you repeatedly swore you never met."
+    },
+
+    canc_fut_socio_rival: {
+      titulo: "RIVAL CLUB MEMBERSHIP CARD",
+      motivo: "Internet sleuths leaked your 20-year-old lifetime membership card for your sworn rival club."
+    },
+    "EL CARNET DE SOCIO RIVAL": {
+      titulo: "RIVAL CLUB MEMBERSHIP CARD",
+      motivo: "Internet sleuths leaked your 20-year-old lifetime membership card for your sworn rival club."
+    },
+
+    canc_fut_violencia_justificada: {
+      titulo: "DEFENDING HOOLIGAN RIOTS",
+      motivo: "You justified the stadium riot and property destruction by claiming 'that is just pure football culture.'"
+    },
+    "JUSTIFICACION DE LA BARRA BRAVA": {
+      titulo: "DEFENDING HOOLIGAN RIOTS",
+      motivo: "You justified the stadium riot and property destruction by claiming 'that is just pure football culture.'"
+    },
+
+    // ── MILITANTE ────────────────────────────────────────────────────
+    canc_poli_tweets_viejos: {
+      titulo: "FANBOYING THE ENEMY'S PAST",
+      motivo: "They unearthed 50 old tweets of you feverishly campaigning for the exact candidate you now call a traitor to the nation."
+    },
+    "MILITANCIA EN EL BANDO OPUESTO": {
+      titulo: "FANBOYING THE ENEMY'S PAST",
+      motivo: "They unearthed 50 old tweets of you feverishly campaigning for the exact candidate you now call a traitor to the nation."
+    },
+
+    canc_poli_cargo_fantasma: {
+      titulo: "THE PHANTOM GOVERNMENT CONTRACT",
+      motivo: "The official government gazette published your appointment as an advisor with an astronomical salary and no fixed hours."
+    },
+    "EL CONTRATO ESTATAL EN NEGRO": {
+      titulo: "THE PHANTOM GOVERNMENT CONTRACT",
+      motivo: "The official government gazette published your appointment as an advisor with an astronomical salary and no fixed hours."
+    },
+
+    canc_poli_privado_vs_publico: {
+      titulo: "ELITE PRIVATE SCHOOL HYPOCRISY",
+      motivo: "While lecturing the feed on defending public education, it leaked that your kids attend the city's most elite private school."
+    },
+    "COLEGIO PRIVADO BILINGUE": {
+      titulo: "ELITE PRIVATE SCHOOL HYPOCRISY",
+      motivo: "While lecturing the feed on defending public education, it leaked that your kids attend the city's most elite private school."
+    },
+
+    // ── HUMOR ────────────────────────────────────────────────────────
+    canc_hum_robachistes: {
+      titulo: "THE SERIAL PUNCHLINE THIEF",
+      motivo: "Three indie comedians posted a thread proving you stole their punchlines verbatim for six straight months."
+    },
+    "EL LADRON DE REMATES": {
+      titulo: "THE SERIAL PUNCHLINE THIEF",
+      motivo: "Three indie comedians posted a thread proving you stole their punchlines verbatim for six straight months."
+    },
+
+    canc_hum_tragedia_chiste: {
+      titulo: "THE CRUEL TRAGEDY JOKE",
+      motivo: "You dropped an edgy, tasteless joke while first responders were still searching for collapse survivors."
+    },
+    "EL REMATE CRUEL": {
+      titulo: "THE CRUEL TRAGEDY JOKE",
+      motivo: "You dropped an edgy, tasteless joke while first responders were still searching for collapse survivors."
+    },
+
+    canc_hum_granja_bots: {
+      titulo: "BOT FARM DASHBOARD LEAK",
+      motivo: "A leaked dashboard revealed you bought 2,000 bots to inflate your metrics and mass-downvote rival comics."
+    },
+    "GRANJA DE BOTS DESCUBIERTA": {
+      titulo: "BOT FARM DASHBOARD LEAK",
+      motivo: "A leaked dashboard revealed you bought 2,000 bots to inflate your metrics and mass-downvote rival comics."
+    },
+
+    // ── PERIODISTA ───────────────────────────────────────────────────
+    canc_per_fake_doc: {
+      titulo: "THE FORGED LEAKED INTEL",
+      motivo: "You published an obvious fake Word doc full of typos crafted by a troll as a 'classified intelligence dossier'."
+    },
+    "EL DOCUMENTO FALSIFICADO": {
+      titulo: "THE FORGED LEAKED INTEL",
+      motivo: "You published an obvious fake Word doc full of typos crafted by a troll as a 'classified intelligence dossier'."
+    },
+
+    canc_per_sobre_enterrado: {
+      titulo: "THE BRIBED SILENCE",
+      motivo: "Chats leaked proving you accepted a $5,000 payoff from Big Pharma to bury an investigation into expired medications."
+    },
+    "LA INVESTIGACION CAJONEADA": {
+      titulo: "THE BRIBED SILENCE",
+      motivo: "Chats leaked proving you accepted a $5,000 payoff from Big Pharma to bury an investigation into expired medications."
+    },
+
+    canc_per_escrache_inocente: {
+      titulo: "FRAMING AN INNOCENT STUDENT",
+      motivo: "You posted an innocent college student's face and national ID, wrongly framing him as a bank heist suspect."
+    },
+    "EL INOCENTE CONFUNDIDO": {
+      titulo: "FRAMING AN INNOCENT STUDENT",
+      motivo: "You posted an innocent college student's face and national ID, wrongly framing him as a bank heist suspect."
+    },
+
+    // ── CRYPTO BRO ───────────────────────────────────────────────────
+    canc_cry_rugpull_sponsor: {
+      titulo: "THE SPONSORED EXCHANGE EXIT SCAM",
+      motivo: "The shady crypto exchange you pushed with your affiliate links rug-pulled and stole your entire community's funds."
+    },
+    "EL EXCHANGE QUE SE FUGO": {
+      titulo: "THE SPONSORED EXCHANGE EXIT SCAM",
+      motivo: "The shady crypto exchange you pushed with your affiliate links rug-pulled and stole your entire community's funds."
+    },
+
+    canc_cry_dump_followers: {
+      titulo: "DUMPING ON YOUR FOLLOWERS",
+      motivo: "On-chain sleuths tracked your wallet and proved you dumped your bags while shouting 'DIAMOND HANDS HODL'."
+    },
+    "DUMP SOBRE TUS SEGUIDORES": {
+      titulo: "DUMPING ON YOUR FOLLOWERS",
+      motivo: "On-chain sleuths tracked your wallet and proved you dumped your bags while shouting 'DIAMOND HANDS HODL'."
+    },
+
+    canc_cry_bot_liquidado: {
+      titulo: "THE COLLAPSED TRADING BOT",
+      motivo: "The 'foolproof' VIP trading bot you sold on subscription liquidated 100% of subscribers on a single red candle."
+    },
+    "EL BOT DE FUTUROS QUE COLAPSO": {
+      titulo: "THE COLLAPSED TRADING BOT",
+      motivo: "The 'foolproof' VIP trading bot you sold on subscription liquidated 100% of subscribers on a single red candle."
+    },
+
+    // ── GAMER / STREAMER ──────────────────────────────────────────────
+    canc_gam_cheating_live: {
+      titulo: "AIMBOT ON CHARITY STREAM",
+      motivo: "Your aimbot cheat menu popped open live on stream in front of 15,000 viewers during a charity tournament grand finals."
+    },
+    "AIMBOT EN TORNEO BENEFICO": {
+      titulo: "AIMBOT ON CHARITY STREAM",
+      motivo: "Your aimbot cheat menu popped open live on stream in front of 15,000 viewers during a charity tournament grand finals."
+    },
+
+    canc_gam_discord_leaks: {
+      titulo: "TOXIC DISCORD CHAT LEAKS",
+      motivo: "A former mod leaked screenshots of you hurling slurs and hate speech at smaller streamers and your own subscribers."
+    },
+    "CHATS TOXICOS DE DISCORD": {
+      titulo: "TOXIC DISCORD CHAT LEAKS",
+      motivo: "A former mod leaked screenshots of you hurling slurs and hate speech at smaller streamers and your own subscribers."
+    },
+
+    canc_gam_casino_menores: {
+      titulo: "PROMOTING ILLEGAL GAMBLING TO MINORS",
+      motivo: "You plugged an unlicensed offshore casino roulette in the middle of a Minecraft stream watched largely by kids."
+    },
+    "PROMO DE CASINO ILEGAL A MENORES": {
+      titulo: "PROMOTING ILLEGAL GAMBLING TO MINORS",
+      motivo: "You plugged an unlicensed offshore casino roulette in the middle of a Minecraft stream watched largely by kids."
+    },
+
+    // ── CONSPIRANOICO ────────────────────────────────────────────────
+    canc_con_fuente_falsa: {
+      titulo: "THE 14-YEAR-OLD PENTAGON SOURCE",
+      motivo: "The 'retired NATO general' you cited in all your viral threads turned out to be an edgy 14-year-old troll on Discord."
+    },
+    "LA FUENTE PENTAGONO DE 14 ANOS": {
+      titulo: "THE 14-YEAR-OLD PENTAGON SOURCE",
+      motivo: "The 'retired NATO general' you cited in all your viral threads turned out to be an edgy 14-year-old troll on Discord."
+    },
+
+    canc_con_antena_carton: {
+      titulo: "CARDBOARD ANTI-5G SHIELD SCAM",
+      motivo: "A lab dismantled your $50 'quantum 5G blocker' and showed it was just corrugated cardboard wrapped in tinfoil."
+    },
+    "EL FILTRO ANTI-5G DE CARTON": {
+      titulo: "CARDBOARD ANTI-5G SHIELD SCAM",
+      motivo: "A lab dismantled your $50 'quantum 5G blocker' and showed it was just corrugated cardboard wrapped in tinfoil."
+    },
+
+    canc_con_acoso_medico: {
+      titulo: "DOCTOR HARASSMENT CRUSADE",
+      motivo: "You sicced your mob of followers on an ER doctor, falsely claiming he was implanting microchips into patients."
+    },
+    "ESCRACHE AL MEDICO DE GUARDIA": {
+      titulo: "DOCTOR HARASSMENT CRUSADE",
+      motivo: "You sicced your mob of followers on an ER doctor, falsely claiming he was implanting microchips into patients."
+    },
+
+    // ── INFLUENCER ───────────────────────────────────────────────────
+    canc_inf_sorteo_trucho: {
+      titulo: "RIGGED FAMILY GIVEAWAY",
+      motivo: "The lucky winner of your luxury resort vacation and iPhone turned out to be your partner's first cousin on a burner account."
+    },
+    "EL SORTEO PARA LA FAMILIA": {
+      titulo: "RIGGED FAMILY GIVEAWAY",
+      motivo: "The lucky winner of your luxury resort vacation and iPhone turned out to be your partner's first cousin on a burner account."
+    },
+
+    canc_inf_maltrato_mozos: {
+      titulo: "SCREAMING AT RESTAURANT STAFF",
+      motivo: "A viral video caught you screeching at waitstaff because they refused to give you and your 8 friends a free meal for 'exposure'."
+    },
+    "AUDIO DE MALTRATO POR CANJE": {
+      titulo: "SCREAMING AT RESTAURANT STAFF",
+      motivo: "A viral video caught you screeching at waitstaff because they refused to give you and your 8 friends a free meal for 'exposure'."
+    },
+
+    canc_inf_crema_toxica: {
+      titulo: "THE CAUSTIC SKINCARE SERUM",
+      motivo: "The miracle skincare serum you promoted with discount codes gave hundreds of followers severe chemical burns."
+    },
+    "CREMA FACIAL CON QUEMADURAS": {
+      titulo: "THE CAUSTIC SKINCARE SERUM",
+      motivo: "The miracle skincare serum you promoted with discount codes gave hundreds of followers severe chemical burns."
+    },
+
+    // ── ONLYFANS ─────────────────────────────────────────────────────
+    canc_of_callcenter_chat: {
+      titulo: "THE NIGHT-SHIFT CHATBOT CALL CENTER",
+      motivo: "Screenshots proved the $20 'intimate, personal' DMs were actually being answered by night-shift call center temps."
+    },
+    "EL CALL CENTER DEL CHAT VIP": {
+      titulo: "THE NIGHT-SHIFT CHATBOT CALL CENTER",
+      motivo: "Screenshots proved the $20 'intimate, personal' DMs were actually being answered by night-shift call center temps."
+    },
+
+    canc_of_datos_filtrados: {
+      titulo: "SUBSCRIBER IDENTITY LEAK",
+      motivo: "A security flaw in your link page leaked the real names and corporate emails of high-profile subscribers."
+    },
+    "FILTRACION DE DATOS DE COMPRADORES": {
+      titulo: "SUBSCRIBER IDENTITY LEAK",
+      motivo: "A security flaw in your link page leaked the real names and corporate emails of high-profile subscribers."
+    },
+
+    canc_of_reciclado_fotos: {
+      titulo: "THE RECYCLED INSTAGRAM SET",
+      motivo: "You charged $100 for an 'exclusive vault set' that was just free, recycled story photos from 2021."
+    },
+    "EL SET 'EXCLUSIVO' DE INSTAGRAM": {
+      titulo: "THE RECYCLED INSTAGRAM SET",
+      motivo: "You charged $100 for an 'exclusive vault set' that was just free, recycled story photos from 2021."
+    },
+
+    // ── TECHIE ───────────────────────────────────────────────────────
+    canc_tec_wrapper_estafa: {
+      titulo: "THE $50 API WRAPPER SCAM",
+      motivo: "Engineers decompiled your SaaS and revealed it was just a 5-line OpenAI API wrapper with a blue CSS button."
+    },
+    "EL WRAPPER QUE COBRABA $50": {
+      titulo: "THE $50 API WRAPPER SCAM",
+      motivo: "Engineers decompiled your SaaS and revealed it was just a 5-line OpenAI API wrapper with a blue CSS button."
+    },
+
+    canc_tec_passwords_leak: {
+      titulo: "PASSWORDS STORED IN PLAINTEXT",
+      motivo: "A data breach revealed your startup stored plaintext passwords for 50 enterprise clients in an unencrypted table."
+    },
+    "CONTRASENAS EN TEXTO PLANO": {
+      titulo: "PASSWORDS STORED IN PLAINTEXT",
+      motivo: "A data breach revealed your startup stored plaintext passwords for 50 enterprise clients in an unencrypted table."
+    },
+
+    canc_tec_90horas_semanales: {
+      titulo: "THE 90-HOUR WORKWEEK MANIFESTO",
+      motivo: "You posted a viral thread claiming 'devs who sleep more than 4 hours or have families lack true founder dedication.'"
+    },
+    "EL MANIFIESTO DE ESCLAVITUD": {
+      titulo: "THE 90-HOUR WORKWEEK MANIFESTO",
+      motivo: "You posted a viral thread claiming 'devs who sleep more than 4 hours or have families lack true founder dedication.'"
+    },
+
+    // ── PODCASTER ────────────────────────────────────────────────────
+    canc_pod_terraplanista: {
+      titulo: "GIVING A MIC TO DELUSION",
+      motivo: "You gave a 3-hour prime-time platform to an unhinged guest claiming gravity is a Freemason hoax."
+    },
+    "MICROFONO AL DELIRIO": {
+      titulo: "GIVING A MIC TO DELUSION",
+      motivo: "You gave a 3-hour prime-time platform to an unhinged guest claiming gravity is a Freemason hoax."
+    },
+
+    canc_pod_preguntas_pactadas: {
+      titulo: "THE SCRIPTED PUPPET INTERVIEW",
+      motivo: "Unedited pre-roll video leaked showing a corrupt politician crossing off your questions with a red pen."
+    },
+    "LA ENTREVISTA GUIONADA": {
+      titulo: "THE SCRIPTED PUPPET INTERVIEW",
+      motivo: "Unedited pre-roll video leaked showing a corrupt politician crossing off your questions with a red pen."
+    },
+
+    canc_pod_clip_mutilado: {
+      titulo: "THE DECEPTIVELY EDITED CLIP",
+      motivo: "You maliciously spliced a scientist's quote to make it seem like medicine is useless just to farm TikTok views."
+    },
+    "EL CLIP DESHONESTO": {
+      titulo: "THE DECEPTIVELY EDITED CLIP",
+      motivo: "You maliciously spliced a scientist's quote to make it seem like medicine is useless just to farm TikTok views."
+    }
+  },
+
+  ja: {
+    // ── GENERAL CANCELLATIONS ─────────────────────────────────────────
+    canc_gen_medida_gobierno: {
+      titulo: "大炎上政策の全力擁護",
+      motivo: "国民の9割がブチギレている政府の悪法を熱烈に擁護してTLを敵に回した。"
+    },
+    "APOYO A MEDIDA IMPOPULAR": {
+      titulo: "大炎上政策の全力擁護",
+      motivo: "国民の9割がブチギレている政府の悪法を熱烈に擁護してTLを敵に回した。"
+    },
+
+    canc_gen_alabar_persona: {
+      titulo: "過去の黒歴史ツイート発掘",
+      motivo: "有罪判決を受けたばかりの凶悪犯罪者を大絶賛していた2017年のポストを掘り起こされた。"
+    },
+    "EL TWEET VIEJO INCORRECTO": {
+      titulo: "過去の黒歴史ツイート発掘",
+      motivo: "有罪判決を受けたばかりの凶悪犯罪者を大絶賛していた2017年のポストを掘り起こされた。"
+    },
+
+    canc_gen_like_filtrado: {
+      titulo: "深夜3時の誤爆いいね事件",
+      motivo: "とんでもないヘイト投稿にうっかり「いいね」を押してしまい、魚拓アカウントに晒し上げられた。"
+    },
+    "EL LIKE COMPROMETEDOR A LAS 3 AM": {
+      titulo: "深夜3時の誤爆いいね事件",
+      motivo: "とんでもないヘイト投稿にうっかり「いいね」を押してしまい、魚拓アカウントに晒し上げられた。"
+    },
+
+    canc_gen_tragedia_marketing: {
+      titulo: "大惨事の便乗ステマ",
+      motivo: "大災害のトレンドハッシュタグに便乗して、宣伝リンクや不謹慎な自分語りをぶち込んだ。"
+    },
+    "MARKETING EN MEDIO DE LA TRAGEDIA": {
+      titulo: "大惨事の便乗ステマ",
+      motivo: "大災害のトレンドハッシュタグに便乗して、宣伝リンクや不謹慎な自分語りをぶち込んだ。"
+    },
+
+    canc_gen_audio_filtrado: {
+      titulo: "裏の毒舌ボイス流出",
+      motivo: "ファンを「養分」呼ばわりしスポンサー企業を小馬鹿にするプライベート音声が全世界に流出した。"
+    },
+    "AUDIO PRIVADO FILTRADO": {
+      titulo: "裏の毒舌ボイス流出",
+      motivo: "ファンを「養分」呼ばわりしスポンサー企業を小馬鹿にするプライベート音声が全世界に流出した。"
+    },
+
+    canc_gen_estafa_piramidal: {
+      titulo: "ポンジスキームのステマ",
+      motivo: "怪しい投資プラットフォームを激推しした直後に運営が夜逃げし、フォロワーの貯金が全滅した。"
+    },
+    "LA PROMO DE LA ESTAFA": {
+      titulo: "ポンジスキームのステマ",
+      motivo: "怪しい投資プラットフォームを激推しした直後に運営が夜逃げし、フォロワーの貯金が全滅した。"
+    },
+
+    canc_gen_plagio_descubierto: {
+      titulo: "一言一句まるパクリ発覚",
+      motivo: "今週バズり散らかした解説スレッドが、2022年の海外ツイートの直訳コピペであることが暴かれた。"
+    },
+    "PLAGIO PALABRA POR PALABRA": {
+      titulo: "一言一句まるパクリ発覚",
+      motivo: "今週バズり散らかした解説スレッドが、2022年の海外ツイートの直訳コピペであることが暴かれた。"
+    },
+
+    canc_gen_clasismo_meme: {
+      titulo: "上級国民の選民思想ポスト",
+      motivo: "満員電車や庶民の生活習慣を見下すようなツイートをして、猛烈な階級闘争の標的にされた。"
+    },
+    "EL COMENTARIO DESUBICADO": {
+      titulo: "上級国民の選民思想ポスト",
+      motivo: "満員電車や庶民の生活習慣を見下すようなツイートをして、猛烈な階級闘争の標的にされた。"
+    },
+
+    // ── OPINÓLOGO ────────────────────────────────────────────────────
+    canc_opi_peritaje: {
+      titulo: "専門家による公開処刑ファクトチェック",
+      motivo: "「絶対の真実」と豪語していた調査報告書が、公的機関と3人の本職研究者に完膚なきまで論破された。"
+    },
+    "DESMENTIDA TECNICA EN VIVO": {
+      titulo: "専門家による公開処刑ファクトチェック",
+      motivo: "「絶対の真実」と豪語していた調査報告書が、公的機関と3人の本職研究者に完膚なきまで論破された。"
+    },
+
+    canc_opi_opereta: {
+      titulo: "政党の工作マニュアル流出",
+      motivo: "独自の見解ぶっていた長文コラムが、ある政党の内部工作マニュアルと一字一句同じだったことがバレた。"
+    },
+    "LA OPERETA DESCUBIERTA": {
+      titulo: "政党の工作マニュアル流出",
+      motivo: "独自の見解ぶっていた長文コラムが、ある政党の内部工作マニュアルと一字一句同じだったことがバレた。"
+    },
+
+    canc_opi_dolares: {
+      titulo: "大不況下での貧困層煽り",
+      motivo: "通貨が30％暴落した当日に「自国通貨で稼いでる奴は努力不足」と煽り倒してTL全員をブチギレさせた。"
+    },
+    "BURLA ECONOMICA EN PLENA CRISIS": {
+      titulo: "大不況下での貧困層煽り",
+      motivo: "通貨が30％暴落した当日に「自国通貨で稼いでる奴は努力不足」と煽り倒してTL全員をブチギレさせた。"
+    },
+
+    // ── FUTBOLERO ────────────────────────────────────────────────────
+    canc_fut_palco_dirigente: {
+      titulo: "汚職会長とのVIP席ハグ写真",
+      motivo: "「会ったこともない」と断言していたクラブの腐敗会長と、VIP席で親しげに抱き合う超高画質写真が流出した。"
+    },
+    "FOTOGRAFIADO EN EL PALCO VIP": {
+      titulo: "汚職会長とのVIP席ハグ写真",
+      motivo: "「会ったこともない」と断言していたクラブの腐敗会長と、VIP席で親しげに抱き合う超高画質写真が流出した。"
+    },
+
+    canc_fut_socio_rival: {
+      titulo: "宿敵クラブのファンクラブ会員証流出",
+      motivo: "生涯の宿敵であるライバルチームの終身有料会員カード（20歳当時の名義）がネットに晒された。"
+    },
+    "EL CARNET DE SOCIO RIVAL": {
+      titulo: "宿敵クラブのファンクラブ会員証流出",
+      motivo: "生涯の宿敵であるライバルチームの終身有料会員カード（20歳当時の名義）がネットに晒された。"
+    },
+
+    canc_fut_violencia_justificada: {
+      titulo: "フーリガンの暴動擁護",
+      motivo: "スタジアム外でのサポーターの暴動や破壊活動を「これがサッカの熱狂という文化だ」と正当化して告発された。"
+    },
+    "JUSTIFICACION DE LA BARRA BRAVA": {
+      titulo: "フーリガンの暴動擁護",
+      motivo: "スタジアム外でのサポーターの暴動や破壊活動を「これがサッカの熱狂という文化だ」と正当化して告発された。"
+    },
+
+    // ── MILITANTE ────────────────────────────────────────────────────
+    canc_poli_tweets_viejos: {
+      titulo: "敵対候補への過去の熱烈応援ツイート",
+      motivo: "現在「国家の敵」と罵倒している対立候補を、熱狂的に支持・応援していた昔のツイートが50件発掘された。"
+    },
+    "MILITANCIA EN EL BANDO OPUESTO": {
+      titulo: "敵対候補への過去の熱烈応援ツイート",
+      motivo: "現在「国家の敵」と罵倒している対立候補を、熱狂的に支持・応援していた昔のツイートが50件発掘された。"
+    },
+
+    canc_poli_cargo_fantasma: {
+      titulo: "公金の幽霊天下り顧問契約",
+      motivo: "官報の記載から、勤務実態ゼロの「広報アドバイザー」として法外な血税を受け取っていたことが暴露された。"
+    },
+    "EL CONTRATO ESTATAL EN NEGRO": {
+      titulo: "公金の幽霊天下り顧問契約",
+      motivo: "官報の記載から、勤務実態ゼロの「広報アドバイザー」として法外な血税を受け取っていたことが暴露された。"
+    },
+
+    canc_poli_privado_vs_publico: {
+      titulo: "公立推しのお受験セレブ偽善",
+      motivo: "「公立教育を守れ」と説教を垂れ流す裏で、自分の子供を超エリート私立校に通わせていたことがバレた。"
+    },
+    "COLEGIO PRIVADO BILINGUE": {
+      titulo: "公立推しのお受験セレブ偽善",
+      motivo: "「公立教育を守れ」と説教を垂れ流す裏で、自分の子供を超エリート私立校に通わせていたことがバレた。"
+    },
+
+    // ── HUMOR ────────────────────────────────────────────────────────
+    canc_hum_robachistes: {
+      titulo: "常習的パクツイ芸人の断罪",
+      motivo: "無名のお笑い芸人3人から、半年間にわたりネタを一言一句パクり続けていた比較スレッドを叩きつけられた。"
+    },
+    "EL LADRON DE REMATES": {
+      titulo: "常習的パクツイ芸人の断罪",
+      motivo: "無名のお笑い芸人3人から、半年間にわたりネタを一言一句パクり続けていた比較スレッドを叩きつけられた。"
+    },
+
+    canc_hum_tragedia_chiste: {
+      titulo: "生き埋め事故をネタにした悪趣味ジョーク",
+      motivo: "ビルの倒壊現場で救助活動が続いている最中に、悪質な不謹慎ギャグを放って大炎上した。"
+    },
+    "EL REMATE CRUEL": {
+      titulo: "生き埋め事故をネタにした悪趣味ジョーク",
+      motivo: "ビルの倒壊現場で救助活動が続いている最中に、悪質な不謹慎ギャグを放って大炎上した。"
+    },
+
+    canc_hum_granja_bots: {
+      titulo: "海外ボット業者コントロールパネル流出",
+      motivo: "2,000体の水増しボットを購入していいねを自作自演し、ライバル垢を通報爆撃していた管理画面が流出した。"
+    },
+    "GRANJA DE BOTS DESCUBIERTA": {
+      titulo: "海外ボット業者コントロールパネル流出",
+      motivo: "2,000体の水増しボットを購入していいねを自作自演し、ライバル垢を通報爆撃していた管理画面が流出した。"
+    },
+
+    // ── PERIODISTA ───────────────────────────────────────────────────
+    canc_per_fake_doc: {
+      titulo: "誤字だらけの偽造機密文書スクープ",
+      motivo: "ネットの釣り師が作った誤字だらけのWordファイルを「政府の極秘諜報ファイル」として大々的に誤報した。"
+    },
+    "EL DOCUMENTO FALSIFICADO": {
+      titulo: "誤字だらけの偽造機密文書スクープ",
+      motivo: "ネットの釣り師が作った誤字だらけのWordファイルを「政府の極秘諜報ファイル」として大々的に誤報した。"
+    },
+
+    canc_per_sobre_enterrado: {
+      titulo: "製薬会社からの裏金もみ消し疑惑",
+      motivo: "期限切れ薬品の不正告発をもみ消す見返りに、製薬会社から5,000ドルの裏金を受け取ったLINEが流出した。"
+    },
+    "LA INVESTIGACION CAJONEADA": {
+      titulo: "製薬会社からの裏金もみ消し疑惑",
+      motivo: "期限切れ薬品の不正告発をもみ消す見返りに、製薬会社から5,000ドルの裏金を受け取ったLINEが流出した。"
+    },
+
+    canc_per_escrache_inocente: {
+      titulo: "無実の大学生を強盗犯に仕立て上げ晒し",
+      motivo: "まったく無関係な男子大学生の顔写真と身分証明書を晒し、「銀行強盗の主犯」とデマを拡散した。"
+    },
+    "EL INOCENTE CONFUNDIDO": {
+      titulo: "無実の大学生を強盗犯に仕立て上げ晒し",
+      motivo: "まったく無関係な男子大学生の顔写真と身分証明書を晒し、「銀行強盗の主犯」とデマを拡散した。"
+    },
+
+    // ── CRYPTO BRO ───────────────────────────────────────────────────
+    canc_cry_rugpull_sponsor: {
+      titulo: "紹介した暗号資産取引所の持ち逃げ",
+      motivo: "アフィリエイトリンクで熱心に勧誘していた怪しい取引所が突如閉鎖し、フォロワーの資産を持ち逃げした。"
+    },
+    "EL EXCHANGE QUE SE FUGO": {
+      titulo: "紹介した暗号資産取引所の持ち逃げ",
+      motivo: "アフィリエイトリンクで熱心に勧誘していた怪しい取引所が突如閉鎖し、フォロワーの資産を持ち逃げした。"
+    },
+
+    canc_cry_dump_followers: {
+      titulo: "信者にガチホさせながら裏で全売り",
+      motivo: "「ダイヤモンドハンドでガチホしろ」と煽りながら、裏で自分のウォレットから全コインを売り抜けていた。"
+    },
+    "DUMP SOBRE TUS SEGUIDORES": {
+      titulo: "信者にガチホさせながら裏で全売り",
+      motivo: "「ダイヤモンドハンドでガチホしろ」と煽りながら、裏で自分のウォレットから全コインを売り抜けていた。"
+    },
+
+    canc_cry_bot_liquidado: {
+      titulo: "有料自動売買ボットの全ロスカット",
+      motivo: "「月利100％確約」と宣伝していた有料サインツールが、たった一本の陰線で利用者の資産を全損させた。"
+    },
+    "EL BOT DE FUTUROS QUE COLAPSO": {
+      titulo: "有料自動売買ボットの全ロスカット",
+      motivo: "「月利100％確約」と宣伝していた有料サインツールが、たった一本の陰線で利用者の資産を全損させた。"
+    },
+
+    // ── GAMER / STREAMER ──────────────────────────────────────────────
+    canc_gam_cheating_live: {
+      titulo: "チャリティ大会でのオートAIM誤爆",
+      motivo: "同接1万5千人のチャリティ大会決勝中、画面上にチートツールの設定画面がモロ映りして即失格になった。"
+    },
+    "AIMBOT EN TORNEO BENEFICO": {
+      titulo: "チャリティ大会でのオートAIM誤爆",
+      motivo: "同接1万5千人のチャリティ大会決勝中、画面上にチートツールの設定画面がモロ映りして即失格になった。"
+    },
+
+    canc_gam_discord_leaks: {
+      titulo: "裏Discordでの暴言・差別チャット流出",
+      motivo: "元モデレーターによって、底辺配信者やファンを有料サブスク会員の裏鯖で差別用語で罵倒していたログが流出した。"
+    },
+    "CHATS TOXICOS DE DISCORD": {
+      titulo: "裏Discordでの暴言・差別チャット流出",
+      motivo: "元モデレーターによって、底辺配信者やファンを有料サブスク会員の裏鯖で差別用語で罵倒していたログが流出した。"
+    },
+
+    canc_gam_casino_menores: {
+      titulo: "子供向け配信での違法カジノ勧誘",
+      motivo: "キッズ視聴者が大半のマイクラ配信の合間に、違法オンラインカジノのスロット宣伝をぶち込んで大問題になった。"
+    },
+    "PROMO DE CASINO ILEGAL A MENORES": {
+      titulo: "子供向け配信での違法カジノ勧誘",
+      motivo: "キッズ視聴者が大半のマイクラ配信の合間に、違法オンラインカジノのスロット宣伝をぶち込んで大問題になった。"
+    },
+
+    // ── CONSPIRANOICO ────────────────────────────────────────────────
+    canc_con_fuente_falsa: {
+      titulo: "「元NATO将軍」の情報源が中学生だった件",
+      motivo: "全スレッドで「極秘情報源の元NATO将軍」と崇めていた人物が、地方のイタズラ中学生だったことが判明した。"
+    },
+    "LA FUENTE PENTAGONO DE 14 ANOS": {
+      titulo: "「元NATO将軍」の情報源が中学生だった件",
+      motivo: "全スレッドで「極秘情報源の元NATO将軍」と崇めていた人物が、地方のイタズラ中学生だったことが判明した。"
+    },
+
+    canc_con_antena_carton: {
+      titulo: "段ボールとアルミホイルの「5G遮断器」",
+      motivo: "信者に高額で売りつけていた「量子力学的5G電磁波遮断シール」を分解され、ただのアルミホイルと判明した。"
+    },
+    "EL FILTRO ANTI-5G DE CARTON": {
+      titulo: "段ボールとアルミホイルの「5G遮断器」",
+      motivo: "信者に高額で売りつけていた「量子力学的5G電磁波遮断シール」を分解され、ただのアルミホイルと判明した。"
+    },
+
+    canc_con_acoso_medico: {
+      titulo: "当直医への電凸・集団嫌がらせ教唆",
+      motivo: "「マイクロチップを埋め込んでいる」と妄想を抱き、公立病院の救急当直医へ信者をけしかけて電話攻撃させた。"
+    },
+    "ESCRACHE AL MEDICO DE GUARDIA": {
+      titulo: "当直医への電凸・集団嫌がらせ教唆",
+      motivo: "「マイクロチップを埋め込んでいる」と妄想を抱き、公立病院の救急当直医へ信者をけしかけて電話攻撃させた。"
+    },
+
+    // ── INFLUENCER ───────────────────────────────────────────────────
+    canc_inf_sorteo_trucho: {
+      titulo: "身内当選のヤラセ懸賞プレキャン",
+      motivo: "豪華ハワイ旅行と最新iPhoneのプレゼント企画で、当選者が彼氏の従姉妹の作りたて捨て垢だったことがバレた。"
+    },
+    "EL SORTEO PARA LA FAMILIA": {
+      titulo: "身内当選のヤラセ懸賞プレキャン",
+      motivo: "豪華ハワイ旅行と最新iPhoneのプレゼント企画で、当選者が彼氏の従姉妹の作りたて捨て垢だったことがバレた。"
+    },
+
+    canc_inf_maltrato_mozos: {
+      titulo: "タダ飯要求を断られて店員にブチギレ",
+      motivo: "「PRしてやるから8人前無料にしろ」という要求を断られ、ウエイトレスに怒鳴り散らしている動画が晒された。"
+    },
+    "AUDIO DE MALTRATO POR CANJE": {
+      titulo: "タダ飯要求を断られて店員にブチギレ",
+      motivo: "「PRしてやるから8人前無料にしろ」という要求を断られ、ウエイトレスに怒鳴り散らしている動画が晒された。"
+    },
+
+    canc_inf_crema_toxica: {
+      titulo: "PRした美容液でフォロワーが化学火傷",
+      motivo: "特別クーポンでゴリ押ししていた美白美容液を使った信者数百人が、顔面に重度のアレルギー火傷を負った。"
+    },
+    "CREMA FACIAL CON QUEMADURAS": {
+      titulo: "PRした美容液でフォロワーが化学火傷",
+      motivo: "特別クーポンでゴリ押ししていた美白美容液を使った信者数百人が、顔面に重度のアレルギー火傷を負った。"
+    },
+
+    // ── ONLYFANS ─────────────────────────────────────────────────────
+    canc_of_callcenter_chat: {
+      titulo: "裏垢VIPチャットの外注コールセンター",
+      motivo: "1通20ドルの「親密なプライベートDM」を、裏で夜勤のコールセンターのバイト男3人が返信していたことが流出した。"
+    },
+    "EL CALL CENTER DEL CHAT VIP": {
+      titulo: "裏垢VIPチャットの外注コールセンター",
+      motivo: "1通20ドルの「親密なプライベートDM」を、裏で夜勤のコールセンターのバイト男3人が返信していたことが流出した。"
+    },
+
+    canc_of_datos_filtrados: {
+      titulo: "VIP購入者の本名・会社メール流出",
+      motivo: "リンク集の設定ミスで、企業役員や有名人を含む有料会員の実名と社用メールアドレスがネット上に丸見えになった。"
+    },
+    "FILTRACION DE DATOS DE COMPRADORES": {
+      titulo: "VIP購入者の本名・会社メール流出",
+      motivo: "リンク集の設定ミスで、企業役員や有名人を含む有料会員の実名と社用メールアドレスがネット上に丸見えになった。"
+    },
+
+    canc_of_reciclado_fotos: {
+      titulo: "過去ストーリー再利用のぼったくり写真集",
+      motivo: "100ドルで販売した「完全限定撮り下ろし」が、2021年にインスタの無料ストーリーに上げていた写真のコピペだった。"
+    },
+    "EL SET 'EXCLUSIVO' DE INSTAGRAM": {
+      titulo: "過去ストーリー再利用のぼったくり写真集",
+      motivo: "100ドルで販売した「完全限定撮り下ろし」が、2021年にインスタの無料ストーリーに上げていた写真のコピペだった。"
+    },
+
+    // ── TECHIE ───────────────────────────────────────────────────────
+    canc_tec_wrapper_estafa: {
+      titulo: "月額50ドルのゴミAPIラッパーSaaS",
+      motivo: "「独自開発AI」と称して月50ドル取っていたツールが、OpenAIのAPIに青いボタンを付けただけのペラペラツールと暴かれた。"
+    },
+    "EL WRAPPER QUE COBRABA $50": {
+      titulo: "月額50ドルのゴミAPIラッパーSaaS",
+      motivo: "「独自開発AI」と称して月50ドル取っていたツールが、OpenAIのAPIに青いボタンを付けただけのペラペラツールと暴かれた。"
+    },
+
+    canc_tec_passwords_leak: {
+      titulo: "平文パスワードのずさん管理流出",
+      motivo: "セキュリティ事故により、法人顧客50社の生パスワードを暗号化もせずプレーンテキストで保存していたことが発覚。"
+    },
+    "CONTRASENAS EN TEXTO PLANO": {
+      titulo: "平文パスワードのずさん管理流出",
+      motivo: "セキュリティ事故により、法人顧客50社の生パスワードを暗号化もせずプレーンテキストで保存していたことが発覚。"
+    },
+
+    canc_tec_90horas_semanales: {
+      titulo: "「睡眠4時間以上のエンジニアは甘え」スレッド",
+      motivo: "「4時間以上寝る奴や家庭を優先する開発者に未来はない」とブラック労働を狂気的に礼賛して大炎上。"
+    },
+    "EL MANIFIESTO DE ESCLAVITUD": {
+      titulo: "「睡眠4時間以上のエンジニアは甘え」スレッド",
+      motivo: "「4時間以上寝る奴や家庭を優先する開発者に未来はない」とブラック労働を狂気的に礼賛して大炎上。"
+    },
+
+    // ── PODCASTER ────────────────────────────────────────────────────
+    canc_pod_terraplanista: {
+      titulo: "電波系トンデモ陰謀論者の3時間特番",
+      motivo: "「重力はフリーメイソンの捏造」と主張するガチの電波系人物に3時間マイクを渡し、怪電波を垂れ流して大炎上。"
+    },
+    "MICROFONO AL DELIRIO": {
+      titulo: "電波系トンデモ陰謀論者の3時間特番",
+      motivo: "「重力はフリーメイソンの捏造」と主張するガチの電波系人物に3時間マイクを渡し、怪電波を垂れ流して大炎上。"
+    },
+
+    canc_pod_preguntas_pactadas: {
+      titulo: "事前すり合わせの台本通りヤラセ対談",
+      motivo: "「台本なしのガチ対談」と謳いながら、悪徳政治家に赤ペンで質問を検閲されている舞台裏動画が流出した。"
+    },
+    "LA ENTREVISTA GUIONADA": {
+      titulo: "事前すり合わせの台本通りヤラセ対談",
+      motivo: "「台本なしのガチ対談」と謳いながら、悪徳政治家に赤ペンで質問を検閲されている舞台裏動画が流出した。"
+    },
+
+    canc_pod_clip_mutilado: {
+      titulo: "切り抜き歪曲によるデマ拡散",
+      motivo: "TikTokでバズるためだけに、医学博士の発言を悪意を持ってツギハギ編集し「薬は毒」と切り抜いて法的措置を取られた。"
+    },
+    "EL CLIP DESHONESTO": {
+      titulo: "切り抜き歪曲によるデマ拡散",
+      motivo: "TikTokでバズるためだけに、医学博士の発言を悪意を持ってツギハギ編集し「薬は毒」と切り抜いて法的措置を取られた。"
+    }
+  }
+};
+
+/**
+ * Helper: Obtiene la versión localizada de una carta de historia (Story Card)
+ * @param {string} cardId
+ * @param {string} lang ('en' | 'ja')
+ * @returns {{ titulo: string, texto: string, replies: Array } | null}
+ */
+function _normTitle(s) {
+  if (!s || typeof s !== 'string') return '';
+  return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+}
+
+const TITLE_TO_STORY_ID_MAP = {
+  "grabando el especial": "gamer_act",
+  "la nave en el garage": "gamer_01",
+  "asado con el 9": "gamer_02",
+  "papeles del juzgado": "gamer_03",
+  "reglas del juego": "gamer_cierre_2026",
+  "trailer en el garage": "podcaster_act",
+  "el chisme del cafe": "podcaster_01",
+  "repercusiones del episodio": "podcaster_02",
+  "dilema de produccion": "podcaster_03",
+  "200 episodios": "podcaster_cierre_2026",
+  "manifestando abundancia": "influencer_act",
+  "extranando en silencio": "influencer_01",
+  "filtros y apariencias": "influencer_02",
+  "energias y noticias": "influencer_03",
+  "nueva rutina matutina": "influencer_cierre_2026",
+  "rumores en la city": "techie_act",
+  "la bomba por estallar": "techie_01",
+  "el corralito cripto": "techie_02",
+  "el manifiesto decodificado": "techie_03",
+  "serie a cerrada": "techie_cierre_2026",
+  "el chiste del auto": "humor_act",
+  "chiste sobre hackers": "humor_01",
+  "victima del corralito cripto": "humor_02",
+  "risas con sabor amargo": "humor_03",
+  "el tweet viejo": "humor_cierre_2026",
+  "rastros en la blockchain": "conspiranoico_act",
+  "el origen ignorado": "conspiranoico_04",
+  "la advertencia de comando fierro": "conspiranoico_02",
+  "de delaware a los terrenos": "conspiranoico_03",
+  "el anuncio en el congreso": "conspiranoico_cierre_2026",
+  "la pista del gobierno": "periodista_act",
+  "persiguiendo la fuente": "periodista_02",
+  "el hilo de la verdad": "periodista_04",
+  "el organigrama de la llc": "periodista_03",
+  "el caso que cambio mi carrera": "periodista_cierre_2026",
+  "conexion en la bombonera": "futbolero_act",
+  "el auto frente al ministerio": "futbolero_01",
+  "la charla con el periodista": "futbolero_02",
+  "rumores en el palco": "futbolero_03",
+  "20 anos de socio": "futbolero_cierre_2026",
+  "el rumor y las suscripciones": "onlyfans_act",
+  "basta de acoso": "onlyfans_01",
+  "la verdad sobre el streamer": "onlyfans_02",
+  "capturas y disculpas": "onlyfans_03",
+  "cafe de especialidad": "onlyfans_cierre_2026",
+  "la empresa en delaware": "cryptobro_act",
+  "riesgos del corazon": "cryptobro_01",
+  "la confesion de la llc": "cryptobro_02",
+  "firmas en soledad": "cryptobro_03",
+  "dos anos despues": "cryptobro_cierre_2026",
+  "el recuerdo amargo": "militante_act",
+  "la critica al metodo": "militante_01",
+  "el curro de las viviendas": "militante_02",
+  "el precio del silencio": "militante_03",
+  "los terrenos vacios": "militante_04",
+  "el desencanto final": "militante_cierre_2026",
+  "reescribiendo la historia": "opinologo_act",
+  "la parte del amor": "opinologo_01",
+  "la distancia del tiempo": "opinologo_02",
+  "el sueno de comodoro py": "opinologo_03",
+  "la anatomia del olvido": "opinologo_04",
+  "el veredicto final": "opinologo_cierre_2026"
+};
+
+function getLocalizedStoryCard(cardOrId, lang) {
+  if (!lang || lang === 'es' || !cardOrId) return null;
+  const dict = STORY_CARDS_TRANSLATIONS[lang];
+  if (!dict) return null;
+
+  let key = null;
+  if (typeof cardOrId === 'object') {
+    key = cardOrId.storyId || cardOrId.contradiccion_id || cardOrId.id;
+    if (key && dict[key]) return dict[key];
+    if (cardOrId.titulo) {
+      const mappedId = TITLE_TO_STORY_ID_MAP[_normTitle(cardOrId.titulo)];
+      if (mappedId && dict[mappedId]) return dict[mappedId];
+      if (dict[cardOrId.titulo]) return dict[cardOrId.titulo];
+    }
+    return null;
+  }
+
+  // cardOrId es un string (ID o título)
+  if (dict[cardOrId]) return dict[cardOrId];
+  const mappedId = TITLE_TO_STORY_ID_MAP[_normTitle(cardOrId)];
+  if (mappedId && dict[mappedId]) return dict[mappedId];
+
+  return null;
+}
+
+/**
+ * Helper: Obtiene un incidente de cancelación con sus campos 'titulo' y 'motivo' localizados
+ * @param {object} canc
+ * @param {string} lang ('en' | 'ja')
+ * @returns {object}
+ */
+function getLocalizedCancellation(canc, lang) {
+  if (!canc) return canc;
+  if (!lang || lang === 'es') return canc;
+  const dict = CANCELLATION_INCIDENTS_TRANSLATIONS[lang];
+  if (!dict) return canc;
+
+  const trans = dict[canc.id] || (canc.titulo && dict[canc.titulo]);
+  if (trans) {
+    return {
+      ...canc,
+      titulo: trans.titulo || canc.titulo,
+      motivo: trans.motivo || canc.motivo
+    };
+  }
+  return canc;
+}
+
+// Registro global en navegador si aplica
+if (typeof window !== 'undefined') {
+  window.STORY_CARDS_TRANSLATIONS = STORY_CARDS_TRANSLATIONS;
+  window.CANCELLATION_INCIDENTS_TRANSLATIONS = CANCELLATION_INCIDENTS_TRANSLATIONS;
+  window.getLocalizedStoryCard = getLocalizedStoryCard;
+  window.getLocalizedCancellation = getLocalizedCancellation;
+}
+
+// Exportación para entornos CommonJS / Node.js
+if (typeof module !== 'undefined' && module.exports) {
+  
+}
+
+
 /* ?? M?DULO: content/archetypes.js ?? */
 /* ═══════════════════════════════════════════════════════════
    Twitero v15 — content/archetypes.js
@@ -1313,12 +9833,12 @@ const temaPropioContent = {
     { titulo: "Marca que rechacé", texto: "Me ofrecieron una colaboración muy buena económicamente y la rechacé porque los valores no alineaban con lo que cuido acá. No digo quiénes. Pero lo rechacé.", engagement: 62, hate: 14 },
   ],
   onlyfans: [
-    { titulo: "Detrás de escena", texto: "La gente cree que es prender la cámara y listo. En realidad son luces, edición, contratos con el estudio y seis horas de trabajo por un video de diez minutos.", engagement: 50, hate: 18 },
-    { titulo: "Mi mes en números", texto: "Transparencia total del mes: facturé bien, invertí en cámara y estudio nuevo, y me quedó bastante menos de lo que la gente imagina cuando dice 'esto es plata fácil'.", engagement: 48, hate: 20 },
-    { titulo: "Nuevo set disponible", texto: "Tres semanas armando esta producción, con vestuario y locación distinta a todo lo anterior. Es lo mejor que subí hasta ahora, se las dejo. Link en bio.", engagement: 55, hate: 15 },
-    { titulo: "El límite que puse hoy", texto: "Hoy dije que no a algo que hace seis meses hubiera aceptado por plata. Crecer también es aprender a fijar el precio correcto de tu energía y tiempo.", engagement: 54, hate: 17 },
-    { titulo: "Colaboración con otra creadora", texto: "Terminamos de editar la colaboración con una creadora que admiro hace dos años. Algo completamente diferente a lo que hago sola. Sale el viernes. Link en bio cuando esté.", engagement: 60, hate: 12 },
-    { titulo: "Carta abierta a mis subs", texto: "Les debo honestidad: el mes pasado fue durísimo emocionalmente. Acá lo que les puedo contar y lo que me reservo. Gracias por seguir ahí.", engagement: 58, hate: 14 },
+    { titulo: "Facturando con calvicie", texto: "Un sub me pagó 500 usd para que le insulte la calvicie en un audio de 15 segundos. La mejor profesión del planeta, amo mi trabajo 💅💵", engagement: 65, hate: 14 },
+    { titulo: "Al límite de las reglas", texto: "Subí un set nuevo que literalmente desafía las leyes de la física y las normas de Twitter/X. Vayan al link fijado antes de que me lo den de baja amores 🍒💦", engagement: 72, hate: 16 },
+    { titulo: "Doble moral en el feed", texto: "Los mismos que me bardean en los replies por vender contenido son los que me mandan fotopijas a las 3am pidiendo 50% de descuento. Tengan dignidad y paguen precio completo 🙄", engagement: 68, hate: 22 },
+    { titulo: "Cena con el empresario", texto: "Un 'empresario' de traje me ofreció 2000 usd por cenar y le pasé el alias de Mercado Pago sin ir al restaurante. Gracias por pagarme las expensas amor, volvé cuando quieras kjjj 💅", engagement: 75, hate: 18 },
+    { titulo: "Colaboración explosiva", texto: "Grabamos colaboración con mi amiga y terminamos rompiendo un espejo del camarín. Lo que pasó en el set no se puede contar por acá, solo en el VIP. Link abajo 🔥", engagement: 78, hate: 12 },
+    { titulo: "La envidia cotiza en dólares", texto: "Mi ex se abrió una cuenta para competir conmigo y factura 40 dólares al mes. La humillación es total. Les dejo mi link en promo por si quieren ver contenido de verdad 💋", engagement: 70, hate: 15 },
   ],
   techie: [
     { titulo: "Review honesta de la herramienta", texto: "Usé esta IA toda la semana metida en mi workflow diario, sin sponsor de por medio. Acá lo que realmente hace bien, y lo que todavía falla feo.", engagement: 40, hate: 10 },
@@ -4925,7 +13445,7 @@ const METAHISTORY_DATA = {
         fase: 1,
         fecha: "24 Feb 2024",
         titulo: "Papeles del juzgado",
-        texto: "me llegó una notificación de una fiscalía pidiendo declarar por la titularidad del auto, no entiendo nada de términos legales así que le dije a mi viejo que se encargue él",
+        texto: "me cayó un papel de una fiscalía para declarar por el auto kjjj no entiendo un choto de leyes se lo tiré a mi viejo en la mesa que lo resuelva él yo prendo a las 20hs",
         replies: [
           { autor: "Seguidor de Twitch", handle: "@pibe_stream", texto: "Cuidado rey, asesorate con un boga propio y no firmes nada a ciegas" }
         ],
@@ -4938,7 +13458,7 @@ const METAHISTORY_DATA = {
       fase: 4,
       fecha: "14 Mar 2026",
       titulo: "Reglas del juego",
-      texto: "dos años después y la gente sigue insistiendo con lo mismo de mi viejo. él se banca todo solo, como siempre. son las reglas del juego, no shockea",
+      texto: "dos años después y en el chat siguen jodiendo con la causa de mi viejo. él se banca todo solo como siempre, son las reglas del juego. prendo stream en 15",
       replies: [
         { autor: "Seguidor de Twitch", handle: "@pibe_stream", texto: "prendé stream rey, la gente habla porque tiene boca nomás" }
       ],
@@ -4966,7 +13486,7 @@ const METAHISTORY_DATA = {
         fase: 1,
         fecha: "15 Feb 2024",
         titulo: "El chisme del café",
-        texto: "en el café con @lifestyle_arg terminamos hablando más del auto de @gamer_stream que del episodio en sí, la gente ama un auto caro más que el contenido",
+        texto: "merendando con @lifestyle_arg y terminamos hablando 2 horas del auto del pibe de stream y de dónde saca la guita. este país no te deja aburrirte nunca",
         replies: [
           { autor: "Influencer Lifestyle", handle: "@lifestyle_arg", texto: "Es que te juro que no puedo dejar de pensar en esa nave, la energía que maneja" }
         ],
@@ -5001,7 +13521,7 @@ const METAHISTORY_DATA = {
       fase: 4,
       fecha: "22 Abr 2026",
       titulo: "200 episodios",
-      texto: "200 episodios cumplidos esta semana. quién me iba a decir cuando arrancamos grabando en mi living",
+      texto: "200 episodios. cuando arrancamos en el garage no imaginé que íbamos a terminar con una causa penal en la mesa y 4 horas de audio que ningún canal se anima a poner al aire",
       replies: [
         { autor: "Oyente Frecuente", handle: "@radio_fan", texto: "felicitaciones chabón, te sigo desde que grababas con el auricular del celu" }
       ],
@@ -5064,7 +13584,7 @@ const METAHISTORY_DATA = {
       fase: 4,
       fecha: "19 May 2026",
       titulo: "Nueva rutina matutina",
-      texto: "nueva rutina matutina que me cambió la vida por completo, se las cuento en el video de hoy 🙏✨",
+      texto: "dos años después de todo ese circo judicial y la mala vibra en los portales, acá estamos: renovada, en paz y facturando el triple. la abundancia no se negocia amores 🙏✨",
       replies: [
         { autor: "Seguidora Fiel", handle: "@lucia_style", texto: "amé el matcha que recomendaste, pasá el link de la taza!" }
       ],
@@ -5127,7 +13647,7 @@ const METAHISTORY_DATA = {
       fase: 4,
       fecha: "08 Jun 2026",
       titulo: "Serie A cerrada",
-      texto: "cerramos la serie A más grande del año para el sector, día histórico para todo el equipo 🚀",
+      texto: "dos años del exploit al exchange donde lloraban todos en el feed. nosotros codeando en silencio y hoy cerramos la Serie A más grande de la región 🚀 stay humble, keep building",
       replies: [
         { autor: "Venture Capital", handle: "@latam_vc", texto: "Orgullo ver crecer este proyecto desde el día cero. A romperla!" }
       ],
@@ -5190,7 +13710,7 @@ const METAHISTORY_DATA = {
       fase: 4,
       fecha: "29 May 2026",
       titulo: "El tweet viejo",
-      texto: "cada tanto alguien me tagea en el chiste viejo. ya no me da risa como antes, la vida te va cambiando el sentido del humor",
+      texto: "cada tanto algún desocupado me reflota el chiste del auto del ministro. me comí dos denuncias penales por ese remate chabón, qué épocas hermosas",
       replies: [
         { autor: "Seguidor de Standup", handle: "@standup_fan", texto: "creciste un montón chabón, se nota en los monólogos nuevos" }
       ],
@@ -5254,7 +13774,7 @@ const METAHISTORY_DATA = {
       fase: 4,
       fecha: "11 Jul 2026",
       titulo: "El anuncio en el Congreso",
-      texto: "lo que están por anunciar esta semana en el Congreso va a confirmar TODO lo que vengo diciendo hace meses",
+      texto: "SE ACUERDAN CUANDO ME TRATABAN DE LOCO POR LO DE DELAWARE Y LOS TERRENOS? lean el dictamen del Congreso de hoy. uno por uno van a caer. no era teoría, era información clasificada",
       replies: [
         { autor: "Creyente Fiel", handle: "@ojo_abierto", texto: "estamos listos, abran los ojos que se les cae la careta a todos" }
       ],
@@ -5282,7 +13802,7 @@ const METAHISTORY_DATA = {
         fase: 3,
         fecha: "28 Jul 2024",
         titulo: "Persiguiendo la fuente",
-        texto: "estoy persiguiendo a una fuente clave de esta historia con mucha energía aunque la fuente se niega a hablar conmigo. la verdad no se esconde sola",
+        texto: "tres llamadas en espera y una fuente clave que me clava el visto. no importa cuántas puertas cierren, los balances bancarios de la sociedad fantasma ya los tengo en el mail",
         replies: [
           { autor: "Creadora OnlyFans", handle: "@vip_content", texto: "Dejá de acosarme por mensaje directo flaco, no tengo nada que ver con tus políticos" }
         ],
@@ -5346,7 +13866,7 @@ const METAHISTORY_DATA = {
         fase: 3,
         fecha: "24 Jul 2024",
         titulo: "El auto frente al ministerio",
-        texto: "ESE auto importado que subieron hace unos meses, de esos que hay solo dos en el país, es EL MISMO que vi estacionado afuera de la casa de un funcionario, no me cabe duda",
+        texto: "ESE auto importado que subió el streamer es EL MISMO que vi estacionado en la puerta del ministerio cuando fui a hacer un trámite. no me chamuyen, en este país se conocen todos",
         replies: [
           { autor: "Periodista de Investigación", handle: "@periodista_indie", texto: "¿Te acordás la fecha exacta y la calle? Te hablé al privado, es urgente" }
         ],
@@ -5396,7 +13916,7 @@ const METAHISTORY_DATA = {
       id: "onlyfans_act",
       fecha: "18 Jul 2024",
       titulo: "El rumor y las suscripciones",
-      texto: "no voy a confirmar ni negar de quién es el auto en el que me vieron subir 👀 (los que saben, saben) [link a mi perfil]",
+      texto: "no voy a confirmar ni desmentir de quién era el importado en el que me fui de Nordelta 👀 los que están en mi VIP ya vieron las fotos sin censura. link fijado amores",
       replySospechosa: {
         autor: "Hater del TL",
         handle: "@moralista_x",
@@ -5409,7 +13929,7 @@ const METAHISTORY_DATA = {
         fase: 3,
         fecha: "29 Jul 2024",
         titulo: "Basta de acoso",
-        texto: "a ver, en serio: dejen de mandarme DMs a las 4am preguntando dónde vivo 'para hablar'. no está bueno, basta",
+        texto: "a ver pajeros de traje: dejen de mandarme mensajes a las 4am desde cuentas verificadas preguntando si acepto sobres en negro. paguen la suscripción o los doxeo a todos",
         replies: [
           { autor: "Suscriptora VIP", handle: "@mica_love", texto: "Bloqueá a esos enfermos reina, están todos obsesionados con vos" }
         ],
@@ -5444,7 +13964,7 @@ const METAHISTORY_DATA = {
       fase: 4,
       fecha: "20 Oct 2026",
       titulo: "Café de especialidad",
-      texto: "probé el café de especialidad más rico de la ciudad esta semana, review completo ya está arriba ☕",
+      texto: "dos años de ese bardo ridículo donde me quisieron meter y acá sigo, tomando café de especialidad y con los DMs llenos de los mismos que me criticaban en público. besitos 💅☕",
       replies: [
         { autor: "Coffee Lover", handle: "@flat_white_fan", texto: "pasá la dirección que ese tostado etíope se ve tremendo" }
       ],
@@ -5985,10 +14505,33 @@ class SoundEngine {
     this.musicEnabled = localStorage.getItem("twitero_music_enabled") !== "false";
     this.musicVolume = parseFloat(localStorage.getItem("twitero_music_vol") || "0.35");
     this.sfxEnabled = localStorage.getItem("twitero_sfx_enabled") !== "false";
-    this.sfxVolume = parseFloat(localStorage.getItem("twitero_sfx_vol") || "0.8");
     this.currentPhase = 1;
     this._musicStep = 0;
     this._musicTimer = null;
+
+    // Pausar música automáticamente cuando la pantalla del celular se apaga o la pestaña se oculta
+    if (typeof document !== "undefined" && !this._visibilityBound) {
+      this._visibilityBound = true;
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+          if (this._musicPlaying) {
+            this._wasMusicPlaying = true;
+            this.stopMusic();
+          }
+          if (this.ctx && this.ctx.state === "running") {
+            try { this.ctx.suspend(); } catch(_) {}
+          }
+        } else {
+          if (this.ctx && this.ctx.state === "suspended") {
+            try { this.ctx.resume(); } catch(_) {}
+          }
+          if (this._wasMusicPlaying && this.musicEnabled) {
+            this._wasMusicPlaying = false;
+            this.startMusic();
+          }
+        }
+      });
+    }
   }
 
   setPhase(fase) {
@@ -6459,7 +15002,9 @@ const FINALE_GENDER_TITLES = {
 
   // Derrota
   "cancelacion_3strikes": { hombre: "CANCELADO POR 3 STRIKES", mujer: "CANCELADA POR 3 STRIKES", diverso: "CANCELADE POR 3 STRIKES" },
-  "cancelacion_zonaroja": { hombre: "CANCELADO POR HOSTILIDAD EXTREMA", mujer: "CANCELADA POR HOSTILIDAD EXTREMA", diverso: "CANCELADE POR HOSTILIDAD EXTREMA" }
+  "finale_cancelacion_3strikes": { hombre: "CANCELADO POR 3 STRIKES", mujer: "CANCELADA POR 3 STRIKES", diverso: "CANCELADE POR 3 STRIKES" },
+  "cancelacion_zonaroja": { hombre: "CANCELADO POR HOSTILIDAD EXTREMA", mujer: "CANCELADA POR HOSTILIDAD EXTREMA", diverso: "CANCELADE POR HOSTILIDAD EXTREMA" },
+  "finale_cancelacion_zonaroja": { hombre: "CANCELADO POR HOSTILIDAD EXTREMA", mujer: "CANCELADA POR HOSTILIDAD EXTREMA", diverso: "CANCELADE POR HOSTILIDAD EXTREMA" }
 };
 
 function getGenderedFinale(finale, genero) {
@@ -6795,10 +15340,10 @@ const FINALES = [
   }
 ];
 
-const FINALE_DEUDA   = { titulo:"BANCARROTA FINANCIERA", icon:"💸", sub:"Game Over por deuda acumulada.",    narrativa:"Tuviste saldo negativo 5 turnos seguidos. Las deudas te forzaron a cerrar la cuenta." };
-const FINALE_BURNOUT = { titulo:"BURNOUT DIGITAL",       icon:"🧠", sub:"Game Over por colapso emocional.", narrativa:"Tu salud mental llegó a cero. Necesitás un descanso real lejos de las redes." };
-const FINALE_CANCELACION_3STRIKES = { id:"cancelacion_3strikes", titulo:"CANCELADO DEFINITIVAMENTE", icon:"☠️", sub:"Game Over — 3 Strikes de Cancelación.", narrativa:"El timeline no perdona tres veces. Acumulaste 3 crisis de cancelación graves en tu carrera digital. Marcas, medios y seguidores te soltaron la mano. Tu cuenta quedó en el olvido eterno." };
-const FINALE_CANCELACION_ZONAROJA  = { id:"cancelacion_zonaroja", titulo:"HOSTILIDAD EXTREMA DEL FEED", icon:"🔥", sub:"Game Over — Zona Roja de Odio Prolongada.", narrativa:"Mantuviste un nivel de odio letal (80%+) durante 3 turnos consecutivos. La toxicidad acumulada volvió inhabitable tu timeline. Cuentas masivas te bloquearon en cadena y la plataforma te sepultó en el ostracismo digital." };
+const FINALE_DEUDA   = { id:"finale_deuda", titulo:"BANCARROTA FINANCIERA", icon:"💸", sub:"Game Over por deuda acumulada.",    narrativa:"Tuviste saldo negativo 5 turnos seguidos. Las deudas te forzaron a cerrar la cuenta." };
+const FINALE_BURNOUT = { id:"finale_burnout", titulo:"BURNOUT DIGITAL",       icon:"🧠", sub:"Game Over por colapso emocional.", narrativa:"Tu salud mental llegó a cero. Necesitás un descanso real lejos de las redes." };
+const FINALE_CANCELACION_3STRIKES = { id:"finale_cancelacion_3strikes", titulo:"CANCELADO DEFINITIVAMENTE", icon:"☠️", sub:"Game Over — 3 Strikes de Cancelación.", narrativa:"El timeline no perdona tres veces. Acumulaste 3 crisis de cancelación graves en tu carrera digital. Marcas, medios y seguidores te soltaron la mano. Tu cuenta quedó en el olvido eterno." };
+const FINALE_CANCELACION_ZONAROJA  = { id:"finale_cancelacion_zonaroja", titulo:"HOSTILIDAD EXTREMA DEL FEED", icon:"🔥", sub:"Game Over — Zona Roja de Odio Prolongada.", narrativa:"Mantuviste un nivel de odio letal (80%+) durante 3 turnos consecutivos. La toxicidad acumulada volvió inhabitable tu timeline. Cuentas masivas te bloquearon en cadena y la plataforma te sepultó en el ostracismo digital." };
 
 const RANKING_STORAGE_KEY = "twitero_hall_of_fame_v15";
 
@@ -7239,6 +15784,7 @@ class GameEngine {
       const c3 = metaArc.capa3;
       const cardObligatoria = {
         id: "historia_obligatoria",
+        storyId: c3.id,
         palo: { nombre: "HISTORIA", icono: "⚡", color: "#e0245e" },
         titulo: c3.titulo,
         texto: c3.texto,
@@ -7395,13 +15941,22 @@ class GameEngine {
         : (this.turno >= 16 && Math.random() < 0.20);
 
       if (shouldThematize && phaseList.length > 0) {
-        // Anti-repetición estricto: descartar los ya jugados en la partida y los ya presentes en la mano actual
-        const availableThemes = phaseList.filter(t => !this.playedTweetKeys.has(t.titulo) && !handKeys.has(t.titulo));
-        if (availableThemes.length > 0) {
-          const themeItem = availableThemes[rng(availableThemes.length)];
+        // Anti-repetición estricto: priorizar temáticos que coincidan con el tipo sorteado
+        const matchingThemes = phaseList.filter(t => t.tipo === meta.id && !this.playedTweetKeys.has(t.titulo) && !handKeys.has(t.titulo));
+        let themeItem = null;
+        if (matchingThemes.length > 0) {
+          themeItem = matchingThemes[rng(matchingThemes.length)];
+        } else {
+          const avail = phaseList.filter(t => !this.playedTweetKeys.has(t.titulo) && !handKeys.has(t.titulo));
+          if (avail.length > 0) themeItem = avail[rng(avail.length)];
+        }
+        if (themeItem) {
           content.titulo = themeItem.titulo;
           content.texto = themeItem.texto;
           content.isThematicT16 = true;
+          if (themeItem.tipo && CARD_PALOS[themeItem.tipo]) {
+            meta.id = themeItem.tipo;
+          }
         }
       }
       if (content.titulo) handKeys.add(content.titulo);
@@ -7417,19 +15972,28 @@ class GameEngine {
         ? (this.turno >= 16 || (this.turno >= 12 && Math.random() < 0.45))
         : (this.turno >= 16 && Math.random() < 0.20);
 
+      let resolvedFbId = fbId;
       if (shouldThematize && phaseList.length > 0) {
-        // Anti-repetición estricto: descartar los ya jugados en la partida y los ya presentes en la mano actual
-        const availableThemes = phaseList.filter(t => !this.playedTweetKeys.has(t.titulo) && !handKeys.has(t.titulo));
-        if (availableThemes.length > 0) {
-          const themeItem = availableThemes[rng(availableThemes.length)];
+        const matchingThemes = phaseList.filter(t => t.tipo === fbId && !this.playedTweetKeys.has(t.titulo) && !handKeys.has(t.titulo));
+        let themeItem = null;
+        if (matchingThemes.length > 0) {
+          themeItem = matchingThemes[rng(matchingThemes.length)];
+        } else {
+          const avail = phaseList.filter(t => !this.playedTweetKeys.has(t.titulo) && !handKeys.has(t.titulo));
+          if (avail.length > 0) themeItem = avail[rng(avail.length)];
+        }
+        if (themeItem) {
           content.titulo = themeItem.titulo;
           content.texto = themeItem.texto;
           content.isThematicT16 = true;
+          if (themeItem.tipo && CARD_PALOS[themeItem.tipo]) {
+            resolvedFbId = themeItem.tipo;
+          }
         }
       }
       if (content.titulo) handKeys.add(content.titulo);
 
-      drawn.push({ id:fbId, palo:CARD_PALOS[fbId], ...content });
+      drawn.push({ id:resolvedFbId, palo:CARD_PALOS[resolvedFbId], ...content });
     }
 
     // Insertar la carta de historia en una posición aleatoria (0, 1 o 2) para que no sea predecible
@@ -7442,37 +16006,39 @@ class GameEngine {
   }
 
   _successChance(card, booster) {
+    // Balance Propuesta B: curva calibrada
     const bases = {
-      meme: 58,
-      tema: card.isPropio ? 62 : 38,
-      pelea: 48,
-      hilo: 54,
-      quote: 48,
-      live: 45,
-      temaDelDia: 52,
-      politica: 40,
-      bait: 52,
-      patrocinio: 65,
-      descanso: 62
+      meme: 50,
+      tema: card.isPropio ? 54 : 30,
+      pelea: 40,
+      hilo: 47,
+      quote: 40,
+      live: 37,
+      temaDelDia: 44,
+      politica: 32,
+      bait: 44,
+      patrocinio: 58,
+      descanso: 52
     };
-    let c = card.chanceOverride || bases[card.id] || 50;
+    let c = card.chanceOverride || bases[card.id] || 42;
 
-    // Modificadores de género (dificultad asimétrica)
+    // Modificadores de género (asimetría equilibrada)
     if (this.genero === "mujer") c -= 3;
-    else if (this.genero === "diverso") c -= 7;
+    else if (this.genero === "diverso") c -= 4; // Aliviado de -7 a -4
 
     if (!this.arquetipo.deb.some(d=>card.id.startsWith(d)||d.startsWith(card.id.slice(0,4)))) c += 4;
     if (this.personalidad.afines.some(a=>a===card.id)) c += 5;
     if (this.comboRisk) c += 6;
-    if (this.streakExitos >= 3) c += 5;
-    if (card.id === "quote" && this.lastCard?.id === "meme" && this.lastCardOk) c += 8;
-    if (card.id === "pelea" && this.lastCard?.id === "live" && this.lastCardOk) c += 8;
+    if (this.streakExitos >= 3) c += 4;
+    if (card.id === "quote" && this.lastCard?.id === "meme" && this.lastCardOk) c += 7;
+    if (card.id === "pelea" && this.lastCard?.id === "live" && this.lastCardOk) c += 7;
     if (booster?.fx.chanceBonus) c += booster.fx.chanceBonus;
-    if (this.engagement > 200) c += 4;
-    if (this.arquetipo?.id === "cryptobro" && (card.id === "tema" || card.id === "temaDelDia")) c += 8;
-    if (this.saludMental < 30) c -= 8; // Burnout warning: baja salud mental afecta rendimiento
+    if (this.engagement > 200) c += 3;
+    if (this.arquetipo?.id === "cryptobro" && (card.id === "tema" || card.id === "temaDelDia")) c += 7;
+    if (this.saludMental < 40) c -= 8; // Burnout warning
+    if (this.saludMental < 20) c -= 6; // Crisis severa de salud mental
 
-    return Math.min(Math.max(c, 25), 85);
+    return Math.min(Math.max(c, 18), 78);
   }
 
   playCard(card, boosterId=null) {
@@ -7512,7 +16078,8 @@ class GameEngine {
       
       if (card.id === "patrocinio") {
         const boostPct = boosterUsed?.fx.segsPct || 0;
-        segsGain = Math.floor(this.seguidores * (0.01 + boostPct * 0.15) + (100 * mult));
+        segsGain = Math.floor(this.seguidores * (0.01 + boostPct * 0.15) + (80 * mult));
+        dinGain += Math.floor(800 * mult); // Patrocinio aporta liquidez directa
       } else if (card.id === "descanso") {
         segsGain = 0;
       } else {
@@ -7551,11 +16118,11 @@ class GameEngine {
         }
         if(this.lastCard?.id === "descanso") {
           // Spam de descanso consecutivo: penalización por inactividad prolongada
-          this.saludMental = Math.max(0, this.saludMental - 10);
+          this.saludMental = Math.max(0, this.saludMental - 12);
         } else {
-          this.odio = Math.max(0, this.odio - 10);
-          this.saludMental = Math.min(100, this.saludMental + 15);
-          this.amor = Math.min(100, this.amor + 5);
+          this.odio = Math.max(0, this.odio - 6);
+          this.saludMental = Math.min(100, this.saludMental + 8);
+          this.amor = Math.min(100, this.amor + 3);
         }
       }
 
@@ -7566,17 +16133,17 @@ class GameEngine {
         hateGain = Math.min(12, Math.floor((card.hate || 20) * 0.4));
       } else {
         hateGain = Math.floor(card.hate * mult);
-        segsGain = card.id === "descanso" ? 0 : -Math.floor(this.seguidores * 0.04 * mult);
+        segsGain = card.id === "descanso" ? 0 : -Math.floor(this.seguidores * 0.055 * mult);
       }
       if(card.id === "descanso") {
         if(this.rachaViralActive) {
           this.rachaViralDescansoUsed = true;
         }
         if(this.lastCard?.id === "descanso") {
-          this.saludMental = Math.max(0, this.saludMental - 10);
+          this.saludMental = Math.max(0, this.saludMental - 15);
         } else {
-          this.odio = Math.max(0, this.odio - 4);
-          this.saludMental = Math.min(100, this.saludMental + 5);
+          this.odio = Math.max(0, this.odio - 2);
+          this.saludMental = Math.min(100, this.saludMental + 2);
         }
       } else if(Math.random() * 100 < card.odioP) {
         this.odio = Math.min(100, this.odio + Math.floor(6 * mult));
@@ -7598,9 +16165,9 @@ class GameEngine {
         this.odio = Math.min(100, this.odio + Math.floor(6 * mult));
       } else {
         engGain = Math.floor(20 * mult);
-        segsGain = -Math.floor(this.seguidores * 0.03 * mult);
-        this.odio = Math.min(100, this.odio + Math.floor(10 * mult));
-        this.saludMental = Math.max(0, this.saludMental - 5);
+        segsGain = -Math.floor(this.seguidores * 0.035 * mult);
+        this.odio = Math.min(100, this.odio + Math.floor(15 * mult));
+        this.saludMental = Math.max(0, this.saludMental - 8);
       }
     }
 
@@ -7632,19 +16199,27 @@ class GameEngine {
       this.storyLastPlayedCard = null;
     }
 
-    // ── CANCELLATION EVENT & 3 STRIKES (Solo si la tirada de riesgo falla) ──
+    // ── CANCELLATION EVENT & 3 STRIKES ──
+    // Disparadores: cartas de riesgo alto que fallan, O cualquier carta que falla con odio elevado
     const RISK_CARDS = ["pelea", "politica", "quote", "bait"];
+    const highHateRisk = !ok && this.odio >= 55 && !RISK_CARDS.includes(card.id);
     let cancellationEvent = null;
-    if(!ok && RISK_CARDS.includes(card.id)) {
+    if(!ok && (RISK_CARDS.includes(card.id) || highHateRisk)) {
       const isTroll = this.personalidad.id === "troll";
-      let riskPct = isTroll ? 32 : 22; // base 22%, troll 32%
+      let riskPct;
+      if (RISK_CARDS.includes(card.id)) {
+        riskPct = isTroll ? 30 : 20; // Base normal para cartas de alto riesgo
+      } else {
+        // Carta cualquiera que falla con odio elevado
+        riskPct = this.odio >= 80 ? 18 : this.odio >= 70 ? 12 : 7;
+      }
       if (this.genero === "mujer") riskPct += 5;
-      else if (this.genero === "diverso") riskPct += 12;
-      if (this.arquetipo.dificultad === "alta") riskPct += 12; // Arquetipos difíciles: peligro de cancelación latente
-      else if (this.arquetipo.dificultad === "baja") riskPct -= 6; // Arquetipos casuales: cancelación protegida
-      if(this.lastCard?.id === "descanso") riskPct -= 20;
+      else if (this.genero === "diverso") riskPct += 6;
+      if (this.arquetipo.dificultad === "alta") riskPct += 8;
+      else if (this.arquetipo.dificultad === "baja") riskPct -= 6;
+      if(this.lastCard?.id === "descanso") riskPct -= 18;
       if(this.odio >= 65) riskPct += 10;
-      riskPct = Math.max(5, Math.min(85, riskPct));
+      riskPct = Math.max(3, Math.min(85, riskPct));
 
       if(Math.random() * 100 < riskPct) {
         this.strikesCancelacion++;
@@ -7823,9 +16398,30 @@ class GameEngine {
   advanceTurn() {
     if(this.gameOver) return;
 
-    // Balance C: Dificultad Alta (Opinólogo, Militante) - desgaste psicológico por hostilidad extrema persistente
-    if (this.arquetipo?.dificultad === "alta" && this.odio >= 65) {
-      this.saludMental = Math.max(0, this.saludMental - 3);
+    // Propuesta B: Costo fijo de mantenimiento ($120/turno)
+    this.dinero -= 120;
+
+    // Propuesta B: Drenaje pasivo de Salud Mental (-2%/turno)
+    this.saludMental = Math.max(0, this.saludMental - 2);
+
+    // Desgaste psicológico en dificultad alta bajo odio
+    if (this.arquetipo?.dificultad === "alta" && this.odio >= 60) {
+      this.saludMental = Math.max(0, this.saludMental - 4);
+    }
+
+    // Desgaste sostenido por hostilidad digital (odio >= 65)
+    if (this.odio >= 65) {
+      this.saludMental = Math.max(0, this.saludMental - (rng(3) + 1));
+    }
+
+    // Tensión de cancelación pasiva en ambiente tóxico (odio >= 80)
+    if (this.odio >= 80 && !this.gameOver && this.strikesCancelacion < 3) {
+      if (Math.random() < 0.05) {
+        this.strikesCancelacion++;
+        this.odio = Math.min(100, this.odio + 10);
+        this.saludMental = Math.max(0, this.saludMental - 8);
+        this.seguidores = Math.max(100, Math.floor(this.seguidores * 0.95));
+      }
     }
 
     if (this.dinero < 0) this.debtTurnos++; else this.debtTurnos = 0;
@@ -7957,11 +16553,16 @@ class UIEngine {
   showScreen(id) {
     document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
     const el=document.getElementById(id); if(el) el.classList.add("active");
+    if (id === "screen-gender") this._gender();
+    else if (id === "screen-archetype") this._archetype();
+    else if (id === "screen-personality") this._personality();
   }
 
   init() {
+    this._setupLanguageDropdown();
+    this.applyTranslations();
     this._splash(); this._gender(); this._archetype(); this._personality();
-    this._setupLanguageDropdown(); this._setupGlobalTooltips();
+    this._setupGlobalTooltips();
     this._setupTutorial();
     this._setupCancellationModal();
     this._setupHateModal();
@@ -8120,6 +16721,15 @@ class UIEngine {
 
       // ── Audio Modal: Cerrar con Espacio / Enter ─────────────────────────
       const audioModal = document.getElementById("audio-modal-overlay");
+      const epilogueModal = document.getElementById("story-epilogue-modal-overlay");
+      if (epilogueModal && epilogueModal.classList.contains("active")) {
+        if (isConfirm) {
+          ev.preventDefault();
+          snd.click();
+          epilogueModal.classList.remove("active");
+          return;
+        }
+      }
       if (audioModal && audioModal.classList.contains("active")) {
         if (isConfirm) {
           ev.preventDefault();
@@ -8294,37 +16904,48 @@ class UIEngine {
 
   _updateProfileModalContent() {
     const e = this.eng, arch = e.arquetipo, pers = e.personalidad;
-    const pron = GENERO_LABELS[e.genero] || "Elle";
     const currentAvatar = e.getAvatar();
     const genderedArch = getGenderedArchetype(arch, e.genero);
+    const t = (k, p, d) => typeof i18n !== "undefined" ? i18n.t(k, p, d) : d;
+    const pron = t("pronouns." + e.genero, null, GENERO_LABELS[e.genero] || "Elle");
+    const archName = (typeof i18n !== "undefined" && i18n.t(`archetypes.${arch.id}.nombre`)) || genderedArch;
+    const persName = (typeof i18n !== "undefined" && i18n.t(`personalities.${pers.id}.nombre`)) || pers.nombre;
+    const archDesc = (typeof i18n !== "undefined" && i18n.t(`archetypes.${arch.id}.desc`)) || (typeof getGenderedArchetypeDesc === "function" ? getGenderedArchetypeDesc(arch, e.genero) : arch.desc);
+    const persDesc = (typeof i18n !== "undefined" && i18n.t(`personalities.${pers.id}.desc`)) || (typeof getGenderedPersonalityDesc === "function" ? getGenderedPersonalityDesc(pers, e.genero) : pers.desc);
+
+    const profileHeader = document.querySelector("#perfil-modal-overlay .spec-label");
+    if (profileHeader) profileHeader.textContent = "📋 " + t("profile.title", null, "PERFIL COMPLETO");
 
     const avEl = document.getElementById("perfil-avatar"); if(avEl) avEl.textContent = currentAvatar;
-    const nameEl = document.getElementById("perfil-name"); if(nameEl) nameEl.textContent = genderedArch.toUpperCase();
-    const handleEl = document.getElementById("perfil-handle"); if(handleEl) handleEl.textContent = `${e.handle} · ${pers.icono} ${pers.nombre.toUpperCase()}`;
+    const nameEl = document.getElementById("perfil-name"); if(nameEl) nameEl.textContent = archName.toUpperCase();
+    const handleEl = document.getElementById("perfil-handle"); if(handleEl) handleEl.textContent = `${e.handle} · ${pers.icono} ${persName.toUpperCase()}`;
 
-    const aChips = (arch.afines||[]).map(f=>`<span class="chip-afin-sm">${CARD_PALOS[f]?.icono||""} ${f}</span>`).join("");
-    const dChips = (arch.debiles||[]).map(f=>`<span class="chip-debil-sm">${CARD_PALOS[f]?.icono||""} ${f}</span>`).join("");
-    const synergyLine = e.comboRisk ? "+6% a todas las tiradas por perfil no convencional" : "Combo canónico — sin bonus adicional";
+    const aChips = (arch.afines||[]).map(f => {
+      const pName = (typeof i18n !== "undefined" && i18n.t("cards.palo_" + f)) || f;
+      return `<span class="chip-afin-sm">${CARD_PALOS[f]?.icono||""} ${pName}</span>`;
+    }).join("");
+    const dChips = (arch.debiles||[]).map(f => {
+      const pName = (typeof i18n !== "undefined" && i18n.t("cards.palo_" + f)) || f;
+      return `<span class="chip-debil-sm">${CARD_PALOS[f]?.icono||""} ${pName}</span>`;
+    }).join("");
+    const synergyLine = e.comboRisk ? "+6% bonus" : "Standard";
     const goalPct = Math.min(100, Math.floor((e.seguidores/80000)*100));
-
-    const archDesc = typeof getGenderedArchetypeDesc === "function" ? getGenderedArchetypeDesc(arch, e.genero) : arch.desc;
-    const persDesc = typeof getGenderedPersonalityDesc === "function" ? getGenderedPersonalityDesc(pers, e.genero) : pers.desc;
 
     const contentEl = document.getElementById("perfil-identity-content");
     if(contentEl) {
       contentEl.innerHTML = `
         <div class="char-identity-box" style="border:1px solid var(--border); margin-bottom:8px;">
-          <div class="id-row"><span class="id-label">PRONOMBRES</span><span class="id-val">${pron}</span></div>
-          <div class="id-row"><span class="id-label">ARQUETIPO</span><span class="id-val">${genderedArch} // ${archDesc}</span></div>
-          <div class="id-row"><span class="id-label">PERSONALIDAD</span><span class="id-val">${persDesc}</span></div>
-          <div class="id-row"><span class="id-label">CARTAS AFINES</span><span>${aChips}</span></div>
-          <div class="id-row"><span class="id-label">CARTAS DÉBILES</span><span>${dChips}</span></div>
-          <div class="id-row"><span class="id-label">RASGOS</span><span class="id-val" style="color:var(--blue-bright)">${pers.bonus} · ${pers.malus}</span></div>
-          <div class="id-row"><span class="id-label">SINERGIA</span><span class="id-val">${synergyLine}</span></div>
-          <div class="id-row"><span class="id-label">CANCELACIONES</span><span class="id-val" style="color:${e.strikesCancelacion>0?'var(--red)':'var(--green)'}; font-weight:700;">STRIKES: ${e.strikesCancelacion} / 3</span></div>
+          <div class="id-row"><span class="id-label">${t("profile.pronouns", null, "PRONOMBRES")}</span><span class="id-val">${pron}</span></div>
+          <div class="id-row"><span class="id-label">${t("profile.archetype_label", null, "ARQUETIPO")}</span><span class="id-val">${archName} // ${archDesc}</span></div>
+          <div class="id-row"><span class="id-label">${t("profile.personality_label", null, "PERSONALIDAD")}</span><span class="id-val">${persDesc}</span></div>
+          <div class="id-row"><span class="id-label">${t("profile.allied", null, "CARTAS AFINES")}</span><span>${aChips}</span></div>
+          <div class="id-row"><span class="id-label">${t("profile.weak", null, "CARTAS DÉBILES")}</span><span>${dChips}</span></div>
+          <div class="id-row"><span class="id-label">${t("profile.traits", null, "RASGOS")}</span><span class="id-val" style="color:var(--blue-bright)">${pers.bonus} · ${pers.malus}</span></div>
+          <div class="id-row"><span class="id-label">${t("profile.synergy", null, "SINERGIA")}</span><span class="id-val">${synergyLine}</span></div>
+          <div class="id-row"><span class="id-label">${t("profile.cancels", null, "CANCELACIONES")}</span><span class="id-val" style="color:${e.strikesCancelacion>0?'var(--red)':'var(--green)'}; font-weight:700;">STRIKES: ${e.strikesCancelacion} / 3</span></div>
         </div>
         <div class="goal-progress-box" style="border:1px solid var(--border);">
-          <div class="goal-label">META DE VICTORIA: 80K SEGUIDORES — ${goalPct}%</div>
+          <div class="goal-label">${t("profile.win_condition", null, "META DE VICTORIA")}: 80K SEGUIDORES — ${goalPct}%</div>
           <div class="goal-track"><div class="goal-fill" style="width:${goalPct}%"></div></div>
         </div>
       `;
@@ -8334,11 +16955,17 @@ class UIEngine {
   _setupTutorial() {
     this.tutSlide = 1;
     this.tutMax = 4;
+    this._applyModalTranslations(); // populate modal content in current language
     const updateTut = () => {
-      document.querySelectorAll(".tutorial-slide").forEach((s, i) => s.classList.toggle("active", i+1 === this.tutSlide));
-      document.querySelectorAll(".tutorial-dots .dot").forEach((d, i) => d.classList.toggle("active", i+1 === this.tutSlide));
+      document.querySelectorAll("#tutorial-modal-overlay .tutorial-slide").forEach((s, i) => s.classList.toggle("active", i+1 === this.tutSlide));
+      document.querySelectorAll("#tutorial-modal-overlay .tutorial-dots .dot").forEach((d, i) => d.classList.toggle("active", i+1 === this.tutSlide));
       document.getElementById("btn-tutorial-prev").style.visibility = this.tutSlide > 1 ? "visible" : "hidden";
-      document.getElementById("btn-tutorial-next").textContent = this.tutSlide === this.tutMax ? "COMENZAR ▶" : "SIGUIENTE ➡";
+      const nextBtn = document.getElementById("btn-tutorial-next");
+      const lang = typeof i18n !== "undefined" ? i18n.getLanguage() : "es";
+      const spaceLabel = lang === "ja" ? "スペース" : lang === "en" ? "SPACE" : "ESPACIO";
+      if (nextBtn) nextBtn.innerHTML = this.tutSlide === this.tutMax
+        ? (i18n.t("tutorial.start") + ` <span class="key-hint-pill">␣ ${spaceLabel}</span>`)
+        : (i18n.t("tutorial.next") + ` <span class="key-hint-pill">␣ ${spaceLabel}</span>`);
     };
     
     const closeTut = () => {
@@ -8363,12 +16990,160 @@ class UIEngine {
     });
   }
 
+  _applyModalTranslations() {
+    if (typeof i18n === "undefined") return;
+    const t = (k, d) => i18n.t(k, null, d);
+
+    // ── Tutorial modal ──────────────────────────────────────────
+    const tutHeader = document.querySelector("#tutorial-modal-overlay .spec-label");
+    if (tutHeader) tutHeader.textContent = t("tutorial.header", "📖 CÓMO JUGAR // GUÍA DE SUPERVIVENCIA");
+
+    const tutSkipBottom = document.getElementById("btn-tutorial-skip-bottom");
+    if (tutSkipBottom) tutSkipBottom.textContent = t("tutorial.skip", "SALTAR TUTORIAL");
+
+    const tutPrev = document.getElementById("btn-tutorial-prev");
+    if (tutPrev) tutPrev.textContent = t("tutorial.prev", "⬅ ATRÁS");
+
+    const tutNext = document.getElementById("btn-tutorial-next");
+    if (tutNext) {
+      const isFinal = this.tutSlide === this.tutMax;
+      const label = isFinal ? t("tutorial.start", "COMENZAR ▶") : t("tutorial.next", "SIGUIENTE ➡");
+      tutNext.innerHTML = label + ' <span class="key-hint-pill">␣ ESPACIO</span>';
+    }
+
+    const tut1 = document.getElementById("tut-slide-1");
+    if (tut1) tut1.innerHTML = `<h3>${t("tutorial.slide1_title")}</h3><p>${t("tutorial.slide1_p1")}</p><p>${t("tutorial.slide1_p2")}</p>`;
+    const tut2 = document.getElementById("tut-slide-2");
+    if (tut2) tut2.innerHTML = `<h3>${t("tutorial.slide2_title")}</h3><p>${t("tutorial.slide2_p1")}</p>`;
+    const tut3 = document.getElementById("tut-slide-3");
+    if (tut3) tut3.innerHTML = `<h3>${t("tutorial.slide3_title")}</h3><p>${t("tutorial.slide3_p1")}</p>`;
+    const tut4 = document.getElementById("tut-slide-4");
+    if (tut4) tut4.innerHTML = `<h3>${t("tutorial.slide4_title")}</h3><p>${t("tutorial.slide4_p1")}</p>`;
+
+    // ── Cancellation modal ──────────────────────────────────────
+    const cancHeader = document.querySelector("#cancellation-modal-overlay .spec-label");
+    if (cancHeader) cancHeader.textContent = t("cancellation_modal.header", "⚖️ SISTEMA DE CANCELACIÓN // 3 PASOS");
+
+    const cancSlide1 = document.getElementById("canc-slide-1");
+    if (cancSlide1) cancSlide1.innerHTML = `<h3>${t("cancellation_modal.slide1_title")}</h3><p>${t("cancellation_modal.slide1_p1")}</p><p>${t("cancellation_modal.slide1_p2")}</p>`;
+
+    const cancSlide2 = document.getElementById("canc-slide-2");
+    if (cancSlide2) cancSlide2.innerHTML = `<h3>${t("cancellation_modal.slide2_title")}</h3><p>${t("cancellation_modal.slide2_p1")}</p><div class="strike-meter-row"><div class="strike-slot active-1">${t("cancellation_modal.strike1","STRIKE 1: ADVERTENCIA")}</div><div class="strike-slot active-2">${t("cancellation_modal.strike2","STRIKE 2: CRÍTICO")}</div><div class="strike-slot danger-target">${t("cancellation_modal.strike3","STRIKE 3: EXPULSIÓN")}</div></div><p>${t("cancellation_modal.slide2_p2")}</p>`;
+
+    const cancSlide3 = document.getElementById("canc-slide-3");
+    if (cancSlide3) cancSlide3.innerHTML = `<h3>${t("cancellation_modal.slide3_title")}</h3><p>${t("cancellation_modal.slide3_p1")}</p><p>${t("cancellation_modal.slide3_p2")}</p><p>${t("cancellation_modal.slide3_p3")}</p>`;
+
+    const cancNext = document.getElementById("btn-canc-next");
+    if (cancNext) cancNext.innerHTML = t("cancellation_modal.understood","ENTENDIDO ▶") + ' <span class="key-hint-pill">␣ ESPACIO</span>';
+
+    const cancPrev = document.getElementById("btn-canc-prev");
+    if (cancPrev) cancPrev.textContent = t("tutorial.prev", "⬅ ATRÁS");
+
+    // ── Hate modal ──────────────────────────────────────────────
+    const hateHeader = document.querySelector("#hate-modal-overlay .spec-label");
+    if (hateHeader) hateHeader.textContent = t("hate_modal.header", "🔥 ODIO Y ZONA ROJA // 3 PASOS");
+
+    const hateSlide1 = document.getElementById("hate-slide-1");
+    if (hateSlide1) hateSlide1.innerHTML = `<h3>${t("hate_modal.slide1_title")}</h3><p>${t("hate_modal.slide1_p1")}</p>`;
+
+    const hateSlide2 = document.getElementById("hate-slide-2");
+    if (hateSlide2) hateSlide2.innerHTML = `<h3>${t("hate_modal.slide2_title")}</h3><p>${t("hate_modal.slide2_p1")}</p><div class="strike-meter-row"><div class="strike-slot active-1">${t("hate_modal.turn1","TURNO 1: ALERTA ROJA")}</div><div class="strike-slot active-2">${t("hate_modal.turn2","TURNO 2: ÚLTIMA GRACIA")}</div><div class="strike-slot danger-target">${t("hate_modal.turn3","TURNO 3: CIERRE FORZADO")}</div></div><p>${t("hate_modal.slide2_p2")}</p>`;
+
+    const hateSlide3 = document.getElementById("hate-slide-3");
+    if (hateSlide3) hateSlide3.innerHTML = `<h3>${t("hate_modal.slide3_title")}</h3><p>${t("hate_modal.slide3_p1")}</p><p>${t("hate_modal.slide3_p2")}</p><p>${t("hate_modal.slide3_p3")}</p>`;
+
+    const hateNext = document.getElementById("btn-hate-next");
+    if (hateNext) hateNext.innerHTML = t("hate_modal.understood","ENTENDIDO ▶") + ' <span class="key-hint-pill">␣ ESPACIO</span>';
+
+    const hatePrev = document.getElementById("btn-hate-prev");
+    if (hatePrev) hatePrev.textContent = t("tutorial.prev", "⬅ ATRÁS");
+
+    // ── Viral Streak modal ──────────────────────────────────────
+    const viralHeader = document.querySelector("#viral-modal-overlay .spec-label");
+    if (viralHeader) viralHeader.textContent = t("viral_modal.header", "⚡ EVENTO ESPECIAL: ¡TE VOLVISTE VIRAL!");
+
+    const viralSlide1 = document.getElementById("viral-slide-1");
+    if (viralSlide1) viralSlide1.innerHTML = `<h3>${t("viral_modal.slide1_title")}</h3><p>${t("viral_modal.slide1_p1")}</p><p>${t("viral_modal.slide1_p2")}</p>`;
+
+    const viralSlide2 = document.getElementById("viral-slide-2");
+    if (viralSlide2) viralSlide2.innerHTML = `<h3>${t("viral_modal.slide2_title")}</h3><p>${t("viral_modal.slide2_p1")}</p><p>${t("viral_modal.slide2_p2")}</p>`;
+
+    const viralSlide3 = document.getElementById("viral-slide-3");
+    if (viralSlide3) {
+      // Update title, paragraph and card texts WITHOUT replacing buttons
+      const vs3h3 = viralSlide3.querySelector("h3");
+      if (vs3h3) vs3h3.textContent = t("viral_modal.slide3_title");
+      const vs3p = viralSlide3.querySelector("p");
+      if (vs3p) vs3p.innerHTML = t("viral_modal.slide3_p1");
+      const vs3card = viralSlide3.querySelector(".strike-info-card");
+      if (vs3card) {
+        vs3card.innerHTML = `<strong style="color:var(--red);">${t("viral_modal.consequences_title")}</strong><br>${t("viral_modal.consequences_desc")}`;
+      }
+      const vs3accept = document.getElementById("btn-viral-accept");
+      if (vs3accept) vs3accept.textContent = t("viral_modal.accept_btn");
+      const vs3decline = document.getElementById("btn-viral-decline");
+      if (vs3decline) vs3decline.textContent = t("viral_modal.decline_btn");
+    }
+
+    const viralNext = document.getElementById("btn-viral-next");
+    const lang = typeof i18n !== "undefined" ? i18n.getLanguage() : "es";
+    const spaceLabel = lang === "ja" ? "スペース" : lang === "en" ? "SPACE" : "ESPACIO";
+    if (viralNext) viralNext.innerHTML = t("tutorial.next", "SIGUIENTE ➡") + ` <span class="key-hint-pill">␣ ${spaceLabel}</span>`;
+
+    const viralPrev = document.getElementById("btn-viral-prev");
+    if (viralPrev) viralPrev.textContent = t("tutorial.prev", "⬅ ATRÁS");
+
+    // ── Story Unlock Modal ──────────────────────────────────────
+    const storyHeader = document.querySelector("#story-unlock-modal-overlay .spec-label");
+    if (storyHeader) storyHeader.textContent = t("story_modal.header", "⚡ NUEVA TRAMA DESCUBIERTA");
+
+    const storySlide1 = document.getElementById("story-slide-1");
+    if (storySlide1) {
+      const s1h3 = storySlide1.querySelector("h3");
+      if (s1h3) s1h3.textContent = t("story_modal.slide1_title", "¡Encontraste una pista!");
+      const s1ps = storySlide1.querySelectorAll("p");
+      if (s1ps[0]) s1ps[0].textContent = t("story_modal.slide1_p1", "¡Entraste en modo historia! Acabás de descubrir una pista que conecta a varios personajes detrás de escena.");
+      if (s1ps[1]) s1ps[1].textContent = t("story_modal.slide1_p2", "Prestá atención a lo que sucede en el feed.");
+    }
+
+    const storySlide2 = document.getElementById("story-slide-2");
+    if (storySlide2) {
+      const s2h3 = storySlide2.querySelector("h3");
+      if (s2h3) s2h3.textContent = t("story_modal.slide2_title", "Leé entre líneas");
+      const s2p = storySlide2.querySelector("p");
+      if (s2p) s2p.innerHTML = t("story_modal.slide2_p1", "Prestá atención al contexto y a los <strong>replies latientes</strong>. Cada carta de historia esconde respuestas de otros usuarios que revelan qué está pasando realmente.");
+    }
+
+    const storySlide3 = document.getElementById("story-slide-3");
+    if (storySlide3) {
+      const s3h3 = storySlide3.querySelector("h3");
+      if (s3h3) s3h3.textContent = t("story_modal.slide3_title", "La historia es colectiva");
+      const s3p = storySlide3.querySelector("p");
+      if (s3p) s3p.innerHTML = t("story_modal.slide3_p1", "Para entender la historia completa, tenés que <strong>jugar con otros personajes</strong>. Cada arquetipo vive una parte de la verdad y tiene su propio punto de vista.");
+      // Keep the button but update its text (preserve event listener)
+      const s3btn = document.getElementById("btn-story-unlock-ok");
+      if (s3btn) {
+        // Update text node only, preserve child span
+        const textNode = Array.from(s3btn.childNodes).find(n => n.nodeType === 3);
+        if (textNode) textNode.textContent = t("story_modal.continue_btn", "SEGUIR JUGANDO") + " ";
+        const pill = s3btn.querySelector(".key-hint-pill");
+        if (pill) pill.textContent = "␣ " + spaceLabel;
+      }
+    }
+
+    const storyPrev = document.getElementById("btn-story-prev");
+    if (storyPrev) storyPrev.textContent = t("tutorial.prev", "⬅ ATRÁS");
+    const storyNext = document.getElementById("btn-story-next");
+    if (storyNext) storyNext.innerHTML = t("story_modal.next_btn", "SIGUIENTE ➡") + ` <span class="key-hint-pill">␣ ${spaceLabel}</span>`;
+  }
+
   _startTutorial() {
     this.tutSlide = 1;
-    document.querySelectorAll(".tutorial-slide").forEach((s, i) => s.classList.toggle("active", i === 0));
-    document.querySelectorAll(".tutorial-dots .dot").forEach((d, i) => d.classList.toggle("active", i === 0));
+    document.querySelectorAll("#tutorial-modal-overlay .tutorial-slide").forEach((s, i) => s.classList.toggle("active", i === 0));
+    document.querySelectorAll("#tutorial-modal-overlay .tutorial-dots .dot").forEach((d, i) => d.classList.toggle("active", i === 0));
     document.getElementById("btn-tutorial-prev").style.visibility = "hidden";
-    document.getElementById("btn-tutorial-next").textContent = "SIGUIENTE ➡";
+    const nextBtn = document.getElementById("btn-tutorial-next");
+    if (nextBtn) nextBtn.innerHTML = i18n.t("tutorial.next","SIGUIENTE ➡") + ' <span class="key-hint-pill">␣ ESPACIO</span>';
     document.getElementById("tutorial-modal-overlay").classList.add("active");
   }
 
@@ -8383,8 +17158,21 @@ class UIEngine {
       overlay.querySelectorAll(".tutorial-dots .dot").forEach((d, i) => d.classList.toggle("active", i + 1 === this.cancSlide));
       const prevBtn = document.getElementById("btn-canc-prev");
       const nextBtn = document.getElementById("btn-canc-next");
-      if (prevBtn) prevBtn.style.visibility = this.cancSlide > 1 ? "visible" : "hidden";
-      if (nextBtn) nextBtn.textContent = this.cancSlide === this.cancMax ? "ENTENDIDO ✕" : "SIGUIENTE ➡";
+      const cancLang = typeof i18n !== "undefined" ? i18n.getLanguage() : "es";
+      const spaceKey = cancLang === "ja" ? "スペース" : cancLang === "en" ? "SPACE" : "ESPACIO";
+      if (prevBtn) {
+        prevBtn.style.visibility = this.cancSlide > 1 ? "visible" : "hidden";
+        prevBtn.textContent = cancLang === "ja" ? "⬅ 戻る" : cancLang === "en" ? "⬅ BACK" : "⬅ ATRÁS";
+      }
+      if (nextBtn) {
+        if (this.cancSlide === this.cancMax) {
+          const tOk = cancLang === "ja" ? "了解 ✕" : cancLang === "en" ? "UNDERSTOOD ✕" : "ENTENDIDO ✕";
+          nextBtn.innerHTML = `${tOk} <span class="key-hint-pill">␣ ${spaceKey}</span>`;
+        } else {
+          const tNext = cancLang === "ja" ? "次へ ➡" : cancLang === "en" ? "NEXT ➡" : "SIGUIENTE ➡";
+          nextBtn.innerHTML = `${tNext} <span class="key-hint-pill">␣ ${spaceKey}</span>`;
+        }
+      }
     };
 
     const closeCanc = () => {
@@ -8419,14 +17207,23 @@ class UIEngine {
   _showCancellationModal(onClose) {
     this._onCancClose = onClose || null;
     this.cancSlide = 1;
+    this._applyModalTranslations();
     const overlay = document.getElementById("cancellation-modal-overlay");
     if (!overlay) return;
     overlay.querySelectorAll(".tutorial-slide").forEach((s, i) => s.classList.toggle("active", i === 0));
     overlay.querySelectorAll(".tutorial-dots .dot").forEach((d, i) => d.classList.toggle("active", i === 0));
+    const cancLang = typeof i18n !== "undefined" ? i18n.getLanguage() : "es";
     const prevBtn = document.getElementById("btn-canc-prev");
     const nextBtn = document.getElementById("btn-canc-next");
-    if (prevBtn) prevBtn.style.visibility = "hidden";
-    if (nextBtn) nextBtn.textContent = "SIGUIENTE ➡";
+    if (prevBtn) {
+      prevBtn.style.visibility = "hidden";
+      prevBtn.textContent = cancLang === "ja" ? "⬅ 戻る" : cancLang === "en" ? "⬅ BACK" : "⬅ ATRÁS";
+    }
+    if (nextBtn) {
+      const tNext = cancLang === "ja" ? "次へ ➡" : cancLang === "en" ? "NEXT ➡" : "SIGUIENTE ➡";
+      const spaceKey = cancLang === "ja" ? "スペース" : cancLang === "en" ? "SPACE" : "ESPACIO";
+      nextBtn.innerHTML = `${tNext} <span class="key-hint-pill">␣ ${spaceKey}</span>`;
+    }
     snd.alert();
     overlay.classList.add("active");
   }
@@ -8442,8 +17239,21 @@ class UIEngine {
       overlay.querySelectorAll(".tutorial-dots .dot").forEach((d, i) => d.classList.toggle("active", i + 1 === this.hateSlide));
       const prevBtn = document.getElementById("btn-hate-prev");
       const nextBtn = document.getElementById("btn-hate-next");
-      if (prevBtn) prevBtn.style.visibility = this.hateSlide > 1 ? "visible" : "hidden";
-      if (nextBtn) nextBtn.textContent = this.hateSlide === this.hateMax ? "ENTENDIDO ✕" : "SIGUIENTE ➡";
+      const hateLang = typeof i18n !== "undefined" ? i18n.getLanguage() : "es";
+      const spaceKey = hateLang === "ja" ? "スペース" : hateLang === "en" ? "SPACE" : "ESPACIO";
+      if (prevBtn) {
+        prevBtn.style.visibility = this.hateSlide > 1 ? "visible" : "hidden";
+        prevBtn.textContent = hateLang === "ja" ? "⬅ 戻る" : hateLang === "en" ? "⬅ BACK" : "⬅ ATRÁS";
+      }
+      if (nextBtn) {
+        if (this.hateSlide === this.hateMax) {
+          const tOk = hateLang === "ja" ? "了解 ✕" : hateLang === "en" ? "UNDERSTOOD ✕" : "ENTENDIDO ✕";
+          nextBtn.innerHTML = `${tOk} <span class="key-hint-pill">␣ ${spaceKey}</span>`;
+        } else {
+          const tNext = hateLang === "ja" ? "次へ ➡" : hateLang === "en" ? "NEXT ➡" : "SIGUIENTE ➡";
+          nextBtn.innerHTML = `${tNext} <span class="key-hint-pill">␣ ${spaceKey}</span>`;
+        }
+      }
     };
 
     const closeHate = () => {
@@ -8478,14 +17288,23 @@ class UIEngine {
   _showHateModal(onClose) {
     this._onHateClose = onClose || null;
     this.hateSlide = 1;
+    this._applyModalTranslations();
     const overlay = document.getElementById("hate-modal-overlay");
     if (!overlay) return;
     overlay.querySelectorAll(".tutorial-slide").forEach((s, i) => s.classList.toggle("active", i === 0));
     overlay.querySelectorAll(".tutorial-dots .dot").forEach((d, i) => d.classList.toggle("active", i === 0));
+    const hateLang = typeof i18n !== "undefined" ? i18n.getLanguage() : "es";
     const prevBtn = document.getElementById("btn-hate-prev");
     const nextBtn = document.getElementById("btn-hate-next");
-    if (prevBtn) prevBtn.style.visibility = "hidden";
-    if (nextBtn) nextBtn.textContent = "SIGUIENTE ➡";
+    if (prevBtn) {
+      prevBtn.style.visibility = "hidden";
+      prevBtn.textContent = hateLang === "ja" ? "⬅ 戻る" : hateLang === "en" ? "⬅ BACK" : "⬅ ATRÁS";
+    }
+    if (nextBtn) {
+      const tNext = hateLang === "ja" ? "次へ ➡" : hateLang === "en" ? "NEXT ➡" : "SIGUIENTE ➡";
+      const spaceKey = hateLang === "ja" ? "スペース" : hateLang === "en" ? "SPACE" : "ESPACIO";
+      nextBtn.innerHTML = `${tNext} <span class="key-hint-pill">␣ ${spaceKey}</span>`;
+    }
     snd.alert();
     overlay.classList.add("active");
   }
@@ -8502,8 +17321,21 @@ class UIEngine {
       overlay.querySelectorAll(".tutorial-dots .dot").forEach((d, i) => d.classList.toggle("active", i + 1 === this.s2Slide));
       const prevBtn = document.getElementById("btn-s2-prev");
       const nextBtn = document.getElementById("btn-s2-next");
-      if (prevBtn) prevBtn.style.visibility = this.s2Slide > 1 ? "visible" : "hidden";
-      if (nextBtn) nextBtn.textContent = this.s2Slide === this.s2Max ? "ENTENDIDO ✕" : "SIGUIENTE ➡";
+      const s2Lang = typeof i18n !== "undefined" ? i18n.getLanguage() : "es";
+      const spaceKey = s2Lang === "ja" ? "スペース" : s2Lang === "en" ? "SPACE" : "ESPACIO";
+      if (prevBtn) {
+        prevBtn.style.visibility = this.s2Slide > 1 ? "visible" : "hidden";
+        prevBtn.textContent = s2Lang === "ja" ? "⬅ 戻る" : s2Lang === "en" ? "⬅ BACK" : "⬅ ATRÁS";
+      }
+      if (nextBtn) {
+        if (this.s2Slide === this.s2Max) {
+          const tOk = s2Lang === "ja" ? "了解 ✕" : s2Lang === "en" ? "UNDERSTOOD ✕" : "ENTENDIDO ✕";
+          nextBtn.innerHTML = `${tOk} <span class="key-hint-pill">␣ ${spaceKey}</span>`;
+        } else {
+          const tNext = s2Lang === "ja" ? "次へ ➡" : s2Lang === "en" ? "NEXT ➡" : "SIGUIENTE ➡";
+          nextBtn.innerHTML = `${tNext} <span class="key-hint-pill">␣ ${spaceKey}</span>`;
+        }
+      }
     };
 
     const closeS2 = () => {
@@ -8539,24 +17371,108 @@ class UIEngine {
     const overlay = document.getElementById("strike2-modal-overlay");
     if (!overlay) return;
 
+    // Localize cancellation incident
+    const s2Lang = typeof i18n !== "undefined" ? i18n.getLanguage() : "es";
+    if (s2Lang !== "es" && typeof getLocalizedCancellation === "function") {
+      canc = getLocalizedCancellation(canc, s2Lang);
+    }
+
+    const s2Header = overlay.querySelector(".spec-label");
+    if (s2Header) {
+      s2Header.textContent = s2Lang === "ja" ? "🚨 セカンドストライク — 危機的警告 (2/3)" : s2Lang === "en" ? "🚨 SECOND STRIKE — CRITICAL ALERT (2/3)" : "🚨 SEGUNDO STRIKE — ALERTA CRÍTICA (2/3)";
+    }
+
     // Populate slide 1 dynamically with the specific incident
     const slide1 = document.getElementById("s2-slide-1");
     if (slide1) {
       const displayTweet = canc.tweetReal || canc.texto;
-      const tweetLabel = canc.tweetReal ? `<div style="font-size:0.7rem;color:var(--gray-1);margin-bottom:3px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.5px;">El tweet que lo desató:</div>` : "";
+      const tEscandalo = s2Lang === "ja" ? "スキャンダル:" : s2Lang === "en" ? "THE SCANDAL:" : "EL ESCÁNDALO:";
+      const tSegundoStrike = s2Lang === "ja" ? "セカンドストライク" : s2Lang === "en" ? "SECOND STRIKE" : "SEGUNDO STRIKE";
+      const tDefaultMotivo = s2Lang === "ja" ? "新たな問題行動により、アカウントへの通報が殺到しています。" : s2Lang === "en" ? "A new incident shook your timeline, triggering massive community reports against your account." : "Un nuevo incidente sacudió tu timeline y acumuló reportes masivos contra tu cuenta.";
+      const tTweetLabel = s2Lang === "ja" ? "炎上の引き金となったポスト:" : s2Lang === "en" ? "The post that triggered it:" : "El tweet que lo desató:";
+      const tweetLabel = canc.tweetReal ? `<div style="font-size:0.7rem;color:var(--gray-1);margin-bottom:3px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.5px;">${tTweetLabel}</div>` : "";
       slide1.innerHTML = `
-        <h3>EL ESCÁNDALO: ${canc.titulo || "SEGUNDO STRIKE"} 🚨</h3>
-        <p>${canc.motivo || "Un nuevo incidente sacudió tu timeline y acumuló reportes masivos contra tu cuenta."}</p>
+        <h3>${tEscandalo} ${canc.titulo || tSegundoStrike} 🚨</h3>
+        <p>${canc.motivo || tDefaultMotivo}</p>
         ${displayTweet ? `<div style="font-family:var(--font-mono); font-size:0.82rem; color:var(--gray-1); border-left:3px solid var(--red); padding:8px 12px; margin-top:4px;">${tweetLabel}"${displayTweet}"</div>` : ""}
       `;
+    }
+
+    // Localize slide 2 and slide 3
+    const slide2 = document.getElementById("s2-slide-2");
+    if (slide2) {
+      if (s2Lang === "ja") {
+        slide2.innerHTML = `
+          <h3>最大警戒レベル: 2/3 ☠️</h3>
+          <div class="strike-meter-row">
+            <div class="strike-slot active-2">⚠️ ストライク 1</div>
+            <div class="strike-slot active-2">🚨 ストライク 2 — 発動中</div>
+            <div class="strike-slot danger-target">☠️ ストライク 3: 終了</div>
+          </div>
+          <p>あと1回のミスで、あなたのアカウントは<strong>永久凍結</strong>されます。次の規約違反で即時ゲームオーバーです。</p>
+        `;
+      } else if (s2Lang === "en") {
+        slide2.innerHTML = `
+          <h3>MAXIMUM DANGER: 2/3 ☠️</h3>
+          <div class="strike-meter-row">
+            <div class="strike-slot active-2">⚠️ STRIKE 1</div>
+            <div class="strike-slot active-2">🚨 STRIKE 2 — ACTIVE</div>
+            <div class="strike-slot danger-target">☠️ STRIKE 3: GAME OVER</div>
+          </div>
+          <p>Just one more violation and your account will be <strong>permanently suspended</strong>. The next strike means instant Game Over.</p>
+        `;
+      } else {
+        slide2.innerHTML = `
+          <h3>PELIGRO MÁXIMO: 2/3 ☠️</h3>
+          <div class="strike-meter-row">
+            <div class="strike-slot active-2">⚠️ STRIKE 1</div>
+            <div class="strike-slot active-2">🚨 STRIKE 2 — ACTIVO</div>
+            <div class="strike-slot danger-target">☠️ STRIKE 3: FIN</div>
+          </div>
+          <p>Un solo error más y tu cuenta queda <strong>suspendida de forma definitiva</strong>. La próxima infracción es Game Over inmediato.</p>
+        `;
+      }
+    }
+
+    const slide3 = document.getElementById("s2-slide-3");
+    if (slide3) {
+      if (s2Lang === "ja") {
+        slide3.innerHTML = `
+          <h3>サバイバルモード 🛡️</h3>
+          <p>• <strong>口論、政治ポスト、釣り投稿</strong>は絶対に避けてください — ストライク発生率が極めて高くなります。</p>
+          <p>• ヘイト値を下げメンタルを回復するために、<strong>デジタルデトックス</strong>や<strong>ミーム</strong>を活用しましょう。</p>
+          <p>• バズりラッシュが発生した場合、3ツイートすべて成功させる自信がない限り<strong>拒否</strong>してください。</p>
+        `;
+      } else if (s2Lang === "en") {
+        slide3.innerHTML = `
+          <h3>SURVIVAL MODE 🛡️</h3>
+          <p>• Avoid <strong>Fight, Politics, and Bait</strong> at all costs — their strike odds are extremely high.</p>
+          <p>• Play <strong>Disconnect Day</strong> or <strong>Memes</strong> to drain Hate and restore Mental Health.</p>
+          <p>• If a Viral Streak triggers, <strong>decline it</strong> unless you are 100% sure you can win all 3 tweets.</p>
+        `;
+      } else {
+        slide3.innerHTML = `
+          <h3>MODO SUPERVIVENCIA 🛡️</h3>
+          <p>• Evitá <strong>Pelea, Política y Bait</strong> a cualquier costo — las chances de strike son altas.</p>
+          <p>• Jugá <strong>Día de Desconexión</strong> o <strong>Memes</strong> para bajar el Odio y recuperar Salud Mental.</p>
+          <p>• Si aparece una Racha Viral, <strong>no la aceptes</strong> salvo que estés segurx de ganar los 3 tweets.</p>
+        `;
+      }
     }
 
     overlay.querySelectorAll(".tutorial-slide").forEach((s, i) => s.classList.toggle("active", i === 0));
     overlay.querySelectorAll(".tutorial-dots .dot").forEach((d, i) => d.classList.toggle("active", i === 0));
     const prevBtn = document.getElementById("btn-s2-prev");
     const nextBtn = document.getElementById("btn-s2-next");
-    if (prevBtn) prevBtn.style.visibility = "hidden";
-    if (nextBtn) nextBtn.textContent = "SIGUIENTE ➡";
+    if (prevBtn) {
+      prevBtn.style.visibility = "hidden";
+      prevBtn.textContent = s2Lang === "ja" ? "⬅ 戻る" : s2Lang === "en" ? "⬅ BACK" : "⬅ ATRÁS";
+    }
+    if (nextBtn) {
+      const tNext = s2Lang === "ja" ? "次へ ➡" : s2Lang === "en" ? "NEXT ➡" : "SIGUIENTE ➡";
+      const spaceKey = s2Lang === "ja" ? "スペース" : s2Lang === "en" ? "SPACE" : "ESPACIO";
+      nextBtn.innerHTML = `${tNext} <span class="key-hint-pill">␣ ${spaceKey}</span>`;
+    }
     snd.alert();
     overlay.classList.add("active");
     overlay.focus();
@@ -8585,15 +17501,59 @@ class UIEngine {
     this._onCgoClose = onClose || null;
     const overlay = document.getElementById("canc-gameover-modal-overlay");
     if (!overlay) return;
+
+    // Localize
+    const cgoLang = typeof i18n !== "undefined" ? i18n.getLanguage() : "es";
+    if (cgoLang !== "es" && typeof getLocalizedCancellation === "function") {
+      canc = getLocalizedCancellation(canc, cgoLang);
+    }
+
+    const headerEl = overlay.querySelector(".spec-label");
+    if (headerEl) {
+      headerEl.textContent = cgoLang === "ja" ? "☠️ アカウント永久凍結" : cgoLang === "en" ? "☠️ ACCOUNT PERMANENTLY SUSPENDED" : "☠️ CUENTA SUSPENDIDA DEFINITIVAMENTE";
+    }
+
     const titleEl  = document.getElementById("cgo-title");
     const reasonEl = document.getElementById("cgo-reason");
     const tweetEl  = document.getElementById("cgo-tweet");
-    if (titleEl)  titleEl.textContent  = canc?.titulo  || "CUENTA SUSPENDIDA DEFINITIVAMENTE";
-    if (reasonEl) reasonEl.textContent = canc?.motivo  || "";
+
+    let finalTitle = canc?.titulo;
+    let finalMotivo = canc?.motivo;
+
+    // Handle special ad-hoc game over modals (hate max / chronic toxicity / failed viral streak)
+    if (finalTitle === "HOSTILIDAD EXTREMA — CUENTA CERRADA") {
+      if (cgoLang === "ja") {
+        finalTitle = "極限のヘイト — アカウント永久凍結";
+        finalMotivo = "ヘイト値が100%に達しました。プラットフォームはあなたのアカウントを公共の脅威と判断し即座に永久凍結しました。";
+      } else if (cgoLang === "en") {
+        finalTitle = "EXTREME HOSTILITY — ACCOUNT SUSPENDED";
+        finalMotivo = "Your Hate reached 100%. The platform deemed your account a public hazard and permanently banned you.";
+      }
+    } else if (finalTitle === "TOXICIDAD CRÓNICA — EXPULSIÓN FORZADA") {
+      if (cgoLang === "ja") {
+        finalTitle = "慢性的有害性 — 強制追放";
+        finalMotivo = "3ターン連続でヘイト値が危険水域に留まりました。モデレーターによりアカウントが強制閉鎖されました。";
+      } else if (cgoLang === "en") {
+        finalTitle = "CHRONIC TOXICITY — FORCED EXPULSION";
+        finalMotivo = "Your Hate stayed in the red zone for 3 consecutive turns. Moderators terminated your profile.";
+      }
+    } else if (finalTitle === "RACHA VIRAL FALLIDA — CUENTA SUSPENDIDA") {
+      if (cgoLang === "ja") {
+        finalTitle = "バズりラッシュ失敗 — アカウント凍結";
+        finalMotivo = "資金を失い、さらに2回のストライクを受けました。モデレーターによりアカウントが永久凍結されました。";
+      } else if (cgoLang === "en") {
+        finalTitle = "FAILED VIRAL STREAK — ACCOUNT SUSPENDED";
+        finalMotivo = "You lost funds and accumulated 2 extra strikes. The moderators suspended your account permanently.";
+      }
+    }
+
+    const defaultTitle = cgoLang === "ja" ? "アカウント永久凍結" : cgoLang === "en" ? "ACCOUNT PERMANENTLY SUSPENDED" : "CUENTA SUSPENDIDA DEFINITIVAMENTE";
+    if (titleEl)  titleEl.textContent  = finalTitle  || defaultTitle;
+    if (reasonEl) reasonEl.textContent = finalMotivo || "";
     const displayTweet = canc?.tweetReal || canc?.texto;
     if (tweetEl) {
       if (displayTweet) {
-        const label = canc?.tweetReal ? "El tweet que lo desató:\n" : "";
+        const label = canc?.tweetReal ? (cgoLang === "ja" ? "炎上の引き金となったポスト:\n" : cgoLang === "en" ? "The post that triggered it:\n" : "El tweet que lo desató:\n") : "";
         tweetEl.textContent = label + `"${displayTweet}"`;
         tweetEl.style.display = "block";
       } else {
@@ -8601,6 +17561,12 @@ class UIEngine {
         tweetEl.style.display = "none";
       }
     }
+
+    const btnOk = document.getElementById("btn-cgo-ok");
+    if (btnOk) {
+      btnOk.textContent = cgoLang === "ja" ? "最終リザルトを見る ☠️" : cgoLang === "en" ? "VIEW FINAL STATS ☠️" : "VER ESTADÍSTICAS FINALES ☠️";
+    }
+
     overlay.classList.add("active");
     overlay.focus();
   }
@@ -8670,6 +17636,7 @@ class UIEngine {
   _showViralModal(onClose) {
     this._onViralClose = onClose || null;
     this.viralSlide = 1;
+    this._applyModalTranslations();
     const overlay = document.getElementById("viral-modal-overlay");
     if (!overlay) return;
     overlay.querySelectorAll(".tutorial-slide").forEach((s, i) => s.classList.toggle("active", i === 0));
@@ -8679,7 +17646,10 @@ class UIEngine {
     if (prevBtn) prevBtn.style.visibility = "hidden";
     if (nextBtn) {
       nextBtn.style.display = "block";
-      nextBtn.textContent = "SIGUIENTE ➡";
+      const lang = typeof i18n !== "undefined" ? i18n.getLanguage() : "es";
+      const spaceLabel = lang === "ja" ? "スペース" : lang === "en" ? "SPACE" : "ESPACIO";
+      const tNext = typeof i18n !== "undefined" ? i18n.t("tutorial.next", null, "SIGUIENTE ➡") : "SIGUIENTE ➡";
+      nextBtn.innerHTML = tNext + ` <span class="key-hint-pill">␣ ${spaceLabel}</span>`;
     }
     snd.alert();
     overlay.classList.add("active");
@@ -8739,6 +17709,7 @@ class UIEngine {
     if (nav) nav.style.display = "flex";
 
     snd.dramaticBraam();
+    this._applyModalTranslations();
     overlay.classList.add("active");
   }
 
@@ -8923,6 +17894,9 @@ class UIEngine {
         const isSelected = opt.dataset.lang === currentLang;
         opt.classList.toggle("active", isSelected);
       });
+      if (typeof i18n !== "undefined" && i18n.getLanguage() !== currentLang) {
+        i18n.setLanguage(currentLang);
+      }
     }
 
     btn.onclick = (e) => {
@@ -8941,22 +17915,214 @@ class UIEngine {
         snd.click();
         const lang = opt.dataset.lang;
         menu.classList.remove("active");
-        if (lang === "es") {
-          try { localStorage.setItem("twitero_preferred_lang", "es"); } catch(_) {}
-          updateBtn("es");
-          menu.querySelectorAll(".lang-opt").forEach(o => o.classList.toggle("active", o.dataset.lang === "es"));
-          return;
-        }
         try { localStorage.setItem("twitero_preferred_lang", lang); } catch(_) {}
+        if (typeof i18n !== "undefined") {
+          i18n.setLanguage(lang);
+        }
         updateBtn(lang);
         menu.querySelectorAll(".lang-opt").forEach(o => o.classList.toggle("active", o.dataset.lang === lang));
-        this._showAlert("IDIOMA EN DESARROLLO", `El soporte para ${lang==="en"?"Inglés (🇬🇧 English)":"Japonés (🇯🇵 日本語)"} estará disponible en una próxima actualización. Actualmente los textos se mostrarán en Español.`, "🌐 LOCALIZACIÓN");
+        this.applyTranslations();
       };
     });
   }
 
+  applyTranslations() {
+    if (typeof i18n === "undefined") return;
+    const t = (k, p, d) => i18n.t(k, p, d);
+    const lang = i18n.getLanguage();
+
+    // ── Splash image swap based on language ──────────────────────────────
+    const splashImg = document.getElementById("splash-hero-img");
+    if (splashImg) {
+      splashImg.src = lang === "ja" ? "splash JAP.jpg" : "splash.jpg";
+    }
+
+    // Splash texts
+    const splashIntro = document.querySelector(".splash-intro-text");
+    if (splashIntro) splashIntro.textContent = t("splash.tagline");
+
+    const btnStart = document.getElementById("btn-start");
+    if (btnStart) btnStart.textContent = t("splash.start_btn");
+
+    const btnSplashRanking = document.getElementById("btn-splash-ranking");
+    if (btnSplashRanking) btnSplashRanking.textContent = t("splash.fame_btn");
+
+    const btnFullscreenSplash = document.getElementById("btn-fullscreen-splash");
+    if (btnFullscreenSplash) btnFullscreenSplash.textContent = t("splash.fullscreen");
+
+    // Rotate overlay texts
+    const rotTitle = document.querySelector(".rotate-title");
+    if (rotTitle) rotTitle.textContent = t("rotate.title");
+    const rotDesc = document.querySelector(".rotate-desc");
+    if (rotDesc) rotDesc.innerHTML = t("rotate.desc");
+    const rotPill = document.querySelector(".rotate-pill");
+    if (rotPill) rotPill.textContent = t("rotate.pill");
+
+    // Dashboard: Topbar and Section Titles
+    const topbarTitle = document.getElementById("topbar-title");
+    if (topbarTitle) topbarTitle.textContent = t("dashboard.timeline_title", null, "🐦 TIMELINE DEL DÍA");
+
+    const cardsTitle = document.getElementById("cards-section-title");
+    if (cardsTitle) cardsTitle.textContent = t("cards.section_title", null, "TUITS DISPONIBLES");
+
+    const cardsSubtitle = document.getElementById("cards-subtitle");
+    if (cardsSubtitle) cardsSubtitle.textContent = t("cards.section_sub", null, "SELECCIONÁ UNA CARTA PARA PUBLICAR ESTE TURNO");
+
+    const boosterSecTitle = document.querySelector("#boosters-section .section-title-standard");
+    if (boosterSecTitle) boosterSecTitle.textContent = t("shop.section_title", null, "BOOSTERS DISPONIBLES");
+
+    const boosterSecSub = document.querySelector("#boosters-section .sub");
+    if (boosterSecSub) boosterSecSub.textContent = t("shop.section_sub", null, "ACTIVA UN BOOSTER PARA MULTIPLICAR EL EFECTO DE TU PRÓXIMO TWEET");
+
+    // Dashboard: Sidebar Labels and Buttons
+    const statRows = document.querySelectorAll(".stat-row-compact");
+    if (statRows.length >= 4) {
+      const lblSegs = statRows[0]?.querySelector(".stat-row-label");
+      if (lblSegs) lblSegs.textContent = t("dashboard.followers", null, "SEGUIDORES");
+
+      const lblDin = statRows[1]?.querySelector(".stat-row-label");
+      if (lblDin) {
+        const paySpan = document.getElementById("stat-payout-label");
+        const payHtml = paySpan ? paySpan.outerHTML : '<span class="sv" id="stat-payout-label" style="color:var(--green)">+~$500/T</span>';
+        lblDin.innerHTML = `${t("dashboard.money", null, "DINERO")} ${payHtml}`;
+      }
+
+      const lblSm = statRows[2]?.querySelector(".stat-row-label");
+      if (lblSm) {
+        const smSpan = document.getElementById("stat-sm-val");
+        const smHtml = smSpan ? smSpan.outerHTML : '<span class="sv" id="stat-sm-val">100%</span>';
+        lblSm.innerHTML = `${t("dashboard.mental_health", null, "SALUD MENTAL")} ${smHtml}`;
+      }
+
+      const lblLoveHate = statRows[3]?.querySelector(".stat-row-label");
+      if (lblLoveHate) lblLoveHate.textContent = t("dashboard.love_hate", null, "AMOR / ODIO");
+    }
+
+    // ── Sidebar tooltips ─────────────────────────────────────────────────
+    const sidebarFollowers = document.querySelector(".stat-followers-box, [data-stat='followers']");
+    if (sidebarFollowers) sidebarFollowers.setAttribute("data-tooltip", t("dashboard.tooltips.followers", null, "SEGUIDORES: tu audiencia acumulada."));
+    const sidebarCash = document.querySelector(".stat-cash-box, [data-stat='cash']");
+    if (sidebarCash) sidebarCash.setAttribute("data-tooltip", t("dashboard.tooltips.cash", null, "DINERO: saldo disponible."));
+
+    const btnVerPerfil = document.getElementById("btn-ver-perfil");
+    if (btnVerPerfil) btnVerPerfil.textContent = t("dashboard.view_profile", null, "📋 VER PERFIL COMPLETO");
+
+    const btnShortcuts = document.getElementById("btn-ver-shortcuts");
+    if (btnShortcuts) btnShortcuts.textContent = t("dashboard.shortcuts", null, "⌨️ ATAJOS DE TECLADO");
+
+    const btnAudioModal = document.getElementById("btn-open-audio-modal");
+    if (btnAudioModal) btnAudioModal.textContent = t("dashboard.audio_opts", null, "🎧 OPCIONES DE AUDIO");
+
+    // ── Audio Modal ───────────────────────────────────────────────────────
+    const audioModalSpec = document.querySelector("#audio-modal-overlay .spec-label");
+    if (audioModalSpec) audioModalSpec.textContent = t("audio.title", null, "🎧 OPCIONES DE AUDIO");
+    const audioMusicLabel = document.querySelector("#audio-modal-overlay .audio-row-label span:last-child, .audio-music-label");
+    if (audioMusicLabel) audioMusicLabel.textContent = t("audio.music", null, "🎵 MÚSICA");
+    const audioSfxLabel = document.querySelector(".audio-sfx-label");
+    if (audioSfxLabel) audioSfxLabel.textContent = t("audio.sfx", null, "🔔 EFECTOS DE SONIDO");
+    const audioOkBtn = document.getElementById("btn-audio-modal-ok");
+    if (audioOkBtn) audioOkBtn.innerHTML = `${t("audio.ok", null, "LISTO")} <span class="key-hint-pill">⎵ ${lang === "ja" ? "スペース" : lang === "en" ? "SPACE" : "ESPACIO"}</span>`;
+
+    // ── Ranking Modal ─────────────────────────────────────────────────────
+    const rankingSpec = document.querySelector("#ranking-modal-overlay .spec-label");
+    if (rankingSpec) rankingSpec.textContent = t("ranking.title", null, "🏆 SALÓN DE LA FAMA // LEADERBOARD");
+    const rankingDaily = document.querySelector("#ranking-modal-overlay .ranking-col-title:first-of-type");
+    if (rankingDaily) rankingDaily.textContent = t("ranking.daily", null, "📅 TOP 10 DE HOY (DIARIO)");
+    const rankingAlltime = document.querySelector("#ranking-modal-overlay .ranking-col-title:last-of-type");
+    if (rankingAlltime) rankingAlltime.textContent = t("ranking.alltime", null, "🏆 TOP 10 HISTÓRICO (ALL-TIME)");
+    const rankingClose = document.getElementById("btn-ranking-ok");
+    if (rankingClose) rankingClose.textContent = t("ranking.close", null, "CERRAR ✕");
+
+    // ── Ranking Prompt (handle input before ranking) ──────────────────────
+    const rankingPromptH3 = document.querySelector("#ranking-prompt-overlay h3");
+    if (rankingPromptH3) rankingPromptH3.textContent = t("ranking_prompt.title", null, "¡PARTIDA COMPLETADA!");
+    const rankingPromptP = document.querySelector("#ranking-prompt-overlay p");
+    if (rankingPromptP) rankingPromptP.textContent = t("ranking_prompt.subtitle", null, "Ingresá tu @ para entrar al Salón de la Fama");
+    const rankingSubmit = document.getElementById("btn-ranking-prompt-submit");
+    if (rankingSubmit) rankingSubmit.textContent = t("ranking_prompt.submit", null, "⚡ ENTRAR AL SALÓN");
+
+    // ── Mobile Boosters Drawer ────────────────────────────────────────────
+    const mobileBooSpec = document.querySelector("#mobile-boosters-overlay .spec-label");
+    if (mobileBooSpec) mobileBooSpec.textContent = t("mobile_boosters.title", null, "🚀 TIENDA DE BOOSTERS");
+    const mobileBooSub = document.querySelector(".mobile-boosters-subtitle");
+    if (mobileBooSub) mobileBooSub.textContent = t("mobile_boosters.subtitle", null, "Tocá un booster para activarlo o desactivarlo para tu próximo tweet:");
+    const mobileBooReady = document.getElementById("btn-mobile-boosters-ready");
+    if (mobileBooReady) mobileBooReady.textContent = t("mobile_boosters.ready", null, "LISTO PARA TUITEAR ▶");
+
+    // ── Alert overlay OK button ───────────────────────────────────────────
+    const alertOkBtn = document.getElementById("alert-ok-btn");
+    if (alertOkBtn) alertOkBtn.innerHTML = `${t("shop.ok", null, "[ ENTENDIDO ]")} <span class="key-hint-pill">⎵ ${lang === "ja" ? "スペース" : lang === "en" ? "SPACE" : "ESPACIO"}</span>`;
+
+    // End Screens
+    const end1Badge = document.querySelector("#screen-end1 .end-game-badge");
+    if (end1Badge) end1Badge.textContent = t("end.game_over", null, "🏆 FINAL DEL JUEGO 🏆");
+
+    const spaceLabel = lang === "ja" ? "スペース" : lang === "en" ? "SPACE" : "ESPACIO";
+    const end1Restart = document.getElementById("btn-end1-restart");
+    if (end1Restart) end1Restart.innerHTML = `${t("end.replay", null, "▶ JUGAR DE NUEVO")} <span class="key-hint-pill">␣ ${spaceLabel}</span>`;
+
+    const end1Ranking = document.getElementById("btn-end1-ranking");
+    if (end1Ranking) end1Ranking.textContent = t("end.ranking", null, "🏆 Ranking");
+
+    const end1Tree = document.getElementById("btn-end1-tree");
+    if (end1Tree) end1Tree.textContent = t("end.tree", null, "🌳 Árbol de Decisiones");
+
+    const end1Share = document.getElementById("btn-end1-share");
+    if (end1Share) end1Share.textContent = t("end.share", null, "🐦 Compartir en X");
+
+    const nextEnd = document.getElementById("btn-next-end");
+    if (nextEnd) nextEnd.textContent = t("end.evolution", null, "📊 Evolución en Turnos");
+
+    const cafecito = document.getElementById("btn-cafecito-link");
+    if (cafecito) cafecito.textContent = t("end.cafecito", null, "☕ Invitame un Cafecito");
+
+    const colTitle = document.querySelector("#screen-end1 .collection-title");
+    if (colTitle) colTitle.textContent = t("end.collection_title", null, "🏆 COLECCIÓN DE FINALES");
+
+    const end2Back = document.getElementById("btn-end2-back");
+    if (end2Back) end2Back.textContent = t("tutorial.prev", null, "⬅ ATRÁS");
+
+    // End2 buttons (turn evolution screen)
+    const end2TreeBtn = document.getElementById("btn-end2-tree");
+    if (end2TreeBtn) end2TreeBtn.textContent = t("end2.tree_btn", null, "🌳 Ver Árbol");
+    const end2ShareBtn = document.getElementById("btn-end2-share");
+    if (end2ShareBtn) end2ShareBtn.textContent = t("end2.share_btn", null, "🐦 Compartir en X");
+    const end2RankingBtn = document.getElementById("btn-end2-ranking");
+    if (end2RankingBtn) end2RankingBtn.textContent = t("end2.ranking_btn", null, "🏆 Salón de la Fama");
+    const end2CopyBtn = document.getElementById("btn-copy-report");
+    if (end2CopyBtn && !end2CopyBtn.classList.contains("copied")) end2CopyBtn.textContent = t("end2.copy_btn", null, "📋 Copy Report");
+    const end2CafecitoBtnE2 = document.getElementById("btn-end2-cafecito");
+    if (end2CafecitoBtnE2) end2CafecitoBtnE2.textContent = t("end2.cafecito_btn", null, "☕ Invitar un Cafecito");
+    const end2CreatedBy = document.querySelector(".end2-credits-label");
+    if (end2CreatedBy) end2CreatedBy.textContent = t("end2.created_by", null, "Creado por");
+
+    const playAgain = document.getElementById("btn-play-again");
+    if (playAgain) playAgain.textContent = t("end.replay", null, "▶ JUGAR DE NUEVO");
+
+    const copyRep = document.getElementById("btn-copy-report");
+    if (copyRep && !copyRep.classList.contains("copied")) copyRep.textContent = t("end.copy_report", null, "📋 COPIAR REPORTE");
+
+    // Re-render setup screens so they reflect the new language immediately
+    this._gender();
+    this._archetype();
+    this._personality();
+
+    const activeScreen = document.querySelector(".screen.active");
+    if (activeScreen && activeScreen.id === "screen-game") {
+      this._updateStatsOnly();
+      this._renderCards();
+      this._renderBoosters();
+    }
+
+    // Update tutorial and help modals
+    if (typeof this._applyModalTranslations === "function") this._applyModalTranslations();
+  }
+
   _setupGlobalTooltips() {
     const tt=document.getElementById("global-tooltip"); if(!tt) return;
+    // En dispositivos táctiles no hay hover real; ignorar para evitar tooltips pegados
+    if (window.matchMedia && window.matchMedia("(hover: none)").matches) return;
+    document.addEventListener("touchstart", () => { tt.classList.remove("active"); }, { passive: true });
     document.addEventListener("mouseover",(e)=>{
       const target=e.target.closest("[data-tooltip]");
       if(target){
@@ -9021,7 +18187,13 @@ class UIEngine {
     };
 
     const okBtn=document.getElementById("alert-ok-btn");
-    if(okBtn) okBtn.onclick = closeAlert;
+    if(okBtn) {
+      const lang = typeof i18n !== "undefined" ? i18n.getLanguage() : "es";
+      const spaceLabel = lang === "ja" ? "スペース" : lang === "en" ? "SPACE" : "ESPACIO";
+      const okText = typeof i18n !== "undefined" ? i18n.t("shop.ok", null, "[ ENTENDIDO ]") : "[ ENTENDIDO ]";
+      okBtn.innerHTML = `${okText} <span class="key-hint-pill">⎵ ${spaceLabel}</span>`;
+      okBtn.onclick = closeAlert;
+    }
 
     const closeBtn=document.getElementById("btn-close-alert");
     if(closeBtn) closeBtn.onclick = closeAlert;
@@ -9032,39 +18204,78 @@ class UIEngine {
   }
 
   _gender() {
+    const t = (k, p, d) => (typeof i18n !== "undefined" ? i18n.t(k, p, d) : d);
     const backBtn = document.getElementById("btn-back-gender");
     if (backBtn) {
+      backBtn.textContent = t("setup.back_btn", null, "← VOLVER AL INICIO");
       backBtn.onclick = () => {
         snd.click();
         this.showScreen("screen-splash");
       };
     }
+    const headTitle = document.querySelector("#screen-gender .sel-header h1");
+    if (headTitle) headTitle.textContent = t("setup.gender_title", null, "Selección de Género");
+    const headSub = document.querySelector("#screen-gender .step-label");
+    if (headSub) headSub.textContent = t("setup.step", { current: "01", total: "03" }, "PASO 01 / 03") + " — " + t("setup.gender_subtitle", null, "DEFINICIÓN DE PRONOMBRES");
+
     const grid=document.getElementById("gender-grid"); if(!grid) return;
-    const opts=[{id:"hombre",icon:"👨",name:"Hombre",desc:"Pronombres masculinos.",meta:"PRON: ÉL"},{id:"mujer",icon:"👩",name:"Mujer",desc:"Pronombres femeninos.",meta:"PRON: ELLA"},{id:"diverso",icon:"🧑",name:"Diverso",desc:"Lenguaje neutro.",meta:"PRON: ELLE"}];
+    const opts=[
+      {id:"hombre",icon:"👨",name:t("setup.male", null, "Hombre"),desc:t("setup.male_desc", null, "Pronombres masculinos."),meta:t("setup.male_meta", null, "PRON: ÉL / HE")},
+      {id:"mujer",icon:"👩",name:t("setup.female", null, "Mujer"),desc:t("setup.female_desc", null, "Pronombres femeninos."),meta:t("setup.female_meta", null, "PRON: ELLA / SHE")},
+      {id:"diverso",icon:"🧑",name:t("setup.non_binary", null, "Diverso"),desc:t("setup.nb_desc", null, "Lenguaje neutro."),meta:t("setup.nb_meta", null, "PRON: ELLE / THEY")}
+    ];
     grid.innerHTML=opts.map(o=>`<div class="sel-card" data-id="${o.id}"><div class="sc-icon-wrap">${o.icon}</div><div class="sc-name">${o.name}</div><div class="sc-desc">${o.desc}</div><div class="sc-meta">${o.meta}</div></div>`).join("");
-    grid.querySelectorAll(".sel-card").forEach(c=>{ c.onclick=()=>{ snd.click(); this.sel.genero=c.dataset.id; this.showScreen("screen-archetype"); this._archetype(); }; });
+    grid.querySelectorAll(".sel-card").forEach(c=>{ c.onclick=()=>{ snd.click(); this.sel.genero=c.dataset.id; this.showScreen("screen-archetype"); }; });
   }
 
   _archetype() {
+    const t = (k, p, d) => (typeof i18n !== "undefined" ? i18n.t(k, p, d) : d);
     const backBtn = document.getElementById("btn-back-archetype");
     if (backBtn) {
+      backBtn.textContent = t("setup.back_btn", null, "← VOLVER A GÉNERO");
       backBtn.onclick = () => {
         snd.click();
         this.showScreen("screen-gender");
       };
     }
+    const headTitle = document.querySelector("#screen-archetype .sel-header h1");
+    if (headTitle) headTitle.textContent = t("setup.archetype_title", null, "Selección de Arquetipo");
+    const headSub = document.querySelector("#screen-archetype .step-label");
+    if (headSub) headSub.textContent = t("setup.step", { current: "02", total: "03" }, "PASO 02 / 03") + " — " + t("setup.archetype_subtitle", null, "IDENTIDAD EN TWITTER · 12 DISPONIBLES");
+
     const grid=document.getElementById("archetype-grid"); if(!grid) return;
     grid.innerHTML=ARCHETYPES.map(a=>{
       const isAvailable = typeof isArchetypeAvailableForGender === "function"
         ? isArchetypeAvailableForGender(a.id, this.sel.genero)
         : true;
-      const genderedName = getGenderedArchetype(a, this.sel.genero);
+      const archTransName = (typeof i18n !== "undefined") ? i18n.t("archetypes." + a.id + ".nombre", null, null) : null;
+      const archTransDesc = (typeof i18n !== "undefined") ? i18n.t("archetypes." + a.id + ".desc", null, null) : null;
+      const archTransDif = (typeof i18n !== "undefined") ? i18n.t("archetypes." + a.id + ".dif", null, null) : null;
+      const genderedName = (typeof i18n !== "undefined" && i18n.getLanguage() !== "es" && archTransName)
+        ? archTransName
+        : getGenderedArchetype(a, this.sel.genero);
       const difClass = a.dificultad === "alta" ? "chip-dif-alta" : a.dificultad === "media" ? "chip-dif-media" : "chip-dif-baja";
-      const difBadge = `<span class="chip-dif ${difClass}">DIFICULTAD ${a.difLabel || "MEDIA"}</span>`;
-      const afinesHtml=(a.afines||[]).map(f=>`<span class="chip-afin">${CARD_PALOS[f]?.icono||"⭐"} ${f}</span>`).join("");
-      const debilesHtml=(a.debiles||[]).map(f=>`<span class="chip-debil">${CARD_PALOS[f]?.icono||"💀"} ${f}</span>`).join("");
-      const passiveText = a.difDesc || (a.bajomon?"Bajo Monetize · ":"") + (a.odioRed?"Odio Reducido":"");
-      const archDesc = typeof getGenderedArchetypeDesc === "function" ? getGenderedArchetypeDesc(a, this.sel.genero) : a.desc;
+      const difBadge = `<span class="chip-dif ${difClass}">${archTransDif || ("DIFICULTAD " + (a.difLabel || "MEDIA"))}</span>`;
+      const lang = typeof i18n !== "undefined" ? i18n.getLanguage() : "es";
+      const afinesHtml = (a.afines || []).map(f => {
+        const fName = (typeof i18n !== "undefined" && i18n.t("cards.palo_" + f)) || (CARD_PALOS[f]?.nombre || f);
+        return `<span class="chip-afin">${CARD_PALOS[f]?.icono || "⭐"} ${fName}</span>`;
+      }).join("");
+      const debilesHtml = (a.debiles || []).map(f => {
+        const fName = (typeof i18n !== "undefined" && i18n.t("cards.palo_" + f)) || (CARD_PALOS[f]?.nombre || f);
+        return `<span class="chip-debil">${CARD_PALOS[f]?.icono || "💀"} ${fName}</span>`;
+      }).join("");
+      let passiveText = "";
+      if (lang === "en") {
+        passiveText = (a.bajomon ? "Low Monetization · " : "") + (a.odioRed ? "Reduced Hate" : "");
+      } else if (lang === "ja") {
+        passiveText = (a.bajomon ? "収益化低下 · " : "") + (a.odioRed ? "ヘイト上昇抑制" : "");
+      } else {
+        passiveText = a.difDesc || (a.bajomon ? "Bajo Monetize · " : "") + (a.odioRed ? "Odio Reducido" : "");
+      }
+      const archDesc = (typeof i18n !== "undefined" && i18n.getLanguage() !== "es" && archTransDesc)
+        ? archTransDesc
+        : (typeof getGenderedArchetypeDesc === "function" ? getGenderedArchetypeDesc(a, this.sel.genero) : a.desc);
 
       // Tooltip: if locked, show which gender unlocks it
       let lockHint = "";
@@ -9072,8 +18283,13 @@ class UIEngine {
         const unlockGenders = ["hombre","mujer","diverso"].filter(g => {
           const allowed = (typeof ARCHETYPE_GENDER_RESTRICTIONS !== "undefined") ? ARCHETYPE_GENDER_RESTRICTIONS[g] : [];
           return allowed && allowed.includes(a.id);
-        }).map(g => g === "hombre" ? "Él" : g === "mujer" ? "Ella" : "Elle");
-        lockHint = `<div style='margin-top:6px;color:var(--red);font-size:0.75rem;font-weight:700;'>🔒 Solo disponible para: ${unlockGenders.join(", ")}</div>`;
+        }).map(g => {
+          if (lang === "ja") return g === "hombre" ? "男性" : g === "mujer" ? "女性" : "ノンバイナリー";
+          if (lang === "en") return g === "hombre" ? "He/Him" : g === "mujer" ? "She/Her" : "They/Them";
+          return g === "hombre" ? "Él" : g === "mujer" ? "Ella" : "Elle";
+        });
+        const lockPrefix = lang === "ja" ? "🔒 解放条件: " : lang === "en" ? "🔒 Only available for: " : "🔒 Solo disponible para: ";
+        lockHint = `<div style='margin-top:6px;color:var(--red);font-size:0.75rem;font-weight:700;'>${lockPrefix}${unlockGenders.join(", ")}</div>`;
       }
       const tip = `<strong>${a.icono} ${genderedName.toUpperCase()}</strong><br><div style='margin:6px 0;'>${difBadge}</div>${archDesc}<br><div style='margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;'>${afinesHtml}${debilesHtml}</div>${passiveText ? `<div style='margin-top:6px;color:var(--blue);font-size:0.75rem;'>${passiveText}</div>` : ''}${lockHint}`.replace(/"/g, '&quot;');
 
@@ -9104,22 +18320,52 @@ class UIEngine {
 
 
   _personality() {
+    const t = (k, p, d) => (typeof i18n !== "undefined" ? i18n.t(k, p, d) : d);
     const backBtn = document.getElementById("btn-back-personality");
     if (backBtn) {
+      backBtn.textContent = t("setup.back_btn", null, "← VOLVER A ARQUETIPOS");
       backBtn.onclick = () => {
         snd.click();
         this.showScreen("screen-archetype");
-        this._archetype();
       };
     }
-    const grid=document.getElementById("personality-grid"); if(!grid) return;
+    const headTitle = document.querySelector("#screen-personality .sel-header h1");
+    if (headTitle) headTitle.textContent = t("setup.personality_title", null, "Personalidad & Cuenta");
+    const headSub = document.querySelector("#screen-personality .step-label");
+    if (headSub) headSub.textContent = t("setup.step", { current: "03", total: "03" }, "PASO 03 / 03") + " — " + t("setup.personality_subtitle", null, "ESTRATEGIA Y NOMBRE DE USUARIO");
+
+    const handleLbl = document.querySelector("#screen-personality .handle-label");
+    if (handleLbl) handleLbl.textContent = "// " + t("setup.handle_title", null, "TU @HANDLE EN X (TWITTER) — EDITABLE:") + ":";
+    const handleInput = document.getElementById("user-handle-input");
+    if (handleInput) handleInput.placeholder = t("setup.handle_placeholder", null, "tu_cuenta");
+
+    const lang = typeof i18n !== "undefined" ? i18n.getLanguage() : "es";
+    const grid = document.getElementById("personality-grid"); if (!grid) return;
     grid.innerHTML=PERSONALITIES.map(p=>{
-      const persDesc = typeof getGenderedPersonalityDesc === "function" ? getGenderedPersonalityDesc(p, this.sel.genero) : p.desc;
-      const tip = `<strong>${p.icono} ${p.nombre.toUpperCase()}</strong><br>${persDesc}<br><div style='margin-top:6px;color:var(--blue);font-family:var(--font-mono);font-size:0.75rem;'>RIESGO: ${p.riesgo.toUpperCase()} · RETORNO: ${p.retorno.toUpperCase()}</div>${p.bonus ? `<div style='color:var(--green);font-size:0.72rem;margin-top:2px;'>+ ${p.bonus}</div>` : ''}${p.malus ? `<div style='color:var(--red);font-size:0.72rem;'>- ${p.malus}</div>` : ''}`.replace(/"/g, '&quot;');
+      const persTransName = (typeof i18n !== "undefined") ? i18n.t("personalities." + p.id + ".nombre", null, null) : null;
+      const persTransDesc = (typeof i18n !== "undefined") ? i18n.t("personalities." + p.id + ".desc", null, null) : null;
+      const persTransRiesgo = (typeof i18n !== "undefined") ? i18n.t("personalities." + p.id + ".riesgo", null, null) : null;
+      const persTransRetorno = (typeof i18n !== "undefined") ? i18n.t("personalities." + p.id + ".retorno", null, null) : null;
+      const persTransBonus = (typeof i18n !== "undefined") ? i18n.t("personalities." + p.id + ".bonus", null, null) : null;
+      const persTransMalus = (typeof i18n !== "undefined") ? i18n.t("personalities." + p.id + ".malus", null, null) : null;
+
+      const persName = (lang !== "es" && persTransName) ? persTransName : p.nombre;
+      const persDesc = (lang !== "es" && persTransDesc)
+        ? persTransDesc
+        : (typeof getGenderedPersonalityDesc === "function" ? getGenderedPersonalityDesc(p, this.sel.genero) : p.desc);
+      const riesgoVal = (persTransRiesgo || p.riesgo || "").toUpperCase();
+      const retornoVal = (persTransRetorno || p.retorno || "").toUpperCase();
+      const bonusVal = persTransBonus || p.bonus;
+      const malusVal = persTransMalus || p.malus;
+
+      const riskLabel = lang === "ja" ? "リスク" : lang === "en" ? "RISK" : "RIESGO";
+      const returnLabel = lang === "ja" ? "リターン" : lang === "en" ? "RETURN" : "RETORNO";
+
+      const tip = `<strong>${p.icono} ${persName.toUpperCase()}</strong><br>${persDesc}<br><div style='margin-top:6px;color:var(--blue);font-family:var(--font-mono);font-size:0.75rem;'>${riskLabel}: ${riesgoVal} · ${returnLabel}: ${retornoVal}</div>${bonusVal ? `<div style='color:var(--green);font-size:0.72rem;margin-top:2px;'>+ ${bonusVal}</div>` : ''}${malusVal ? `<div style='color:var(--red);font-size:0.72rem;'>- ${malusVal}</div>` : ''}`.replace(/"/g, '&quot;');
 
       return `<div class="sel-card sel-card-clean" data-id="${p.id}" data-tooltip="${tip}">
         <div class="sc-icon-wrap">${p.icono}</div>
-        <div class="sc-name">${p.nombre}</div>
+        <div class="sc-name">${persName}</div>
         <div class="sc-desc">${persDesc}</div>
       </div>`;
     }).join("");
@@ -9196,21 +18442,26 @@ class UIEngine {
 
     const currentAvatar = e.getAvatar();
     const genderedArch = getGenderedArchetype(e.arquetipo, e.genero);
+    const archName = (typeof i18n !== "undefined" && i18n.t(`archetypes.${e.arquetipo.id}.nombre`)) || genderedArch;
+    const persName = (typeof i18n !== "undefined" && i18n.t(`personalities.${e.personalidad.id}.nombre`)) || e.personalidad.nombre;
+    const persDesc = (typeof i18n !== "undefined" && i18n.t(`personalities.${e.personalidad.id}.desc`)) || e.personalidad.desc;
+
     const iconEl=document.getElementById("char-icon"); if(iconEl) iconEl.textContent=currentAvatar;
-    set("char-name", genderedArch.toUpperCase());
-    set("char-pers",`${e.handle} · ${e.personalidad.icono} ${e.personalidad.nombre.toUpperCase()}`);
+    set("char-name", archName.toUpperCase());
+    set("char-pers",`${e.handle} · ${e.personalidad.icono} ${persName.toUpperCase()}`);
 
     const identEl=document.getElementById("char-identity");
     if(identEl){
       const pron=GENERO_LABELS[e.genero]||"Elle";
-      const arch=e.arquetipo, pers=e.personalidad;
+      const arch=e.arquetipo;
       const aChips=(arch.afines||[]).map(f=>`<span class="chip-afin-sm">${CARD_PALOS[f]?.icono||""} ${f}</span>`).join("");
       const dChips=(arch.debiles||[]).map(f=>`<span class="chip-debil-sm">${CARD_PALOS[f]?.icono||""} ${f}</span>`).join("");
+      const t = (k, p, d) => typeof i18n !== "undefined" ? i18n.t(k, p, d) : d;
       identEl.innerHTML=`
-        <div class="id-row"><span class="id-label">CUENTA X</span><span class="id-val" style="color:var(--blue-bright)">${e.handle}</span></div>
-        <div class="id-row"><span class="id-label">PRONOMBRES</span><span class="id-val">${pron}</span></div>
-        <div class="id-row"><span class="id-label">ARQUETIPO</span><span class="id-val">${genderedArch}</span></div>
-        <div class="id-row"><span class="id-label">PERSONALIDAD</span><span class="id-val">${pers.desc}</span></div>
+        <div class="id-row"><span class="id-label">${t("setup.handle_title", null, "CUENTA X")}</span><span class="id-val" style="color:var(--blue-bright)">${e.handle}</span></div>
+        <div class="id-row"><span class="id-label">${t("setup.gender_title", null, "PRONOMBRES")}</span><span class="id-val">${pron}</span></div>
+        <div class="id-row"><span class="id-label">${t("setup.archetype_title", null, "ARQUETIPO")}</span><span class="id-val">${archName}</span></div>
+        <div class="id-row"><span class="id-label">${t("setup.personality_title", null, "PERSONALIDAD")}</span><span class="id-val">${persDesc}</span></div>
         <div class="id-row"><span class="id-label">AFINES</span><span>${aChips}</span></div>
         <div class="id-row"><span class="id-label">DÉBILES</span><span>${dChips}</span></div>
       `;
@@ -9239,8 +18490,8 @@ class UIEngine {
     set("stat-cred",e.credibilidad);
     set("stat-viral",e.viralidad);
     set("lbl-amor","💜 "+e.amor);
-    set("lbl-odio",e.odio+" ❤️‍🔥");
-    set("turn-badge",`TURNO ${String(e.turno).padStart(2,"0")} / 20`);
+    const turnWord = typeof i18n !== "undefined" ? i18n.t("dashboard.turn", null, "TURNO") : "TURNO";
+    set("turn-badge",`${turnWord} ${String(e.turno).padStart(2,"0")} / 20`);
     set("sb-turn-label",`T-${String(e.turno).padStart(2,"0")}/20`);
 
     const payEl=document.getElementById("stat-payout-label"); if(payEl) payEl.textContent=`+~$${e.calcPayout().toLocaleString()}/T`;
@@ -9309,7 +18560,7 @@ class UIEngine {
       if (gameMainEl) gameMainEl.classList.remove("racha-viral-mode");
       if (rvBanner) rvBanner.style.display = "none";
       if (cardsSubtitleEl && cardsSubtitleEl.innerHTML.includes("MODO VIRAL ACTIVO")) {
-        cardsSubtitleEl.textContent = "SELECCIONÁ UNA CARTA PARA PUBLICAR ESTE TURNO";
+        cardsSubtitleEl.textContent = typeof i18n !== "undefined" ? i18n.t("cards.section_sub", null, "SELECCIONÁ UNA CARTA PARA PUBLICAR ESTE TURNO") : "SELECCIONÁ UNA CARTA PARA PUBLICAR ESTE TURNO";
       }
     }
 
@@ -9322,12 +18573,24 @@ class UIEngine {
   _renderBuildPanel() {
     const el=document.getElementById("build-panel"); if(!el) return;
     const e=this.eng, arch=e.arquetipo, pers=e.personalidad;
-    const genderedArch = getGenderedArchetype(arch, e.genero);
-    const synergyLine=e.comboRisk?"+6% a todas las tiradas por perfil no convencional":"Combo canónico — sin bonus adicional";
+    const genderedArch = (typeof i18n !== "undefined" && i18n.t(`archetypes.${arch.id}.nombre`)) || (typeof getGenderedArchetype === "function" ? getGenderedArchetype(arch, e.genero) : arch.nombre);
+    const persNombre = (typeof i18n !== "undefined" && i18n.t(`personalities.${pers.id}.nombre`)) || pers.nombre;
+    const alliedLabel = typeof i18n !== "undefined" ? i18n.t("profile.allied", null, "Cartas afines") : "Cartas afines";
+    const synergyLabel = typeof i18n !== "undefined" ? i18n.t("profile.synergy", null, "Sinergia") : "Sinergia";
+    const afinesList = (arch.afines || []).map(f => (typeof i18n !== "undefined" ? i18n.t("cards.palo_" + f) : f) || f).join(", ");
+
+    const lang = typeof i18n !== "undefined" ? i18n.getLanguage() : "es";
+    let synergyLine = e.comboRisk ? "+6% a todas las tiradas por perfil no convencional" : "Combo canónico — sin bonus adicional";
+    if (lang === "en") {
+      synergyLine = e.comboRisk ? "+6% to all rolls due to unconventional build" : "Canonical build — no extra bonus";
+    } else if (lang === "ja") {
+      synergyLine = e.comboRisk ? "変則ビルドにより全判定+6%" : "王道ビルド — 追加ボーナスなし";
+    }
+
     el.innerHTML=`
-      <div class="build-row"><span>🎭 ${genderedArch}</span><span class="build-val">Cartas afines: ${(arch.afines||[]).join(", ")}</span></div>
-      <div class="build-row"><span>${pers.icono} ${pers.nombre}</span><span class="build-val">${pers.bonus} · ${pers.malus}</span></div>
-      <div class="build-row"><span>⚡ Sinergia</span><span class="build-val">${synergyLine}</span></div>
+      <div class="build-row"><span>🎭 ${genderedArch}</span><span class="build-val">${alliedLabel}: ${afinesList}</span></div>
+      <div class="build-row"><span>${pers.icono} ${persNombre}</span><span class="build-val">${pers.bonus} · ${pers.malus}</span></div>
+      <div class="build-row"><span>⚡ ${synergyLabel}</span><span class="build-val">${synergyLine}</span></div>
     `;
   }
 
@@ -9337,7 +18600,11 @@ class UIEngine {
     const fill=el.querySelector(".goal-fill");
     const label=el.querySelector(".goal-label");
     if(fill) fill.style.width=pct+"%";
-    if(label) label.textContent=`META DE VICTORIA: 80K SEGUIDORES — ${pct.toFixed(0)}%`;
+    const pctStr = pct.toFixed(0);
+    const metaTxt = typeof i18n !== "undefined"
+      ? i18n.t("dashboard.meta_goal", { pct: pctStr }, `META DE VICTORIA: 80K SEGUIDORES — ${pctStr}%`)
+      : `META DE VICTORIA: 80K SEGUIDORES — ${pctStr}%`;
+    if(label) label.textContent = metaTxt;
   }
 
   _renderSparkline() {
@@ -9379,9 +18646,31 @@ class UIEngine {
     const fort = this.eng.checkFortuitousEvents ? this.eng.checkFortuitousEvents() : null;
     if (fort) {
       snd.alert();
+      // Localize fortuitous event based on language
+      const fortLang = typeof i18n !== "undefined" ? i18n.getLanguage() : "es";
+      let locFort = fort;
+      if (fortLang !== "es" && typeof getLocalizedFortuitousEvent === "function") {
+        locFort = getLocalizedFortuitousEvent(fort, fortLang) || fort;
+      } else if (fortLang !== "es") {
+        // Inline fallback translation for key algoritmo events
+        const fortKey = fort.tipo || fort.key || "";
+        if (fortKey === "algoritmo_positivo" || fort.multIngresos === 2.0) {
+          if (fortLang === "en") {
+            locFort = { ...fort, titulo: "THE ALGORITHM BLESSES YOU (x2 INCOME)", desc: "Platform engineers tweaked the 'For You' feed weights and your account is now classified as high-value content.", consecuencia: fort.consecuencia };
+          } else if (fortLang === "ja") {
+            locFort = { ...fort, titulo: "アルゴリズムに祝福される（収入×2）", desc: "プラットフォームのエンジニアが「おすすめ」フィードの重みを調整し、あなたのアカウントは高価値コンテンツとして分類されました。", consecuencia: fort.consecuencia };
+          }
+        } else if (fortKey === "algoritmo_negativo" || fort.multIngresos === 0.5) {
+          if (fortLang === "en") {
+            locFort = { ...fort, titulo: "ALGORITHM SHADOWBAN (x0.5 INCOME)", desc: "A silent algorithm update tanked your account's reach due to alleged spam or excessive controversy.", consecuencia: fort.consecuencia };
+          } else if (fortLang === "ja") {
+            locFort = { ...fort, titulo: "アルゴリズムのシャドウバン（収入×0.5）", desc: "アルゴリズムのサイレントアップデートにより、スパムや過度な炎上を理由としてリーチが大幅に低下しました。", consecuencia: fort.consecuencia };
+          }
+        }
+      }
       this._showAlert(
-        `${fort.icono} ${fort.titulo}`,
-        `${fort.desc}<br><br><strong style='color:var(--green); font-family:var(--font-mono);'>${fort.consecuencia}</strong>`,
+        `${locFort.icono} ${locFort.titulo}`,
+        `${locFort.desc}<br><br><strong style='color:var(--green); font-family:var(--font-mono);'>${locFort.consecuencia}</strong>`,
         ""
       );
       this._updateStatsOnly();
@@ -9392,18 +18681,24 @@ class UIEngine {
     const newlyAffordable = BOOSTERS.filter(b => this.eng.dinero >= b.costo && !this.unlockedBoostersShown.has(b.id));
     if (newlyAffordable.length > 0) {
       newlyAffordable.forEach(b => this.unlockedBoostersShown.add(b.id));
-      const bShowcases = newlyAffordable.map(b => `
+      const bShowcases = newlyAffordable.map(b => {
+        const bName = (typeof i18n !== "undefined" && i18n.t(`boosters.${b.id}.nombre`)) || b.nombre;
+        return `
         <div class="booster-unlock-showcase">
           <div class="booster-badge-icon">${b.icono}</div>
-          <div class="booster-showcase-title">${b.nombre}</div>
+          <div class="booster-showcase-title">${bName}</div>
           <div class="booster-price-pill">$${b.costo.toLocaleString()}</div>
         </div>
-      `).join("");
+      `;
+      }).join("");
+
+      const title = (typeof i18n !== "undefined" && i18n.t("shop.new_booster")) || "🚀 NUEVO BOOSTER DISPONIBLE";
+      const meta = (typeof i18n !== "undefined" && i18n.t("shop.title")) || "TIENDA DE BOOSTERS";
 
       this._showAlert(
-        "NUEVO BOOSTER DISPONIBLE",
+        title,
         `${bShowcases}`,
-        "TIENDA DE BOOSTERS",
+        meta,
         true,
         null,
         "🚀"
@@ -9428,17 +18723,19 @@ class UIEngine {
     // ── CHECK EVENTOS INTERACTIVOS (Dilemas con Pop-up de anuncio previo) ──
     const ev = this.eng.checkSpecialEvent();
     if(ev){
+      const lang = typeof i18n !== "undefined" ? i18n.getLanguage() : "es";
+      const locEv = typeof getLocalizedEvent === "function" ? getLocalizedEvent(ev, lang, this.eng.arquetipo?.id) : ev;
       document.getElementById("cards-section").style.display = "none";
       document.getElementById("event-section").style.display = "none";
       document.getElementById("interactive-event-box").style.display = "none";
 
       this._showAlert(
-        `⚡ ${ev.titulo.toUpperCase()}`,
-        `${ev.desc}`,
-        ev.tag,
+        `⚡ ${locEv.titulo.toUpperCase()}`,
+        `${locEv.desc}`,
+        locEv.tag,
         false,
         () => {
-          this._renderInteractiveEvent(ev);
+          this._renderInteractiveEvent(locEv);
         }
       );
       return;
@@ -9461,22 +18758,55 @@ class UIEngine {
       } else if (e.turnosEnZonaRoja === 2 && !e.cancelWarningShown['zr2']) {
         e.cancelWarningShown['zr2'] = true;
         snd.alert();
+        const lang = typeof i18n !== "undefined" ? i18n.getLanguage() : "es";
+        let zrTitle = "🚨 ZONA ROJA — ¡ÚLTIMO TURNO DE GRACIA! (2/3)";
+        let t1 = "🔥 TURNO 1: ACTIVO";
+        let t2 = "🚨 TURNO 2: EN CURSO";
+        let t3 = "☠️ TURNO 3: EXPULSIÓN";
+        let critTitle = "💀 PELIGRO INMINENTE DE SUSPENSIÓN";
+        let critDesc = "Llevás 2 turnos consecutivos con Odio ≥ 80%. <strong>Si este turno termina sin bajar el Odio por debajo de 80%, perderás la partida automáticamente por Hostilidad Extrema.</strong>";
+        let survTitle = "🛡️ ACCIÓN URGENTE REQUERIDA:";
+        let survDesc = "Reducí el Odio AHORA MISMO en este turno o la plataforma cerrará tu perfil.";
+        let tag = "EXPULSIÓN INMINENTE";
+
+        if (lang === "en") {
+          zrTitle = "🚨 RED ZONE — FINAL GRACE TURN! (2/3)";
+          t1 = "🔥 TURN 1: ACTIVE";
+          t2 = "🚨 TURN 2: IN PROGRESS";
+          t3 = "☠️ TURN 3: SUSPENSION";
+          critTitle = "💀 IMMINENT BAN RISK";
+          critDesc = "You've spent 2 consecutive turns with Hate ≥ 80%. <strong>If this turn ends without lowering Hate below 80%, you will lose immediately due to Extreme Toxicity.</strong>";
+          survTitle = "🛡️ URGENT ACTION REQUIRED:";
+          survDesc = "Lower your Hate RIGHT NOW this turn or the platform will ban your account.";
+          tag = "IMMINENT BAN";
+        } else if (lang === "ja") {
+          zrTitle = "🚨 警戒ゾーン — 最後の猶予ターン！(2/3)";
+          t1 = "🔥 ターン1: 発動";
+          t2 = "🚨 ターン2: 進行中";
+          t3 = "☠️ ターン3: アカウント凍結";
+          critTitle = "💀 永久凍結の危機";
+          critDesc = "ヘイト値80%以上が2ターン連続しています。<strong>このターン終了までに80%未満に下げられなければ、炎上により即座にゲームオーバーとなります。</strong>";
+          survTitle = "🛡️ 今すぐ対処が必要:";
+          survDesc = "今ターン中に必ずヘイト値を下げてください。さもなければアカウントが停止されます。";
+          tag = "凍結寸前";
+        }
+
         this._showAlert(
-          "🚨 ZONA ROJA — ¡ÚLTIMO TURNO DE GRACIA! (2/3)",
+          zrTitle,
           `<div class="strike-meter-row">
-             <div class="strike-slot active-2">🔥 TURNO 1: ACTIVO</div>
-             <div class="strike-slot active-2">🚨 TURNO 2: EN CURSO</div>
-             <div class="strike-slot danger-target">☠️ TURNO 3: EXPULSIÓN</div>
+             <div class="strike-slot active-2">${t1}</div>
+             <div class="strike-slot active-2">${t2}</div>
+             <div class="strike-slot danger-target">${t3}</div>
            </div>
            <div class="strike-info-card critical">
-             <strong>💀 PELIGRO INMINENTE DE SUSPENSIÓN</strong><br>
-             Llevás 2 turnos consecutivos con Odio ≥ 80%. <strong>Si este turno termina sin bajar el Odio por debajo de 80%, perderás la partida automáticamente por Hostilidad Extrema.</strong>
+             <strong>${critTitle}</strong><br>
+             ${critDesc}
            </div>
            <div class="strike-info-card survival">
-             <strong>🛡️ ACCIÓN URGENTE REQUERIDA:</strong><br>
-             Reducí el Odio AHORA MISMO en este turno o la plataforma cerrará tu perfil.
+             <strong>${survTitle}</strong><br>
+             ${survDesc}
            </div>`,
-          "EXPULSIÓN INMINENTE",
+          tag,
           true
         );
       }
@@ -9516,26 +18846,18 @@ class UIEngine {
 
     container.innerHTML=cards.map((c,idx)=>{
       const palo = c.paloOverride || c.palo || CARD_PALOS[c.id] || { nombre:"TWEET", icono:"💬", color:"#1d9bf0" };
+      const paloKey = c.paloOverride?.id || (typeof c.palo === "string" ? c.palo : (c.palo?.id || c.id));
+      const paloNombre = (typeof i18n !== "undefined" && i18n.t("cards.palo_" + paloKey, null, palo.nombre)) || palo.nombre;
       const chance = this.eng._successChance(c, booster);
       const chanceColor = chance >= 70 ? "var(--green)" : chance >= 50 ? "var(--amber)" : "var(--red)";
-      let conceptDesc = CARD_CONCEPT_DESCS[c.id] || "Publicación estratégica en el feed.";
+      
+      const paloConcept = (typeof i18n !== "undefined" && i18n.t("cards.concept_" + paloKey, null, CARD_CONCEPT_DESCS[paloKey])) || null;
+      let conceptDesc = paloConcept || CARD_CONCEPT_DESCS[paloKey] || CARD_CONCEPT_DESCS[c.id] || "Publicación estratégica en el feed.";
+      const lang = typeof i18n !== "undefined" ? i18n.getLanguage() : "es";
       if (c.isHistoria) {
         const archKey = getArchKey(e.arquetipo?.id);
-        const STORY_HEADLINES = {
-          gamer: "Autos caros y una LLC de Delaware",
-          podcaster: "La modelo y su amigo misterioso",
-          influencer: "Sesión de fotos con una nave importada",
-          techie: "Hackearon el exchange",
-          humor: "Corralito digital cripto",
-          conspiranoico: "Comando Fierro en las sombras",
-          periodista: "Allanamiento judicial y sociedad fantasma",
-          futbolero: "Murmullos en los palcos de la AFA",
-          onlyfans: "El paseo secreto en el auto de lujo",
-          cryptobro: "La wallet expuesta del político",
-          militante: "Las casas que nunca se hicieron",
-          opinologo: "La verdad oculta dos años después"
-        };
-        conceptDesc = c.desc || STORY_HEADLINES[archKey] || "Revelación clave de la trama en el timeline.";
+        const headline = typeof getLocalizedStoryHeadline === "function" ? getLocalizedStoryHeadline(e.arquetipo?.id, lang) : null;
+        conceptDesc = c.desc || headline || "Revelación clave de la trama en el timeline.";
       }
 
       // Badge visual de carta nueva
@@ -9548,6 +18870,15 @@ class UIEngine {
       const cardClass = isDisabled ? "truco-card story-disabled-card" : "truco-card";
       const cursorStyle = isDisabled ? "cursor:not-allowed;" : "cursor:pointer;";
 
+      const tTweetNow = (typeof i18n !== "undefined") ? i18n.t("cards.tweet_now", null, "TUITEAR AHORA ▶") : "TUITEAR AHORA ▶";
+      const tBlocked = (typeof i18n !== "undefined") ? i18n.t("cards.blocked", null, "BLOQUEADA ✕") : "BLOQUEADA ✕";
+      const tSuccess = (typeof i18n !== "undefined") ? i18n.t("cards.success_prob", null, "PROB. ÉXITO:") : "PROB. ÉXITO:";
+      const tMult = (typeof i18n !== "undefined") ? i18n.t("cards.multiplier", null, "MULT:") : "MULT:";
+      const tNewBadge = (typeof i18n !== "undefined") ? i18n.t("cards.new_badge", null, "✨ NUEVA") : "✨ NUEVA";
+      const tStoryLocked = (typeof i18n !== "undefined") ? i18n.t("cards.story_locked", null, "🔒 BLOQUEADA POR HISTORIA") : "🔒 BLOQUEADA POR HISTORIA";
+
+      const cardTitle = typeof getLocalizedCardTitle === "function" ? getLocalizedCardTitle(c, lang, e.arquetipo?.id) : c.titulo;
+
       return `
       <div class="${wrapClass}" id="card-wrap-${idx}">
         <div class="card-flip-inner">
@@ -9558,25 +18889,25 @@ class UIEngine {
             </div>
           </div>
           <div class="card-face card-front">
-            <div class="${cardClass}" style="border-top-color:${palo.color}; ${cursorStyle}" data-idx="${idx}">
+            <div class="${cardClass}" style="border-top-color:${palo.color}; ${cursorStyle}" data-idx="${idx}" data-story-locked-label="${tStoryLocked}">
               <div class="card-suit-tag" style="color:${palo.color};">
                 <span class="card-suit-dot" style="background:${palo.color};"></span>
-                ${palo.nombre.toUpperCase()}
-                ${isNew && !isDisabled ? `<span class="card-new-badge">✨ NUEVA</span>` : `<span class="card-key-badge">[${idx + 1}]</span>`}
+                ${paloNombre.toUpperCase()}
+                ${isNew && !isDisabled ? `<span class="card-new-badge">${tNewBadge}</span>` : `<span class="card-key-badge">[${idx + 1}]</span>`}
               </div>
               <div class="card-palo">${palo.icono}</div>
-              <div class="card-title">${c.titulo}</div>
+              <div class="card-title">${cardTitle}</div>
               <div class="card-desc">${conceptDesc}</div>
               
               <div class="card-stats">
                 <div class="card-chips-row">
-                  <span class="cstat neu">PROB. ÉXITO: <strong style="color:${chanceColor};">${chance}%</strong></span>
-                  <span class="cstat neu">MULT: <strong>${boosterMultiplier}</strong></span>
+                  <span class="cstat neu">${tSuccess} <strong style="color:${chanceColor};">${chance}%</strong></span>
+                  <span class="cstat neu">${tMult} <strong>${boosterMultiplier}</strong></span>
                 </div>
               </div>
 
               <button class="card-play-btn" data-idx="${idx}" ${isDisabled ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''}>
-                ${isDisabled ? 'BLOQUEADA ✕' : 'TUITEAR AHORA ▶'}
+                ${isDisabled ? tBlocked : tTweetNow}
               </button>
             </div>
           </div>
@@ -9657,6 +18988,7 @@ class UIEngine {
     const grid = document.getElementById("boosters-grid");
     const mobileGrid = document.getElementById("mobile-boosters-grid");
     const available = this.eng.getAvailableBoosters();
+    const t = (k, p, d) => typeof i18n !== "undefined" ? i18n.t(k, p, d) : d;
 
     // Actualizar botón en la topbar
     const tbBadge = document.getElementById("tb-booster-badge");
@@ -9666,7 +18998,8 @@ class UIEngine {
     if (tbBadge) tbBadge.textContent = available.length;
     if (this.preparedBoosterId) {
       const activeB = BOOSTERS.find(b => b.id === this.preparedBoosterId);
-      if (tbLabel) tbLabel.textContent = activeB ? `${activeB.icono} ACTIVO` : "BOOSTER";
+      const activeName = activeB ? t(`boosters.${activeB.id}.nombre`, null, activeB.nombre) : "";
+      if (tbLabel) tbLabel.textContent = activeB ? `${activeB.icono} ${t("shop.active_single", null, "ACTIVO")}` : "BOOSTER";
       if (tbBtn) tbBtn.classList.add("booster-active-pulse");
     } else {
       if (tbLabel) tbLabel.textContent = "BOOSTERS";
@@ -9678,16 +19011,17 @@ class UIEngine {
     if (mStatus) {
       if (this.preparedBoosterId) {
         const activeB = BOOSTERS.find(b => b.id === this.preparedBoosterId);
+        const activeName = activeB ? t(`boosters.${activeB.id}.nombre`, null, activeB.nombre) : "";
         mStatus.innerHTML = activeB
-          ? `<span style="color:var(--amber); font-weight:800;">⚡ ${activeB.icono} ${activeB.nombre} ACTIVO</span> — Próximo tweet multiplicado ${activeB.fx.mult}x`
+          ? `<span style="color:var(--amber); font-weight:800;">⚡ ${activeB.icono} ${activeName} ${t("shop.active_single", null, "ACTIVO")}</span> — ${t("shop.booster_active", { icon: activeB.icono, name: activeName, mult: activeB.fx.mult }, `Próximo tweet multiplicado ${activeB.fx.mult}x`)}`
           : "Booster activado";
       } else {
-        mStatus.textContent = "Ningún booster seleccionado (modo normal)";
+        mStatus.textContent = t("shop.no_booster_selected", null, "Ningún booster seleccionado (modo normal)");
       }
     }
 
     if (available.length === 0) {
-      const emptyHtml = `<div style="grid-column:span 3;padding:10px;font-family:var(--font-mono);font-size:0.7rem;color:var(--gray-1);text-align:center;">SIN BOOSTERS DISPONIBLES CON EL SALDO ACTUAL</div>`;
+      const emptyHtml = `<div style="grid-column:span 3;padding:10px;font-family:var(--font-mono);font-size:0.7rem;color:var(--gray-1);text-align:center;">${t("shop.no_boosters", null, "SIN BOOSTERS DISPONIBLES CON EL SALDO ACTUAL")}</div>`;
       if (grid) grid.innerHTML = emptyHtml;
       if (mobileGrid) mobileGrid.innerHTML = emptyHtml;
       return;
@@ -9697,11 +19031,15 @@ class UIEngine {
     const renderHtml = available.map((b, i) => {
       const isHl = this.preparedBoosterId === b.id;
       const keyHint = BOOSTER_KEYS[i] ? `<span class="booster-key-pill">${BOOSTER_KEYS[i]}</span>` : '';
-      const tip = `<strong>${b.icono} ${b.nombre}</strong><br>${b.desc}<br><span style='color:#eab308;'>Cooldown: ${b.cooldown} turno${b.cooldown>1?'s':''}</span>`.replace(/"/g, '&quot;');
+      const bNombre = t(`boosters.${b.id}.nombre`, null, b.nombre);
+      const bDesc = t(`boosters.${b.id}.desc`, null, b.desc);
+      const sSuffix = b.cooldown > 1 ? 's' : '';
+      const cdLabel = t("shop.cooldown_label", { turns: b.cooldown, s: sSuffix }, `Cooldown: ${b.cooldown} turno${sSuffix}`);
+      const tip = `<strong>${b.icono} ${bNombre}</strong><br>${bDesc}<br><span style='color:#eab308;'>${cdLabel}</span>`.replace(/"/g, '&quot;');
       return `<div class="booster-tile ${isHl ? "highlighted" : ""}" data-id="${b.id}" data-tooltip="${tip}">
         ${keyHint}
         <div class="b-icon">${b.icono}</div>
-        <div class="b-name">${b.nombre}</div>
+        <div class="b-name">${bNombre}</div>
         <div class="b-cost">$${b.costo.toLocaleString()}</div>
       </div>`;
     }).join("");
@@ -9777,17 +19115,21 @@ class UIEngine {
       }
 
       const optIcons = ['1️⃣', '2️⃣', '3️⃣'];
+      const lang = typeof i18n !== "undefined" ? i18n.getLanguage() : "es";
+      const optLabel = lang === "ja" ? "選択肢 " : lang === "en" ? "OPTION " : "OPCIÓN ";
+      const chooseBtnLabel = lang === "ja" ? "この方針を選択 ▶" : lang === "en" ? "CHOOSE STANCE ▶" : "ELEGIR POSTURA ▶";
+
       container.innerHTML = indexedOpts.map((item, displayIdx)=>{
         const optIcon = optIcons[displayIdx] || '⚡';
         return `
         <div class="truco-card event-truco-card" style="border-top-color:var(--purple); flex:1; min-width:220px; cursor:pointer;" data-idx="${item.origIdx}">
           <div class="card-suit-tag" style="color:var(--purple);">
             <span class="card-suit-dot" style="background:var(--purple);"></span>
-            OPCIÓN ${displayIdx+1}
+            ${optLabel}${displayIdx+1}
           </div>
           <div class="card-palo">${optIcon}</div>
           <div class="card-title">${item.opt.texto}</div>
-          <button class="card-play-btn btn-opt-choose" data-idx="${item.origIdx}" style="background:var(--purple); margin-top:auto;">ELEGIR POSTURA ▶</button>
+          <button class="card-play-btn btn-opt-choose" data-idx="${item.origIdx}" style="background:var(--purple); margin-top:auto;">${chooseBtnLabel}</button>
         </div>
         `;
       }).join("");
@@ -9802,7 +19144,7 @@ class UIEngine {
     }
   }
 
-    _chooseEventOption(idx) {
+  _chooseEventOption(idx) {
     if(this.isResolvingAction) return;
     this.isResolvingAction=true;
 
@@ -9814,11 +19156,17 @@ class UIEngine {
     this.eng.activeEvent = null;
     this.eng.cachedCards = null;
 
+    const lang2 = typeof i18n !== "undefined" ? i18n.getLanguage() : "es";
+    const locEv = (lang2 !== "es" && typeof getLocalizedEvent === "function")
+      ? getLocalizedEvent(ev, lang2, this.eng.arquetipo?.id)
+      : ev;
+    const locOpt = (locEv && locEv.opciones && locEv.opciones[idx]) ? locEv.opciones[idx] : opt;
+
     this.eng.turnLog.push({
       t: this.eng.turno,
       type: "event",
-      eventTitle: ev.titulo,
-      choice: opt.texto,
+      eventTitle: locEv.titulo || ev.titulo,
+      choice: locOpt.texto || opt.texto,
       effects: opt.efectoDesc
     });
 
@@ -9826,9 +19174,11 @@ class UIEngine {
 
     const simulatedCard = {
       id: "evento",
-      titulo: ev.titulo,
-      texto: opt.tweet || opt.texto
+      titulo: locEv.titulo || ev.titulo,
+      texto: locOpt.tweet || locOpt.texto || opt.tweet || opt.texto
     };
+
+    const defaultNarrative = lang2 === "ja" ? "戦略的な決断を実行した。" : lang2 === "en" ? "Strategic decision executed." : "Decisión estratégica ejecutada.";
 
     const outcomeRes = {
       ok: true,
@@ -9840,10 +19190,12 @@ class UIEngine {
       hateGain: opt.efectoObj?.odio || 0,
       viral: null,
       boosterUsed: null,
-      customNarrative: opt.resultado || "Decisión estratégica ejecutada."
+      customNarrative: locOpt.resultado || opt.resultado || defaultNarrative
     };
 
-    this._showNarrativePanel(simulatedCard, outcomeRes, "⚡ IMPACTO DE TU ELECCIÓN EN EL TIMELINE", opt.resultado);
+    const impactTitle = lang2 === "ja" ? "⚡ タイムラインへのインパクト" : lang2 === "en" ? "⚡ IMPACT OF YOUR CHOICE ON THE TIMELINE" : "⚡ IMPACTO DE TU ELECCIÓN EN EL TIMELINE";
+
+    this._showNarrativePanel(simulatedCard, outcomeRes, impactTitle, locOpt.resultado || opt.resultado);
   }
 
   _getTweetDate(fase = 1, turno = 1, cardFecha = null) {
@@ -9892,6 +19244,12 @@ class UIEngine {
         d = Math.min(31, 10 + dayOffset - 59);
       }
     }
+    const lang = typeof i18n !== "undefined" ? i18n.getLanguage() : "es";
+    if (lang === "ja") return `${y}年${m + 1}月${d}日`;
+    if (lang === "en") {
+      const enMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      return `${enMonths[m]} ${d}, ${y}`;
+    }
     return `${d} ${meses[m]} ${y}`;
   }
 
@@ -9907,31 +19265,47 @@ class UIEngine {
     const booster = res.boosterUsed;
     const isCrisis = res.cancellationEvent !== null && res.cancellationEvent !== undefined;
     const isFatalCrisis = res.cancellationEvent?.isFatal;
+    const panelLang = typeof i18n !== "undefined" ? i18n.getLanguage() : "es";
     const rawTweet = (card.texto || card.titulo || "Contenido en el feed.");
-    const tweetContent = typeof adaptTweetGender === "function" ? adaptTweetGender(rawTweet, e.genero) : rawTweet;
+    // For non-ES, try to get localized tweet from card translations; fall back to original
+    const localizedTweet = (panelLang !== "es" && typeof getLocalizedCardTweet === "function" && card.id !== "evento")
+      ? (getLocalizedCardTweet(card, panelLang, e.arquetipo?.id) || rawTweet)
+      : rawTweet;
+    const tweetContent = typeof adaptTweetGender === "function" ? adaptTweetGender(localizedTweet, e.genero) : localizedTweet;
     const viralData = res.viral;
+
+    const tNarr = (k, p, d) => typeof i18n !== "undefined" ? i18n.t(k, p, d) : d;
 
     let logLines = [];
     if(card.id === "evento") {
-      logLines.push(`⚡ POSTURA ESTRATÉGICA REGISTRADA`);
+      logLines.push(tNarr("narrative.stance_registered", null, "⚡ POSTURA ESTRATÉGICA REGISTRADA"));
     } else {
-      logLines.push(`🎲 RESULTADO DE LA TIRADA: <strong>D${res.roll}</strong> (Requerido: ≤ ${res.chance}%)`);
-      if(booster) logLines.push(`📢 BOOSTER APLICADO: <strong>${booster.nombre}</strong> (${booster.fx.mult || 1.35}x impacto)`);
+      logLines.push(tNarr("narrative.roll_result", { roll: res.roll, chance: res.chance }, `🎲 RESULTADO DE LA TIRADA: <strong>D${res.roll}</strong> (Requerido: ≤ ${res.chance}%)`));
+      if(booster) {
+        const boosterName = (typeof i18n !== "undefined" && i18n.t(`boosters.${booster.id}.nombre`)) || booster.nombre;
+        logLines.push(tNarr("narrative.booster_applied", { name: boosterName, mult: booster.fx?.mult || 1.35 }, `📢 BOOSTER APLICADO: <strong>${boosterName}</strong> (${booster.fx?.mult || 1.35}x impacto)`));
+      }
       if(res.ok) {
-        logLines.push(`👥 SEGUIDORES: <strong style="color:var(--green)">+${res.segsGain.toLocaleString()}</strong>`);
-        logLines.push(`⚡ ENGAGEMENT: <strong style="color:var(--green)">+${res.engGain}</strong>`);
-        if(res.dinGain > 0) logLines.push(`💰 DINERO COBRADO: <strong style="color:var(--amber)">+$${res.dinGain.toLocaleString()}</strong>`);
+        logLines.push(tNarr("narrative.followers_gain", { amount: res.segsGain.toLocaleString() }, `👥 SEGUIDORES: <strong style="color:var(--green)">+${res.segsGain.toLocaleString()}</strong>`));
+        logLines.push(tNarr("narrative.engagement_gain", { amount: res.engGain }, `⚡ ENGAGEMENT: <strong style="color:var(--green)">+${res.engGain}</strong>`));
+        if(res.dinGain > 0) logLines.push(tNarr("narrative.cash_earned", { amount: res.dinGain.toLocaleString() }, `💰 DINERO COBRADO: <strong style="color:var(--amber)">+$${res.dinGain.toLocaleString()}</strong>`));
       } else {
-        logLines.push(`👥 PÉRDIDA DE SEGUIDORES: <strong style="color:var(--red)">${res.segsGain.toLocaleString()}</strong>`);
-        logLines.push(`❤️‍🔥 ODIO GENERADO: <strong style="color:var(--red)">+${res.hateGain}</strong>`);
+        logLines.push(tNarr("narrative.followers_lost", { amount: res.segsGain.toLocaleString() }, `👥 PÉRDIDA DE SEGUIDORES: <strong style="color:var(--red)">${res.segsGain.toLocaleString()}</strong>`));
+        logLines.push(tNarr("narrative.hate_generated", { amount: res.hateGain }, `❤️‍🔥 ODIO GENERADO: <strong style="color:var(--red)">+${res.hateGain}</strong>`));
       }
     }
 
     if(isCrisis) {
-      const canc = res.cancellationEvent;
-      const strikeText = isFatalCrisis ? "☠️ STRIKE 3/3 — CANCELACIÓN DEFINITIVA" : `⚠️ STRIKE ${canc.strike}/3 — ALERTA DE CANCELACIÓN`;
+      let canc = res.cancellationEvent;
+      if (panelLang !== "es" && typeof getLocalizedCancellation === "function") {
+        canc = getLocalizedCancellation(canc, panelLang);
+      }
+      res.cancellationEvent = canc;
+      const strikeText = isFatalCrisis
+        ? tNarr("narrative.strike_fatal", null, "☠️ STRIKE 3/3 — CANCELACIÓN DEFINITIVA")
+        : tNarr("narrative.strike_alert", { strike: canc.strike }, `⚠️ STRIKE ${canc.strike}/3 — ALERTA DE CANCELACIÓN`);
       logLines.push(`<strong style="color:var(--red)">${strikeText}: ${canc.titulo}</strong>`);
-      logLines.push(`<span style="color:var(--off-white); font-size:0.75rem;">${canc.texto}</span>`);
+      logLines.push(`<span style="color:var(--off-white); font-size:0.75rem;">${canc.motivo || canc.texto}</span>`);
     }
 
     const s = Math.max(100, e.seguidores);
@@ -9958,25 +19332,54 @@ class UIEngine {
     }
 
     const currentAvatar = e.getAvatar();
-    const genderedArch = getGenderedArchetype(e.arquetipo, e.genero);
+    const genderedArch = (typeof i18n !== "undefined" && i18n.t(`archetypes.${e.arquetipo.id}.nombre`)) || getGenderedArchetype(e.arquetipo, e.genero);
     const verifiedBadgeHtml = isVerified ? `<span class="tweet-verified-badge" title="Cuenta Verificada">☑️</span>` : '';
-    const outcomeTitle = card.isHistoria
-      ? "🔍 PISTA NARRATIVA DESCUBIERTA"
-      : (customOutcomeTitle || (isSuccess ? "🎯 TWEET VIRAL — EXCELENTE ENGAGEMENT EN EL TIMELINE" : "💥 RATIO HISTÓRICO — EL TIMELINE SE TE VINO ENCIMA"));
+    const tStoryClue = (typeof i18n !== "undefined") ? i18n.t("narrative.story_clue_found", null, "🔍 PISTA NARRATIVA DESCUBIERTA") : "🔍 PISTA NARRATIVA DESCUBIERTA";
+    const tViral = (typeof i18n !== "undefined") ? i18n.t("narrative.viral_tweet", null, "🎯 TWEET VIRAL — EXCELENTE ENGAGEMENT EN EL TIMELINE") : "🎯 TWEET VIRAL — EXCELENTE ENGAGEMENT EN EL TIMELINE";
+    const tRatio = (typeof i18n !== "undefined") ? i18n.t("narrative.historic_ratio", null, "💥 RATIO HISTÓRICO — EL TIMELINE SE TE VINO ENCIMA") : "💥 RATIO HISTÓRICO — EL TIMELINE SE TE VINO ENCIMA";
+    const outcomeTitle = card.isHistoria ? tStoryClue : (customOutcomeTitle || (isSuccess ? tViral : tRatio));
 
-    // Pool of authentic community tweets scrolling in the timeline
-    const communityTweets = [
-      { av: "🐱", name: "Michi Dev", handle: "@michi_dev", time: "2m", text: "deployé a producción un viernes a las 18hs, deséenme suerte amigos..." },
-      { av: "🧉", name: "Mate con Bizcochitos", handle: "@pibe_termolar", time: "5m", text: "el café de especialidad con granos de etiopía es una estafa inventada en Palermo" },
-      { av: "🚀", name: "Lucas BTC", handle: "@crypto_lucas", time: "8m", text: "el que no compró en la corrección después no venga a llorar en el bull market" },
-      { av: "💅", name: "Sofi ✨", handle: "@sofi_lifestyle", time: "11m", text: "necesito urgente tres meses de vacaciones de mis vacaciones" },
-      { av: "⚽", name: "Bosterismo Puro", handle: "@la_mitad_mas_uno", time: "14m", text: "el domingo cueste lo que cueste muchachos, prohibido aflojar" },
-      { av: "🍿", name: "Cinéfilo Posta", handle: "@cinefilo_arg", time: "18m", text: "revivió el cine con esta escena, actuación descomunal y fotografía 10/10" },
-      { av: "🐸", name: "Shitpost Nacional", handle: "@memes_arg", time: "22m", text: "no puedo más con este país jajaja somos el mejor país del mundo lpm" },
-      { av: "🧠", name: "Filósofo de Bar", handle: "@don_nadie_", time: "27m", text: "en twitter la gente inventa un enemigo imaginario y se indigna sola en su pieza" },
-      { av: "📊", name: "Tendencias Hoy", handle: "@trends_bot", time: "31m", text: "Tendencia #1 en Argentina ahora mismo: debate furioso en el timeline" },
-      { av: "🔥", name: "Baitero Profesional", handle: "@polemica_pura", time: "35m", text: "abro debate y me retiro: las medialunas de manteca son infinitamente superiores" }
-    ];
+    // Pool of authentic community tweets scrolling in the timeline (localized ES, EN, JA)
+    const lang = typeof i18n !== "undefined" ? i18n.getLanguage() : "es";
+    const communityTweetsByLang = {
+      es: [
+        { av: "🐱", name: "Michi Dev", handle: "@michi_dev", time: "2m", text: "deployé a producción un viernes a las 18hs, deséenme suerte amigos..." },
+        { av: "🧉", name: "Mate con Bizcochitos", handle: "@pibe_termolar", time: "5m", text: "el café de especialidad con granos de etiopía es una estafa inventada en Palermo" },
+        { av: "🚀", name: "Lucas BTC", handle: "@crypto_lucas", time: "8m", text: "el que no compró en la corrección después no venga a llorar en el bull market" },
+        { av: "💅", name: "Sofi ✨", handle: "@sofi_lifestyle", time: "11m", text: "necesito urgente tres meses de vacaciones de mis vacaciones" },
+        { av: "⚽", name: "Bosterismo Puro", handle: "@la_mitad_mas_uno", time: "14m", text: "el domingo cueste lo que cueste muchachos, prohibido aflojar" },
+        { av: "🍿", name: "Cinéfilo Posta", handle: "@cinefilo_arg", time: "18m", text: "revivió el cine con esta escena, actuación descomunal y fotografía 10/10" },
+        { av: "🐸", name: "Shitpost Nacional", handle: "@memes_arg", time: "22m", text: "no puedo más con este país jajaja somos el mejor país del mundo lpm" },
+        { av: "🧠", name: "Filósofo de Bar", handle: "@don_nadie_", time: "27m", text: "en twitter la gente inventa un enemigo imaginario y se indigna sola en su pieza" },
+        { av: "📊", name: "Tendencias Hoy", handle: "@trends_bot", time: "31m", text: "Tendencia #1 en Argentina ahora mismo: debate furioso en el timeline" },
+        { av: "🔥", name: "Baitero Profesional", handle: "@polemica_pura", time: "35m", text: "abro debate y me retiro: las medialunas de manteca son infinitamente superiores" }
+      ],
+      en: [
+        { av: "🐱", name: "Dev Cat", handle: "@cat_coder", time: "2m", text: "deployed straight to production on Friday 5 PM, send thoughts and prayers..." },
+        { av: "☕", name: "Coffee Snob", handle: "@coffee_purist", time: "5m", text: "charging $9 for an oat milk latte is literally daylight robbery" },
+        { av: "🚀", name: "Crypto Chad", handle: "@hodl_chad", time: "8m", text: "if you couldn't handle the 30% dip you don't deserve the 1000% rally" },
+        { av: "💅", name: "Emily ✨", handle: "@emily_vlogs", time: "11m", text: "I urgently need a 6-month sabbatical from my 2-day work week" },
+        { av: "⚽", name: "Matchday Banter", handle: "@football_banter", time: "14m", text: "VAR has genuinely ruined the beautiful game, absolutely shameless decision" },
+        { av: "🍿", name: "Cinephile Daily", handle: "@film_junkie", time: "18m", text: "cinema is officially back. Unreal performance and 10/10 sound design" },
+        { av: "🐸", name: "Meme Dispatch", handle: "@daily_meme", time: "22m", text: "me explaining my hyperfixation to someone who just asked how my day was" },
+        { av: "🧠", name: "Deep Thoughts Bot", handle: "@unironic_phil", time: "27m", text: "90% of Twitter discourse is just inventing a guy to get mad at" },
+        { av: "📊", name: "Trends Worldwide", handle: "@world_trends", time: "31m", text: "Trending #1 worldwide right now: absolute chaos erupting on the timeline" },
+        { av: "🔥", name: "Bait Specialist", handle: "@hot_takes_only", time: "35m", text: "unpopular opinion: pineapple on pizza is objectively superior and you know it" }
+      ],
+      ja: [
+        { av: "🐱", name: "駆け出しエンジニア", handle: "@web_dev_jp", time: "2分", text: "金曜18時に本番環境へ直デプロイ完了。神のご加護を…" },
+        { av: "☕", name: "カフェ巡りOL", handle: "@tokyo_cafe", time: "5分", text: "表参道で頼んだ抹茶ラテ1200円、氷しか入ってなくて草" },
+        { av: "🚀", name: "仮想通貨侍", handle: "@crypto_samurai", time: "8分", text: "押し目で拾えなかったやつがバブルで勝てると思うなよ" },
+        { av: "💅", name: "限界OLちゃん", handle: "@ol_chan_diary", time: "11分", text: "有給休暇の有給休暇が必要なくらい疲れ果ててて草" },
+        { av: "⚽", name: "海外サッカー実況", handle: "@football_jp", time: "14分", text: "深夜3時に起きて見た甲斐あったわ…劇的ロスタイム弾！！" },
+        { av: "🍿", name: "映画オタクの備忘録", handle: "@movie_geek_jp", time: "18分", text: "伏線回収が美しすぎて鳥肌立った。今年ベスト級の名作。" },
+        { av: "🐸", name: "ネットミーム研究会", handle: "@meme_lab_jp", time: "22分", text: "月曜の労働を断固拒否する猫ちゃんの画像置いておきますね" },
+        { av: "🧠", name: "深夜の哲学者", handle: "@night_thinker", time: "27分", text: "タイムラインって存在しない敵を作り出して一人で怒ってる人多すぎん？" },
+        { av: "📊", name: "日本のトレンド速報", handle: "@trends_japan", time: "31分", text: "日本のトレンド1位：深夜のTL大論争が勃発中" },
+        { av: "🔥", name: "レスバ審判員", handle: "@resuba_judge", time: "35分", text: "今日のTwitterも平常運転で地獄みたいな学級会やってて安心した" }
+      ]
+    };
+    const communityTweets = communityTweetsByLang[lang] || communityTweetsByLang.es;
 
     // Build repeating feed cards for fast upward scroll
     const feedCards = [];
@@ -10010,7 +19413,7 @@ class UIEngine {
           <div class="timeline-feed-reel" id="timeline-feed-reel">
             ${feedCardsHtml}
           </div>
-          <div class="feed-skip-hint">ESPACIO O CLIC PARA FRENAZO ▶</div>
+          <div class="feed-skip-hint">${typeof i18n !== "undefined" ? i18n.t("narrative.clunk_hint", null, "ESPACIO O CLIC PARA FRENAZO ▶") : "ESPACIO O CLIC PARA FRENAZO ▶"}</div>
         </div>
       </div>
 
@@ -10059,7 +19462,7 @@ class UIEngine {
       </div>
 
       <div class="narrative-actions">
-        <button class="btn btn-primary" id="btn-narrative-accept" style="display:none;">ACEPTAR Y CONTINUAR <span class="key-hint-pill">␣ ESPACIO</span> ▶</button>
+        <button class="btn btn-primary" id="btn-narrative-accept" style="display:none;">${(typeof i18n !== "undefined") ? i18n.t("narrative.continue_btn", null, "ACEPTAR Y CONTINUAR ▶") : "ACEPTAR Y CONTINUAR ▶"} <span class="key-hint-pill">␣ ${typeof i18n !== "undefined" && i18n.getLanguage() === "ja" ? "スペース" : (typeof i18n !== "undefined" && i18n.getLanguage() === "en" ? "SPACE" : "ESPACIO")}</span></button>
       </div>
     `;
 
@@ -10202,7 +19605,14 @@ class UIEngine {
             // 1. Desplegar el reply sospechoso de contexto
             const repliesBox = document.getElementById("tweet-story-replies");
             if (repliesBox && metaArc.activador.replySospechosa) {
-              const rep = metaArc.activador.replySospechosa;
+              const repLang = typeof i18n !== "undefined" ? i18n.getLanguage() : "es";
+              let rep = metaArc.activador.replySospechosa;
+              if (repLang !== "es" && typeof getLocalizedStoryCard === "function") {
+                const locCard = getLocalizedStoryCard(metaArc.activador.id, repLang);
+                if (locCard && locCard.replies && locCard.replies[0]) {
+                  rep = locCard.replies[0];
+                }
+              }
               repliesBox.style.display = "flex";
               repliesBox.innerHTML = `
                 <div class="story-reply-card">
@@ -10260,8 +19670,16 @@ class UIEngine {
               if (storyPulseTimer) clearInterval(storyPulseTimer);
               const repliesBox = document.getElementById("tweet-story-replies");
               if (repliesBox) {
+                const repLang = typeof i18n !== "undefined" ? i18n.getLanguage() : "es";
+                let activeReplies = card.replies;
+                if (repLang !== "es" && typeof getLocalizedStoryCard === "function") {
+                  const locCard = getLocalizedStoryCard(card, repLang) || getLocalizedStoryCard(card.storyId || card.contradiccion_id || card.id, repLang);
+                  if (locCard && locCard.replies && locCard.replies.length > 0) {
+                    activeReplies = locCard.replies;
+                  }
+                }
                 repliesBox.style.display = "flex";
-                repliesBox.innerHTML = card.replies.map(r => `
+                repliesBox.innerHTML = activeReplies.map(r => `
                   <div class="story-reply-card">
                     <div class="story-reply-avatar">💬</div>
                     <div class="story-reply-content">
@@ -10296,20 +19714,28 @@ class UIEngine {
                 if (viralData) this._alertViral(viralData); else this._renderFullTurn();
               };
 
-          // ── CHECK RACHA VIRAL RESOLUTION ──
+          // ── CHECK RACHA VIRAL RESOLUTION (TOTALMENTE INTERNACIONALIZADO) ──
           if (res.rachaViralUpdate && res.rachaViralUpdate.complete) {
             const rvu = res.rachaViralUpdate;
+            const t = (k, p, d) => (typeof i18n !== "undefined" ? i18n.t(k, p, d) : d);
             if (rvu.success) {
               snd.legendary();
+              const vTitle = t("viral_win.title", null, "🔥 ¡RACHA VIRAL COMPLETADA!");
+              const vSub = t("viral_win.subtitle", null, "MOMENTO VIRAL ÉPICO");
+              const vHead = t("viral_win.head", null, "🌟 ¡3 DE 3 TWEETS EXITOSOS!");
+              const vBody = t("viral_win.body", null, "Dominaste el algoritmo con maestría absoluta. La comunidad te convirtió en el fenómeno indiscutido de toda la red.");
+              const vGainLbl = t("viral_win.gained_label", null, "SEGUIDORES EXTRA GANADOS:");
+              const vFooter = t("viral_win.footer", null, "Tu cuenta alcanza un nuevo techo histórico de visibilidad e influencia.");
+
               this._showAlert(
-                "🔥 ¡RACHA VIRAL COMPLETADA!",
+                vTitle,
                 `<div class="strike-info-card survival" style="border-color:var(--green);">
-                   <strong>🌟 ¡3 DE 3 TWEETS EXITOSOS!</strong><br>
-                   Dominaste el algoritmo con maestría absoluta. La comunidad te convirtió en el fenómeno indiscutido de toda la red.<br><br>
-                   • <strong>SEGUIDORES EXTRA GANADOS:</strong> +${rvu.gained.toLocaleString()} (+${rvu.pct}% de tu audiencia)<br>
-                   • Tu cuenta alcanza un nuevo techo histórico de visibilidad e influencia.
+                   <strong>${vHead}</strong><br>
+                   ${vBody}<br><br>
+                   • <strong>${vGainLbl}</strong> +${rvu.gained.toLocaleString()} (+${rvu.pct}%)<br>
+                   • ${vFooter}
                  </div>`,
-                "MOMENTO VIRAL ÉPICO",
+                vSub,
                 true,
                 afterTurnCallback,
                 "👑"
@@ -10317,21 +19743,28 @@ class UIEngine {
               return;
             } else {
               snd.fail();
+              const lTitle = t("viral_loss.title", null, "💔 RACHA VIRAL QUEBRADA");
+              const lSub = t("viral_loss.subtitle", null, "DESAFÍO VIRAL FALLIDO");
+              const lMoneyLbl = t("viral_loss.money_lost", null, "DINERO PERDIDO:");
+              const lPenLbl = t("viral_loss.penalty", null, "PENALIZACIÓN: +2 STRIKES");
+              const lStatLbl = t("viral_loss.status", null, "ESTADO DE CUENTA:");
+              const lWarn = rvu.gameOver ? t("viral_loss.suspended", null, "(SUSPENDIDA)") : t("viral_loss.danger", null, "(A 1 DEL GAME OVER)");
+
               this._showAlert(
-                "💔 RACHA VIRAL QUEBRADA",
+                lTitle,
                 `<div class="strike-info-card critical" style="display:flex; flex-direction:column; gap:8px; text-align:left; padding:10px 14px;">
-                   <div style="font-size:0.86rem;">💸 <strong>DINERO PERDIDO:</strong> <span style="color:var(--red); font-weight:800;">-$${rvu.moneyLost.toLocaleString()}</span></div>
-                   <div style="font-size:0.86rem;">⚠️ <strong>PENALIZACIÓN:</strong> <span style="color:var(--red); font-weight:800;">+2 STRIKES</span></div>
-                   <div style="font-size:0.86rem;">🚨 <strong>ESTADO DE CUENTA:</strong> <span style="font-weight:800; color:var(--white);">${rvu.strikes}/3 STRIKES</span> <span style="color:var(--red); font-size:0.78rem;">${rvu.gameOver ? '(SUSPENDIDA)' : '(A 1 DEL GAME OVER)'}</span></div>
+                   <div style="font-size:0.86rem;">💸 <strong>${lMoneyLbl}</strong> <span style="color:var(--red); font-weight:800;">-$${rvu.moneyLost.toLocaleString()}</span></div>
+                   <div style="font-size:0.86rem;">⚠️ <strong>${lPenLbl}</strong></div>
+                   <div style="font-size:0.86rem;">🚨 <strong>${lStatLbl}</strong> <span style="font-weight:800; color:var(--white);">${rvu.strikes}/3 STRIKES</span> <span style="color:var(--red); font-size:0.78rem;">${lWarn}</span></div>
                  </div>`,
-                "DESAFÍO VIRAL FALLIDO",
+                lSub,
                 true,
                 () => {
                   if (rvu.gameOver) {
                     snd.fail();
                     this._showCancGameOverModal({
-                      titulo: "RACHA VIRAL FALLIDA — CUENTA SUSPENDIDA",
-                      motivo: `Perdiste $${rvu.moneyLost.toLocaleString()} y acumulaste 2 strikes extra. Los moderadores suspendieron tu cuenta de forma definitiva.`,
+                      titulo: lTitle + " — " + (rvu.gameOver ? "GAME OVER" : ""),
+                      motivo: `-$${rvu.moneyLost.toLocaleString()} · ${rvu.strikes}/3 Strikes.`,
                       texto: null
                     }, () => this._showEnd1());
                   } else {
@@ -10411,22 +19844,186 @@ class UIEngine {
     this._renderFullTurn();
   }
 
+  _buildShareScorecard(e, f) {
+    const genderedArch = getGenderedArchetype(e.arquetipo, e.genero);
+    const archName = (typeof i18n !== "undefined" && i18n.t(`archetypes.${e.arquetipo.id}.nombre`)) || genderedArch;
+    const persName = (typeof i18n !== "undefined" && i18n.t(`personalities.${e.personalidad.id}.nombre`)) || e.personalidad.nombre;
+    const lang = typeof i18n !== "undefined" ? i18n.getLanguage() : "es";
+
+    const segsStr = e.seguidores.toLocaleString();
+    const dinStr = "$" + e.dinero.toLocaleString();
+    const smStr = e.saludMental + "%";
+    const hateStr = e.odio + "%";
+    const strikesStr = e.strikesCancelacion + (e.strikesCancelacion === 1 ? " Strike" : " Strikes");
+
+    if (lang === "ja") {
+      const strikeLabel = e.strikesCancelacion + "回警告";
+      return `🎮 Tuitero — SNSサバイバル
+👤 ${e.handle} | ${archName}（${persName}）
+🏆 結末：${f.titulo}
+
+👥 フォロワー ${segsStr}人 | 💰 ${dinStr}
+🧠 メンタル ${smStr} | 🔥 炎上度 ${hateStr} | 💥 ${strikeLabel}
+
+20ターン生き残れるか挑戦してみて！
+cc @kohantoys #Tuitero
+👉 bit.ly/playTuitero`;
+    } else if (lang === "en") {
+      return `🎮 Tuitero — Social Media Simulator
+👤 ${e.handle} | ${archName} (${persName})
+🏆 Ending: ${f.titulo}
+
+👥 ${segsStr} followers | 💰 ${dinStr}
+🧠 ${smStr} Health | 🔥 ${hateStr} Hate | 💥 ${strikesStr}
+
+Can you survive cancel culture in 20 turns?
+cc @kohantoys #Tuitero
+👉 bit.ly/playTuitero`;
+    } else {
+      return `🎮 Tuitero — Simulador de Redes
+👤 ${e.handle} | ${genderedArch} (${persName})
+🏆 Final: ${f.titulo}
+
+👥 ${segsStr} segs | 💰 ${dinStr}
+🧠 ${smStr} Salud | 🔥 ${hateStr} Odio | 💥 ${strikesStr}
+
+¿Sobrevivís al algoritmo en 20 turnos?
+cc @kohantoys #Tuitero
+👉 bit.ly/playTuitero`;
+    }
+  }
+
   _showEnd1() {
     this.showScreen("screen-end1");
     snd.stopMusic();
     snd.fanfare();
     const f=this.eng.final, e=this.eng;
     const genderedArch = getGenderedArchetype(e.arquetipo, e.genero);
+    const end1Lang = typeof i18n !== "undefined" ? i18n.getLanguage() : "es";
+    let endTitle, endSub;
+    // Special case: metahistoria endings (id starts with "metahistoria_")
+    if (f.id && f.id.startsWith("metahistoria_")) {
+      if (end1Lang === "en") {
+        endTitle = `${genderedArch.toUpperCase()} STORY UNLOCKED`;
+        endSub = "Metastory completed successfully.";
+      } else if (end1Lang === "ja") {
+        endTitle = `${genderedArch}のストーリー解放`;
+        endSub = "メインストーリー完全踏破。";
+      } else {
+        endTitle = f.titulo;
+        endSub = f.sub || "";
+      }
+    } else {
+      endTitle = (typeof i18n !== "undefined" && i18n.t(`endings.${f.id}.titulo`, null, f.titulo)) || f.titulo;
+      endSub = (typeof i18n !== "undefined" && i18n.t(`endings.${f.id}.sub`, null, f.sub)) || f.sub || "";
+    }
     const set=(id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
-    set("end1-icon",f.icon||"🏆"); set("end1-title",f.titulo); set("end1-sub",f.sub||"");
+    set("end1-icon",f.icon||"🏆"); set("end1-title",endTitle); set("end1-sub",endSub);
+
+    const t = (k, p, d) => typeof i18n !== "undefined" ? i18n.t(k, p, d) : d;
+
+    // ── DESGLOSE DE 3 METAS: SEGUIDORES, DINERO E HISTORIA ──
+    const targetSegs = 80000;
+    const currentSegs = Math.max(0, e.seguidores || 0);
+    const segsMet = currentSegs >= targetSegs;
+    const segsPct = Math.min(100, Math.round((currentSegs / targetSegs) * 100));
+
+    const targetCash = 10000;
+    const currentCash = Math.max(0, e.dinero || 0);
+    const cashMet = currentCash >= targetCash;
+    const cashPct = Math.min(100, Math.round((currentCash / targetCash) * 100));
+
+    const storyMet = !!(e.storyFinished || (f.id && f.id.startsWith("metahistoria_")));
+    const storyPct = storyMet ? 100 : (e.storyModeActivated ? Math.min(100, Math.round(((e.storyCardsPlayed || 0) / 4) * 100)) : 0);
+
+    const isGameOver = e.gameOver && (f.id === "finale_deuda" || f.id === "finale_burnout" || f.id === "finale_cancelacion_3strikes" || f.id === "finale_cancelacion_zonaroja");
+    const isTotalVictory = !isGameOver && (segsMet || cashMet);
+    const isSurvivor = !isGameOver && !isTotalVictory;
+
+    // Badge superior
+    const statusBadgeEl = document.getElementById("end1-status-badge");
+    if (statusBadgeEl) {
+      if (isGameOver) {
+        statusBadgeEl.className = "end-game-badge badge-defeat";
+        statusBadgeEl.textContent = t("end_goals.defeat_badge", null, "💀 DERROTA // GAME OVER");
+      } else if (isTotalVictory) {
+        statusBadgeEl.className = "end-game-badge badge-victory";
+        statusBadgeEl.textContent = t("end_goals.victory_badge", null, "🏆 VICTORIA TOTAL // META CUMPLIDA");
+      } else {
+        statusBadgeEl.className = "end-game-badge badge-survivor";
+        statusBadgeEl.textContent = t("end_goals.survivor_badge", null, "⚠️ SUPERVIVIENTE // META INCOMPLETA");
+      }
+    }
+
+    // Fila 1: Seguidores
+    const segsTitleEl = document.getElementById("end1-goal-segs-title");
+    const segsBadgeEl = document.getElementById("end1-goal-segs-badge");
+    const segsFillEl = document.getElementById("end1-goal-segs-fill");
+    const segsSubEl = document.getElementById("end1-goal-segs-sub");
+    if (segsTitleEl) segsTitleEl.textContent = t("end_goals.followers_title", null, "👥 META DE SEGUIDORES (80.000)");
+    if (segsBadgeEl) {
+      segsBadgeEl.className = segsMet ? "goal-badge badge-success" : "goal-badge badge-fail";
+      segsBadgeEl.textContent = segsMet ? t("end_goals.status_met", null, "✅ CUMPLIDA") : t("end_goals.status_insufficient", null, "❌ INSUFICIENTE");
+    }
+    if (segsFillEl) {
+      segsFillEl.style.width = `${segsPct}%`;
+      segsFillEl.className = segsMet ? "goal-fill goal-fill-success" : "goal-fill goal-fill-warning";
+    }
+    if (segsSubEl) {
+      const segsDiff = Math.max(0, targetSegs - currentSegs);
+      segsSubEl.textContent = segsMet
+        ? `${currentSegs.toLocaleString()} / ${targetSegs.toLocaleString()} (100%) · ` + t("end_goals.followers_met", null, "Superaste el umbral masivo de influencia.")
+        : `${currentSegs.toLocaleString()} / ${targetSegs.toLocaleString()} (${segsPct}%) · ` + t("end_goals.followers_missing", { missing: segsDiff.toLocaleString() }, `Te faltaron ${segsDiff.toLocaleString()} seguidores.`);
+    }
+
+    // Fila 2: Dinero
+    const cashTitleEl = document.getElementById("end1-goal-cash-title");
+    const cashBadgeEl = document.getElementById("end1-goal-cash-badge");
+    const cashFillEl = document.getElementById("end1-goal-cash-fill");
+    const cashSubEl = document.getElementById("end1-goal-cash-sub");
+    if (cashTitleEl) cashTitleEl.textContent = t("end_goals.cash_title", null, "💰 META DE DINERO ($10.000)");
+    if (cashBadgeEl) {
+      cashBadgeEl.className = cashMet ? "goal-badge badge-success" : "goal-badge badge-fail";
+      cashBadgeEl.textContent = cashMet ? t("end_goals.status_met", null, "✅ CUMPLIDA") : t("end_goals.status_insufficient", null, "❌ INSUFICIENTE");
+    }
+    if (cashFillEl) {
+      cashFillEl.style.width = `${cashPct}%`;
+      cashFillEl.className = cashMet ? "goal-fill goal-fill-success" : "goal-fill goal-fill-warning";
+    }
+    if (cashSubEl) {
+      const cashDiff = Math.max(0, targetCash - currentCash);
+      cashSubEl.textContent = cashMet
+        ? `$${currentCash.toLocaleString()} / $${targetCash.toLocaleString()} (100%) · ` + t("end_goals.cash_met", null, "Aseguraste tu independencia financiera.")
+        : `$${currentCash.toLocaleString()} / $${targetCash.toLocaleString()} (${cashPct}%) · ` + t("end_goals.cash_missing", { missing: cashDiff.toLocaleString() }, `Te faltaron $${cashDiff.toLocaleString()}.`);
+    }
+
+    // Fila 3: Historia
+    const storyTitleEl = document.getElementById("end1-goal-story-title");
+    const storyBadgeEl = document.getElementById("end1-goal-story-badge");
+    const storyFillEl = document.getElementById("end1-goal-story-fill");
+    const storySubEl = document.getElementById("end1-goal-story-sub");
+    if (storyTitleEl) storyTitleEl.textContent = t("end_goals.story_title", null, "🗝️ META DE HISTORIA (CAUSA JUDICIAL)");
+    if (storyBadgeEl) {
+      storyBadgeEl.className = storyMet ? "goal-badge badge-success" : "goal-badge badge-warn";
+      storyBadgeEl.textContent = storyMet ? t("end_goals.status_story_done", null, "✅ RESUELTA") : t("end_goals.status_story_missing", null, "⚠️ NO RESUELTA");
+    }
+    if (storyFillEl) {
+      storyFillEl.style.width = `${storyPct}%`;
+      storyFillEl.className = storyMet ? "goal-fill goal-fill-success" : "goal-fill goal-fill-warning";
+    }
+    if (storySubEl) {
+      storySubEl.textContent = storyMet
+        ? t("end_goals.story_done", null, "Desentrañaste la trama de corrupción ministerial.")
+        : t("end_goals.story_missing", null, "No lograste desentrañar la causa a tiempo.");
+    }
 
     // ── HORIZONTAL TELEMETRY STRIP ──
     const statsEl=document.getElementById("end1-stats");
     if(statsEl) statsEl.innerHTML=`
-      <div class="end-stat-col"><span class="lbl">SEGUIDORES</span><span class="val c-blue">${e.seguidores.toLocaleString()}</span></div>
-      <div class="end-stat-col"><span class="lbl">DINERO</span><span class="val c-gold">$${e.dinero.toLocaleString()}</span></div>
-      <div class="end-stat-col"><span class="lbl">ENGAGEMENT</span><span class="val c-white">⚡${e.engagement}</span></div>
-      <div class="end-stat-col"><span class="lbl">SALUD MENTAL</span><span class="val c-green">${e.saludMental}%</span></div>
+      <div class="end-stat-col"><span class="lbl">${t("dashboard.followers", null, "SEGUIDORES")}</span><span class="val c-blue">${e.seguidores.toLocaleString()}</span></div>
+      <div class="end-stat-col"><span class="lbl">${t("dashboard.money", null, "DINERO")}</span><span class="val c-gold">$${e.dinero.toLocaleString()}</span></div>
+      <div class="end-stat-col"><span class="lbl">${t("dashboard.engagement", null, "ENGAGEMENT")}</span><span class="val c-white">⚡${e.engagement}</span></div>
+      <div class="end-stat-col"><span class="lbl">${t("dashboard.mental_health", null, "SALUD MENTAL")}</span><span class="val c-green">${e.saludMental}%</span></div>
     `;
 
     // ── REPLAYABILITY HOOK: UNLOCKED FINALES COLLECTION (26 FINALES: 14 BASE + 12 HISTORIAS) ──
@@ -10451,35 +20048,82 @@ class UIEngine {
       const pct = Math.round((count / totalFinales) * 100);
       const countEl = document.getElementById("collection-count-text");
       const barFill = document.getElementById("collection-bar-fill");
-      if (countEl) countEl.textContent = `${count} / ${totalFinales} DESCUBIERTOS (${pct}%)`;
+      if (countEl) countEl.textContent = t("end.discovered", { found: count, total: totalFinales }, `${count} / ${totalFinales} DESCUBIERTOS`) + ` (${pct}%)`;
       if (barFill) barFill.style.width = `${pct}%`;
     } catch(err) {}
 
-    // ── BANNER NARRATIVO DE FIN DE JUEGO (SOLO SI COMPLETÓ LA HISTORIA) ──
-    const storyBanner = document.getElementById("end1-story-banner");
-    if (storyBanner) {
-      if (e.storyFinished) {
-        storyBanner.style.display = "block";
-        storyBanner.innerHTML = `
-          <div class="story-banner-text">
-            Completaste el arco narrativo de <strong>${genderedArch}</strong>. Ahora sabés un pedacito más de lo que pasó realmente.
-            <br><br>
-            💡 Podés revisar todos los tweets y pistas de esta partida haciendo clic en el <strong>Árbol de Decisiones</strong>: cada turno tiene el tweet que publicaste y las replies del hilo.
-          </div>
-        `;
-      } else {
-        storyBanner.style.display = "none";
+    // ── MODAL ROJO DE HISTORIA (EPÍLOGO NARRATIVO EXCLUSIVO) ──
+    const NEXT_STORY_ARCH = {
+      gamer: "futbolero",
+      futbolero: "periodista",
+      periodista: "militante",
+      militante: "conspiranoico",
+      conspiranoico: "cryptobro",
+      cryptobro: "techie",
+      techie: "gamer",
+      onlyfans: "influencer",
+      influencer: "humor",
+      humor: "podcaster",
+      podcaster: "opinologo",
+      opinologo: "gamer"
+    };
+
+    if (e.storyModeActivated || e.storyFinished) {
+      const archId = e.arquetipo?.id || "periodista";
+      const nextArchId = NEXT_STORY_ARCH[archId] || "periodista";
+      const recText = (typeof i18n !== "undefined" && i18n.t(`story_recs.${archId}`)) || "";
+
+      const epilogueModal = document.getElementById("story-epilogue-modal-overlay");
+      const epilogueBadge = document.getElementById("story-epilogue-badge");
+      const epilogueTitle = document.getElementById("story-epilogue-title");
+      const epilogueText = document.getElementById("story-epilogue-text");
+      const epilogueBtn = document.getElementById("btn-story-epilogue-ok");
+      const epilogueBtnText = document.getElementById("story-epilogue-btn-text");
+
+      if (epilogueBadge) epilogueBadge.textContent = (typeof i18n !== "undefined" && i18n.t("story_epilogue.badge")) || "⚡ CASO RESUELTO // PRÓXIMO EPISODIO";
+      if (epilogueTitle) epilogueTitle.textContent = (typeof i18n !== "undefined" && i18n.t("story_epilogue.title")) || "ARCO NARRATIVO COMPLETADO";
+      if (epilogueText) epilogueText.textContent = recText;
+      if (epilogueBtnText) epilogueBtnText.textContent = (typeof i18n !== "undefined" && i18n.t("story_epilogue.ok_btn")) || "ACEPTAR";
+
+      const closeEpilogue = () => {
+        if (epilogueModal) epilogueModal.classList.remove("active");
+        this._suppressEndKeyUntil = Date.now() + 500;
+      };
+
+      if (epilogueBtn) {
+        epilogueBtn.onclick = () => {
+          snd.click();
+          closeEpilogue();
+        };
       }
+      const closeTopBtn = document.getElementById("btn-close-story-epilogue");
+      if (closeTopBtn) closeTopBtn.onclick = () => closeEpilogue();
+
+      // Abrir con pequeña pausa teatral
+      setTimeout(() => {
+        if (epilogueModal) {
+          snd.ding(0);
+          epilogueModal.classList.add("active");
+        }
+      }, 400);
     }
 
     const btnShare=document.getElementById("btn-end1-share");
     if(btnShare){
       btnShare.onclick=()=>{
         snd.click();
-        const tweetText = `Jugué a Tuitero como ${genderedArch} ${e.personalidad.nombre} (${e.handle}) y alcancé el final "${f.titulo}" con ${e.seguidores.toLocaleString()} seguidores y $${e.dinero.toLocaleString()} 🏆. ¿Podés superarme? Jugá a Tuitero acá: https://bit.ly/playtwitero`;
+        const tweetText = this._buildShareScorecard(e, f);
         const modal = document.getElementById("share-modal-overlay");
         const textarea = document.getElementById("modal-share-textarea");
         if(textarea) textarea.value = tweetText;
+
+        const btnOpenX = document.getElementById("btn-modal-open-x");
+        if (btnOpenX) {
+          btnOpenX.onclick = () => {
+            snd.click();
+            window.open("https://twitter.com/intent/tweet?text=" + encodeURIComponent(tweetText), "_blank");
+          };
+        }
         if(modal) modal.classList.add("active");
       };
     }
@@ -10490,9 +20134,13 @@ class UIEngine {
     const btnRestart=document.getElementById("btn-end1-restart");
     if(btnRestart) btnRestart.onclick=()=>{ snd.click(); location.reload(); };
 
-    // Spacebar to restart game on end screen
+    // Spacebar to restart game on end screen (con guard anti-doble clic)
     const handleEndKey = (ev) => {
       const end1El = document.getElementById("screen-end1");
+      const epilogueModal = document.getElementById("story-epilogue-modal-overlay");
+      if (epilogueModal && epilogueModal.classList.contains("active")) return;
+      if (this._suppressEndKeyUntil && Date.now() < this._suppressEndKeyUntil) return;
+
       if (end1El && end1El.classList.contains("active") && (ev.code === "Space" || ev.code === "Enter")) {
         ev.preventDefault();
         window.removeEventListener("keydown", handleEndKey);
@@ -10501,16 +20149,37 @@ class UIEngine {
     };
     window.addEventListener("keydown", handleEndKey);
 
+    // ── BOTÓN COPIAR REPORTE DE DEBUG EN PANTALLA FINAL ──
+    const copyReportBtn = document.getElementById("btn-end1-copy-report");
+    if (copyReportBtn) {
+      copyReportBtn.textContent = t("end_goals.btn_copy_report", null, "📋 Copiar Reporte");
+      copyReportBtn.onclick = () => {
+        snd.click();
+        const report = e.generateMatchReport();
+        navigator.clipboard.writeText(report).then(() => {
+          copyReportBtn.textContent = t("end_goals.report_copied", null, "✓ ¡Reporte copiado!");
+          copyReportBtn.classList.add("copied");
+          setTimeout(() => {
+            copyReportBtn.textContent = t("end_goals.btn_copy_report", null, "📋 Copiar Reporte");
+            copyReportBtn.classList.remove("copied");
+          }, 3000);
+        }).catch(()=>{});
+      };
+    }
+
     const copyModalBtn = document.getElementById("btn-modal-copy-tweet");
     if (copyModalBtn) {
       copyModalBtn.onclick = () => {
         snd.click();
         const textarea = document.getElementById("modal-share-textarea");
+        const lang = typeof i18n !== "undefined" ? i18n.getLanguage() : "es";
+        const copiedTxt = lang === "ja" ? "✓ コピー完了！" : lang === "en" ? "✓ Text copied!" : "✓ ¡Texto copiado!";
+        const copyTxt = lang === "ja" ? "📋 ツイートをコピー" : lang === "en" ? "📋 Copy Tweet" : "📋 Copiar Tweet";
         navigator.clipboard.writeText(textarea.value).then(() => {
-          copyModalBtn.textContent = "✓ ¡Texto copiado!";
+          copyModalBtn.textContent = copiedTxt;
           copyModalBtn.classList.add("copied");
           setTimeout(() => {
-            copyModalBtn.textContent = "📋 Copiar Tweet";
+            copyModalBtn.textContent = copyTxt;
             copyModalBtn.classList.remove("copied");
           }, 3000);
         }).catch(()=>{});
@@ -10530,9 +20199,34 @@ class UIEngine {
     this.showScreen("screen-end2");
     const f=this.eng.final, e=this.eng;
     const genderedArch = getGenderedArchetype(e.arquetipo, e.genero);
+    const end2Lang = typeof i18n !== "undefined" ? i18n.getLanguage() : "es";
+    let endTitle, endNarr;
+    if (f.id && f.id.startsWith("metahistoria_")) {
+      if (end2Lang === "en") {
+        endTitle = `${genderedArch.toUpperCase()} STORY UNLOCKED`;
+        endNarr = `You completed ${genderedArch}'s narrative arc. Now you know a little more about what really happened. Click the Decision Tree to review all tweets and clues from this run.`;
+      } else if (end2Lang === "ja") {
+        endTitle = `${genderedArch}のストーリー解放`;
+        endNarr = `${genderedArch}の物語アークを完成させました。舞台裏で本当に何が起きていたのか、少しわかりましたか？決断の軌跡から今回のプレイの全ツイートと手がかりを振り返れます。`;
+      } else {
+        endTitle = f.titulo;
+        endNarr = f.narrativa || "";
+      }
+    } else {
+      endTitle = (typeof i18n !== "undefined" && i18n.t(`endings.${f.id}.titulo`, null, f.titulo)) || f.titulo;
+      endNarr = (typeof i18n !== "undefined" && (i18n.t(`endings.${f.id}.narrativa0`, null, f.narrativa) || i18n.t(`endings.${f.id}.narrativa`, null, f.narrativa))) || f.narrativa || "";
+    }
     const set=(id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
-    set("end2-final-title", `${f.icon||"🏆"} ${f.titulo}`);
-    const narr=document.getElementById("end2-narrative"); if(narr) narr.textContent=f.narrativa||"";
+    set("end2-final-title", `${f.icon||"🏆"} ${endTitle}`);
+    const narr=document.getElementById("end2-narrative"); if(narr) narr.textContent=endNarr;
+
+    const t = (k, p, d) => typeof i18n !== "undefined" ? i18n.t(k, p, d) : d;
+    const chartTitle = document.getElementById("end2-chart-title");
+    if (chartTitle) chartTitle.textContent = "// " + t("end2.chart_title", { turns: this.eng.turno || 20 }, "EVOLUCIÓN EN EL TIMELINE (20 TURNOS)");
+    const legSegs = document.getElementById("end2-legend-segs");
+    if (legSegs) legSegs.textContent = "― " + t("end2.legend_followers", null, "SEGUIDORES");
+    const legDin = document.getElementById("end2-legend-din");
+    if (legDin) legDin.textContent = "― " + t("end2.legend_cash", null, "DINERO");
     
     const btnBack=document.getElementById("btn-end2-back"); if(btnBack) btnBack.onclick=()=>{ snd.click(); this._showEnd1(); };
     const pa=document.getElementById("btn-play-again"); if(pa) pa.onclick=()=>{ snd.click(); location.reload(); };
@@ -10558,7 +20252,9 @@ class UIEngine {
         const x=(i/(hist.length-1))*W;
         const ySegs=H-((h.segs-mnSegs)/(mxSegs-mnSegs||1))*(H-30)-15;
         const yDin=H-((h.din-mnDin)/(mxDin-mnDin||1))*(H-30)-15;
-        const tip=`<strong>Turno ${h.t===0?"Inicio":h.t}</strong><br>👥 ${h.segs.toLocaleString()} segs<br>💰 $${(h.din||0).toLocaleString()}`;
+        const tTurn = t("tree.turn_label", null, "Turno");
+        const tSegs = t("tree.followers", null, "segs");
+        const tip=`<strong>${tTurn} ${h.t===0?"0":h.t}</strong><br>👥 ${h.segs.toLocaleString()} ${tSegs}<br>💰 $${(h.din||0).toLocaleString()}`;
         
         nodesSegs+=`<circle cx="${x.toFixed(1)}" cy="${ySegs.toFixed(1)}" r="4" fill="#1d9bf0" stroke="#000" stroke-width="1.5" style="pointer-events:none;"/>`;
         nodesDin+=`<circle cx="${x.toFixed(1)}" cy="${yDin.toFixed(1)}" r="3" fill="#eab308" stroke="#000" stroke-width="1" style="pointer-events:none;"/>`;
@@ -10584,10 +20280,10 @@ class UIEngine {
         snd.click();
         const report = e.generateMatchReport();
         navigator.clipboard.writeText(report).then(() => {
-          reportBtn.textContent = "✓ ¡Reporte copiado al portapapeles!";
+          reportBtn.textContent = typeof i18n !== "undefined" ? i18n.t("end.report_copied", null, "✓ ¡Reporte copiado!") : "✓ ¡Reporte copiado!";
           reportBtn.classList.add("copied");
           setTimeout(() => {
-            reportBtn.textContent = "📋 COPIAR REPORTE (JSON)";
+            reportBtn.textContent = typeof i18n !== "undefined" ? i18n.t("end.copy_report", null, "📋 COPIAR REPORTE") : "📋 COPIAR REPORTE (JSON)";
             reportBtn.classList.remove("copied");
           }, 3000);
         }).catch(()=>{});
@@ -10598,10 +20294,18 @@ class UIEngine {
     if (btnEnd2Share) {
       btnEnd2Share.onclick = () => {
         snd.click();
-        const tweetText = `Jugué a Tuitero como ${genderedArch} ${e.personalidad.nombre} (${e.handle}) y alcancé el final "${f.titulo}" con ${e.seguidores.toLocaleString()} seguidores y $${e.dinero.toLocaleString()} 🏆. ¿Podés superarme? Jugá a Tuitero acá: https://bit.ly/playtwitero`;
+        const tweetText = this._buildShareScorecard(e, f);
         const modal = document.getElementById("share-modal-overlay");
         const textarea = document.getElementById("modal-share-textarea");
         if(textarea) textarea.value = tweetText;
+
+        const btnOpenX = document.getElementById("btn-modal-open-x");
+        if (btnOpenX) {
+          btnOpenX.onclick = () => {
+            snd.click();
+            window.open("https://twitter.com/intent/tweet?text=" + encodeURIComponent(tweetText), "_blank");
+          };
+        }
         if(modal) modal.classList.add("active");
       };
     }
@@ -10687,6 +20391,7 @@ class UIEngine {
 
     let prevX = cX;
     let prevY = rootY;
+    const treeLang = typeof i18n !== "undefined" ? i18n.getLanguage() : "es";
 
     positions.forEach((pos, i) => {
       const turn = pos.turn;
@@ -10694,13 +20399,22 @@ class UIEngine {
       const isViral = !!chosen.viral;
       const hasFailed = !chosen.ok;
 
+      // ── Localización del título y tweet de la carta elegida ──
+      const chosenCardObj = { id: chosen.id, titulo: chosen.title, texto: chosen.text };
+      const locChosenTitle = (treeLang !== "es" && typeof getLocalizedCardTitle === "function")
+        ? getLocalizedCardTitle(chosenCardObj, treeLang, e.arquetipo?.id) || chosen.title
+        : chosen.title;
+      const locChosenTweet = (treeLang !== "es" && typeof getLocalizedCardTweet === "function" && chosen.id !== "evento")
+        ? getLocalizedCardTweet(chosenCardObj, treeLang, e.arquetipo?.id) || (chosen.text || chosen.title || "")
+        : (chosen.text || chosen.title || "");
+
       // ── Línea guía horizontal sutil que delimita cada turno ──
       lines += `<line x1="32" y1="${pos.tierY}" x2="${svgW - 32}" y2="${pos.tierY}"
         stroke="${C.lineGuide}" stroke-width="1"/>`;
 
       // Etiqueta del turno a la izquierda (Space Mono, sobria, sin invadir el centro)
       nodes += `<text x="36" y="${pos.tierY + 22}" font-family="'Space Mono', monospace"
-        font-size="10" font-weight="700" fill="${C.textDim}" letter-spacing="1">TURNO ${String(turn.t).padStart(2,"0")}</text>`;
+        font-size="10" font-weight="700" fill="${C.textDim}" letter-spacing="1">${(typeof i18n !== "undefined" ? i18n.t("tree.turn_label", null, "TURNO") : "TURNO")} ${String(turn.t).padStart(2,"0")}</text>`;
 
       // ── Conector Tronco Principal (Curva S vertical desde nodo elegido anterior) ──
       const midY = (prevY + pos.y) / 2;
@@ -10720,10 +20434,15 @@ class UIEngine {
           stroke="${C.branchAlt}" stroke-width="1.5" stroke-dasharray="3 3" fill="none"/>`;
 
         // Nodo descartado circular
+        const _tDiscarded = typeof i18n !== "undefined" ? i18n.t("tree.discarded", null, "Descartada") : "Descartada";
+        const altCardObj = { id: alt.id, titulo: alt.title || alt.titulo };
+        const locAltTitle = (treeLang !== "es" && typeof getLocalizedCardTitle === "function")
+          ? getLocalizedCardTitle(altCardObj, treeLang, e.arquetipo?.id) || (alt.title || alt.titulo || _tDiscarded)
+          : (alt.title || alt.titulo || _tDiscarded);
         nodes += `<g class="tree-node alt" data-idx="${i}" data-alt="${ai}" style="cursor:help;">
           <circle cx="${altX}" cy="${altY}" r="14" fill="${C.altNodeBg}" stroke="${C.altNodeBdr}" stroke-width="1.5"/>
           <text x="${altX}" y="${altY + 4}" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="10" font-weight="700" fill="${C.textDim}">✕</text>
-          <text x="${altX}" y="${altY + 26}" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="9" fill="${C.textDim}">${(alt.title || alt.titulo || 'Descartada').slice(0, 15)}</text>
+          <text x="${altX}" y="${altY + 26}" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="9" fill="${C.textDim}">${locAltTitle.slice(0, 15)}</text>
         </g>`;
       });
 
@@ -10739,10 +20458,16 @@ class UIEngine {
         <!-- Pip sutil de resultado -->
         <circle cx="${pos.x + 13}" cy="${pos.y - 13}" r="4.5" fill="${pipFill}"/>
         <!-- Título de la carta elegida a la derecha -->
-        <text x="${pos.x + 24}" y="${pos.y + 4}" font-family="'Plus Jakarta Sans', sans-serif" font-size="10" font-weight="700" fill="${titleColor}">${chosen.title.slice(0, 22)}</text>
+        <text x="${pos.x + 24}" y="${pos.y + 4}" font-family="'Plus Jakarta Sans', sans-serif" font-size="10" font-weight="700" fill="${titleColor}">${locChosenTitle.slice(0, 22)}</text>
       </g>`;
 
-      tooltipData.push({ i, chosen, delta: turn.delta, snap: turn.snapshot, alts: turn.alternatives });
+      tooltipData.push({
+        i,
+        chosen: { ...chosen, title: locChosenTitle, text: locChosenTweet },
+        delta: turn.delta,
+        snap: turn.snapshot,
+        alts: turn.alternatives
+      });
 
       // Actualizar nodo anterior para la próxima iteración
       prevX = pos.x;
@@ -10761,58 +20486,61 @@ class UIEngine {
 
     // ── HEADER UNIFICADO ──────────────────────────────────────────────
     const f = e.final;
+    const tTree = (k, d) => typeof i18n !== "undefined" ? i18n.t(k, null, d) : d;
     const genderedArch = typeof getGenderedArchetype === "function"
       ? getGenderedArchetype(e.arquetipo, e.genero) : e.arquetipo.nombre;
     const handleText = e.handle || "@twitero";
-    const archBadge = genderedArch.toUpperCase();
+    const archBadge = ((typeof i18n !== "undefined" && i18n.t(`archetypes.${e.arquetipo.id}.nombre`)) || genderedArch).toUpperCase();
     const archW = Math.max(80, archBadge.length * 7 + 20);
+    const tChosen = tTree("tree.chosen", "Elegido");
+    const tDiscarded = tTree("tree.discarded", "Descartado");
+    const tSuccess = tTree("tree.success", "Éxito");
+    const tRatioLeg = tTree("tree.ratio", "Ratio");
+    const treeTurns = tTree("tree.turns", "TURNOS");
 
     const header = `
       <rect x="0" y="0" width="${svgW}" height="84" fill="${C.bg}"/>
       <line x1="0" y1="84" x2="${svgW}" y2="84" stroke="${C.lineGuide}" stroke-width="1"/>
-      <!-- Título de sección en Plus Jakarta Sans -->
       <text x="36" y="28" font-family="'Plus Jakarta Sans', sans-serif" font-size="10" font-weight="800"
-        fill="${C.trunk}" letter-spacing="1.5">ÁRBOL DE DECISIONES · ${cols} TURNOS</text>
-      <!-- Handle del jugador -->
+        fill="${C.trunk}" letter-spacing="1.5">${tTree("tree.title", "ÁRBOL DE DECISIONES")} · ${cols} ${treeTurns}</text>
       <text x="36" y="58" font-family="'Plus Jakarta Sans', sans-serif" font-size="20" font-weight="800"
         fill="${C.textWhite}">${handleText}</text>
-      <!-- Pastilla discreta de arquetipo -->
       <rect x="${36 + handleText.length * 12 + 14}" y="42" width="${archW}" height="20" rx="10"
         fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
       <text x="${36 + handleText.length * 12 + 14 + archW / 2}" y="55" text-anchor="middle"
         font-family="'Plus Jakarta Sans', sans-serif" font-size="9" font-weight="700" fill="${C.textMuted}">${archBadge}</text>
-      <!-- Leyenda horizontal compacta y sobria a la derecha -->
       <g transform="translate(${svgW - 320}, 44)">
         <circle cx="8" cy="8" r="5" fill="${C.chosenNodeBg}" stroke="${C.trunk}" stroke-width="1.5"/>
-        <text x="18" y="11" font-family="'Plus Jakarta Sans', sans-serif" font-size="10" fill="${C.textMuted}">Elegido</text>
+        <text x="18" y="11" font-family="'Plus Jakarta Sans', sans-serif" font-size="10" fill="${C.textMuted}">${tChosen}</text>
         <circle cx="80" cy="8" r="5" fill="${C.altNodeBg}" stroke="${C.altNodeBdr}" stroke-width="1.5"/>
-        <text x="90" y="11" font-family="'Plus Jakarta Sans', sans-serif" font-size="10" fill="${C.textMuted}">Descartado</text>
+        <text x="90" y="11" font-family="'Plus Jakarta Sans', sans-serif" font-size="10" fill="${C.textMuted}">${tDiscarded}</text>
         <circle cx="170" cy="8" r="4.5" fill="${C.pipOk}"/>
-        <text x="180" y="11" font-family="'Plus Jakarta Sans', sans-serif" font-size="10" fill="${C.textMuted}">Éxito</text>
+        <text x="180" y="11" font-family="'Plus Jakarta Sans', sans-serif" font-size="10" fill="${C.textMuted}">${tSuccess}</text>
         <circle cx="230" cy="8" r="4.5" fill="${C.pipFail}"/>
-        <text x="240" y="11" font-family="'Plus Jakarta Sans', sans-serif" font-size="10" fill="${C.textMuted}">Ratio</text>
+        <text x="240" y="11" font-family="'Plus Jakarta Sans', sans-serif" font-size="10" fill="${C.textMuted}">${tRatioLeg}</text>
       </g>`;
 
     // ── FOOTER STATS SOBRIO (Cero carnaval) ───────────────────────────
     const statsY = svgH - PAD_BOT;
+    const endTitulo = (typeof i18n !== "undefined" && i18n.t(`endings.${f.id}.titulo`)) || f.titulo;
     const statsBar = `
       <rect x="0" y="${statsY}" width="${svgW}" height="${PAD_BOT}" fill="${C.bg}"/>
       <line x1="0" y1="${statsY}" x2="${svgW}" y2="${statsY}" stroke="${C.lineGuide}" stroke-width="1"/>
       <text x="36" y="${statsY + 28}">
-        <tspan font-family="'Plus Jakarta Sans', sans-serif" font-size="10" font-weight="700" fill="${C.textMuted}">SEGUIDORES: </tspan>
+        <tspan font-family="'Plus Jakarta Sans', sans-serif" font-size="10" font-weight="700" fill="${C.textMuted}">${tTree("tree.stats_followers", "SEGUIDORES:")} </tspan>
         <tspan font-family="'Space Mono', monospace" font-size="11" font-weight="700" fill="${C.textWhite}">${e.seguidores.toLocaleString()}</tspan>
       </text>
       <text x="260" y="${statsY + 28}">
-        <tspan font-family="'Plus Jakarta Sans', sans-serif" font-size="10" font-weight="700" fill="${C.textMuted}">DINERO: </tspan>
+        <tspan font-family="'Plus Jakarta Sans', sans-serif" font-size="10" font-weight="700" fill="${C.textMuted}">${tTree("tree.stats_cash", "DINERO:")} </tspan>
         <tspan font-family="'Space Mono', monospace" font-size="11" font-weight="700" fill="${C.textWhite}">$${e.dinero.toLocaleString()}</tspan>
       </text>
       <text x="440" y="${statsY + 28}">
-        <tspan font-family="'Plus Jakarta Sans', sans-serif" font-size="10" font-weight="700" fill="${C.textMuted}">SALUD: </tspan>
+        <tspan font-family="'Plus Jakarta Sans', sans-serif" font-size="10" font-weight="700" fill="${C.textMuted}">${tTree("tree.stats_health", "SALUD:")} </tspan>
         <tspan font-family="'Space Mono', monospace" font-size="11" font-weight="700" fill="${C.textWhite}">${e.saludMental}%</tspan>
       </text>
       <text x="590" y="${statsY + 28}">
-        <tspan font-family="'Plus Jakarta Sans', sans-serif" font-size="10" font-weight="700" fill="${C.textMuted}">FINAL: </tspan>
-        <tspan font-family="'Plus Jakarta Sans', sans-serif" font-size="11" font-weight="800" fill="${C.trunk}">${f.titulo}</tspan>
+        <tspan font-family="'Plus Jakarta Sans', sans-serif" font-size="10" font-weight="700" fill="${C.textMuted}">${tTree("tree.stats_final", "FINAL:")} </tspan>
+        <tspan font-family="'Plus Jakarta Sans', sans-serif" font-size="11" font-weight="800" fill="${C.trunk}">${endTitulo}</tspan>
       </text>`;
 
     const svgContent = `
@@ -10837,16 +20565,16 @@ class UIEngine {
       <div style="width:100%;max-width:960px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
           <span style="color:${C.trunk};font-size:12px;font-weight:800;letter-spacing:1.5px;font-family:'Plus Jakarta Sans', sans-serif;">
-            ÁRBOL DE DECISIONES — RECORRIDO DE PARTIDA
+            ${tTree("tree.title", "ÁRBOL DE DECISIONES")}
           </span>
           <div style="display:flex;gap:10px;">
             <button id="btn-tree-copy" style="background:#0a1828;border:1px solid ${C.trunk};color:#fff;
               padding:7px 16px;border-radius:6px;font-size:11px;cursor:pointer;font-weight:700;font-family:'Plus Jakarta Sans', sans-serif;">
-              📋 Copiar imagen
+              📋 ${tTree("tree.copy_image", "Copiar imagen")}
             </button>
             <button id="btn-tree-close" style="background:#0c101c;border:1px solid #243048;color:#94A3B8;
               padding:7px 14px;border-radius:6px;font-size:11px;cursor:pointer;font-family:'Plus Jakarta Sans', sans-serif;">
-              ✕ Cerrar [Esc]
+              ✕ ${tTree("tree.close", "Cerrar [Esc]")}
             </button>
           </div>
         </div>
@@ -10879,23 +20607,32 @@ class UIEngine {
         const snap = td.snap || {};
         const isViral = td.chosen.viral;
         const tweetText = td.chosen.text || td.chosen.title || "";
+        const turnLabel = tTree("tree.turn_label", "Turno");
+        const outcomeLabel = td.chosen.ok
+          ? (isViral ? tTree("tree.viral_impact", "✨ IMPACTO VIRAL") : tTree("tree.tweet_success", "✅ TWEET EXITOSO"))
+          : tTree("tree.tweet_ratio", "❌ RATIO EN EL TIMELINE");
+        const followersLbl = tTree("tree.followers", "seguidores");
+        const engLbl = tTree("tree.engagement_label", "engagement");
+        const hateLbl = tTree("tree.hate_gen", "odio generado");
+        const boosterLbl = tTree("tree.booster_label", "🚀 Booster:");
+        const balanceLbl = tTree("tree.end_of_turn", "Balance al cierre de turno:");
         tooltip.innerHTML = `
           <div style="color:${C.trunk};font-weight:800;font-size:13px;margin-bottom:6px;">
             ${td.chosen.icon || "💬"} ${td.chosen.title || "Carta"} &nbsp;
-            <span style="color:#64748B;font-size:11px;">(Turno ${log[idx].t})</span>
+            <span style="color:#64748B;font-size:11px;">(${turnLabel} ${log[idx].t})</span>
           </div>
           ${tweetText ? `<div style="font-family:'Plus Jakarta Sans', sans-serif;font-size:13.5px;color:#f1f5f9;background:rgba(255,255,255,0.08);border-left:3px solid ${C.trunk};padding:9px 12px;margin:8px 0;border-radius:4px;line-height:1.45;font-weight:500;">"${tweetText}"</div>` : ""}
           <div style="color:${td.chosen.ok ? (isViral ? C.pipViral : C.pipOk) : C.pipFail};font-weight:700;font-size:12px;">
-            ${td.chosen.ok ? (isViral ? "✨ IMPACTO VIRAL" : "✅ TWEET EXITOSO") : "❌ RATIO EN EL TIMELINE"}
+            ${outcomeLabel}
             &nbsp;<span style="color:#8b98a9;font-size:11px;font-family:'Space Mono', monospace;">[D${td.chosen.roll}/≤${td.chosen.chance}%]</span>
           </div>
           <hr style="border-color:rgba(255,255,255,0.1);margin:8px 0;">
-          <div style="font-weight:600;font-size:12px;">👥 ${td.delta.segs >= 0 ? "+" : ""}${(td.delta.segs||0).toLocaleString()} seguidores</div>
-          <div style="font-size:12px;">⚡ ${td.delta.eng >= 0 ? "+" : ""}${td.delta.eng||0} engagement</div>
-          ${td.delta.hate ? `<div style="color:${C.pipFail};font-size:12px;">💀 +${td.delta.hate} odio generado</div>` : ""}
-          ${td.chosen.booster ? `<div style="color:${C.trunk};font-size:12px;">🚀 Booster: ${td.chosen.booster}</div>` : ""}
+          <div style="font-weight:600;font-size:12px;">👥 ${td.delta.segs >= 0 ? "+" : ""}${(td.delta.segs||0).toLocaleString()} ${followersLbl}</div>
+          <div style="font-size:12px;">⚡ ${td.delta.eng >= 0 ? "+" : ""}${td.delta.eng||0} ${engLbl}</div>
+          ${td.delta.hate ? `<div style="color:${C.pipFail};font-size:12px;">💀 +${td.delta.hate} ${hateLbl}</div>` : ""}
+          ${td.chosen.booster ? `<div style="color:${C.trunk};font-size:12px;">${boosterLbl} ${td.chosen.booster}</div>` : ""}
           <hr style="border-color:rgba(255,255,255,0.1);margin:8px 0;">
-          <div style="color:#64748B;font-size:10.5px;text-transform:uppercase;">Balance al cierre de turno:</div>
+          <div style="color:#64748B;font-size:10.5px;text-transform:uppercase;">${balanceLbl}</div>
           <div style="font-family:'Space Mono', monospace;font-size:11.5px;">👥 ${(snap.segs||0).toLocaleString()} &nbsp;·&nbsp; 💰 $${(snap.dinero||0).toLocaleString()} &nbsp;·&nbsp; ❤️ ${snap.salud||0}%</div>`;
         tooltip.style.display = "block";
       });
@@ -10915,12 +20652,14 @@ class UIEngine {
       const alt = (td.alts || [])[ai];
       if (!alt) return;
       node.addEventListener("mouseenter", ev => {
+        const discardedLbl = tTree("tree.discarded_turn", "OPCIÓN DESCARTADA · TURNO");
+        const discardedDesc = tTree("tree.discarded_desc", "Esta carta formaba parte de tu mano y decidiste no jugarla.");
         tooltip.innerHTML = `
           <div style="color:#94A3B8;font-weight:700;margin-bottom:4px;">
             ${alt.icon || "🃏"} ${alt.title || "Carta descartada"}
           </div>
-          <div style="color:${C.pipFail};font-size:10px;font-weight:700;">OPCIÓN DESCARTADA · TURNO ${log[idx].t}</div>
-          <div style="color:#64748B;margin-top:4px;font-size:11px;">Esta carta formaba parte de tu mano y decidiste no jugarla.</div>`;
+          <div style="color:${C.pipFail};font-size:10px;font-weight:700;">${discardedLbl} ${log[idx].t}</div>
+          <div style="color:#64748B;margin-top:4px;font-size:11px;">${discardedDesc}</div>`;
         tooltip.style.display = "block";
       });
       node.addEventListener("mousemove", ev => {
@@ -11032,19 +20771,33 @@ class UIEngine {
     }
 
     const currentAvatar = e.getAvatar();
-    const genderedArch = typeof getGenderedArchetype === "function" ? getGenderedArchetype(e.arquetipo, e.genero) : e.arquetipo.nombre;
+    const genderedArch = (typeof i18n !== "undefined" && i18n.t(`archetypes.${e.arquetipo.id}.nombre`)) || (typeof getGenderedArchetype === "function" ? getGenderedArchetype(e.arquetipo, e.genero) : e.arquetipo.nombre);
+
+    const tViral = typeof i18n !== "undefined" ? i18n.t("mobile_timeline.viral", null, "✨ VIRAL") : "✨ VIRAL";
+    const tSuccess = typeof i18n !== "undefined" ? i18n.t("mobile_timeline.success", null, "✅ ÉXITO") : "✅ ÉXITO";
+    const tRatio = typeof i18n !== "undefined" ? i18n.t("mobile_timeline.ratio", null, "❌ RATIO") : "❌ RATIO";
+    const tHate = typeof i18n !== "undefined" ? i18n.t("mobile_timeline.hate", null, "odio") : "odio";
+    const feedLang = typeof i18n !== "undefined" ? i18n.getLanguage() : "es";
 
     const cardsHtml = log.map(entry => {
       const ch = entry.chosen;
       const isSuccess = ch.ok;
       const isViral = ch.viral;
       const resultBadge = isViral
-        ? `<span class="mt-badge viral">✨ VIRAL</span>`
+        ? `<span class="mt-badge viral">${tViral}</span>`
         : isSuccess
-        ? `<span class="mt-badge ok">✅ ÉXITO</span>`
-        : `<span class="mt-badge fail">❌ RATIO</span>`;
+        ? `<span class="mt-badge ok">${tSuccess}</span>`
+        : `<span class="mt-badge fail">${tRatio}</span>`;
 
-      const tweetText = ch.text || ch.title || "";
+      const cardObj = { id: ch.id, titulo: ch.title, texto: ch.text };
+      const locTitle = (feedLang !== "es" && typeof getLocalizedCardTitle === "function")
+        ? getLocalizedCardTitle(cardObj, feedLang, e.arquetipo?.id) || ch.title
+        : ch.title;
+      const locTweet = (feedLang !== "es" && typeof getLocalizedCardTweet === "function" && ch.id !== "evento")
+        ? getLocalizedCardTweet(cardObj, feedLang, e.arquetipo?.id) || (ch.text || ch.title || "")
+        : (ch.text || ch.title || "");
+
+      const tweetText = locTweet;
       const segsDelta = entry.delta?.segs || 0;
       const segsClass = segsDelta >= 0 ? "pos" : "neg";
       const segsStr = (segsDelta >= 0 ? "+" : "") + segsDelta.toLocaleString();
@@ -11060,24 +20813,30 @@ class UIEngine {
           </div>
           <div class="mobile-feed-status">${resultBadge}</div>
         </div>
-        <div class="mobile-feed-title">${ch.icon || "💬"} ${ch.title}</div>
+        <div class="mobile-feed-title">${ch.icon || "💬"} ${locTitle}</div>
         ${tweetText ? `<div class="mobile-feed-text">"${tweetText}"</div>` : ''}
         <div class="mobile-feed-stats">
           <span class="mt-stat ${segsClass}">👥 ${segsStr}</span>
           <span class="mt-stat">⚡ +${entry.delta?.eng || 0} eng</span>
-          ${entry.delta?.hate ? `<span class="mt-stat neg">💀 +${entry.delta.hate} odio</span>` : ''}
+          ${entry.delta?.hate ? `<span class="mt-stat neg">💀 +${entry.delta.hate} ${tHate}</span>` : ''}
           ${ch.booster ? `<span class="mt-stat booster">🚀 ${ch.booster}</span>` : ''}
         </div>
       </div>
       `;
     }).join("");
 
+    const tTitle = typeof i18n !== "undefined" ? i18n.t("mobile_timeline.title", null, "📱 TIMELINE DE LA PARTIDA") : "📱 TIMELINE DE LA PARTIDA";
+    const tSub = typeof i18n !== "undefined"
+      ? i18n.t("mobile_timeline.sub", { handle: e.handle, count: log.length }, `${e.handle} · ${log.length} TWEETS PUBLICADOS`)
+      : `${e.handle} · ${log.length} TWEETS PUBLICADOS`;
+    const tClose = typeof i18n !== "undefined" ? i18n.t("mobile_timeline.close_btn", null, "CERRAR TIMELINE ✕") : "CERRAR TIMELINE ✕";
+
     overlay.innerHTML = `
       <div class="mobile-timeline-box">
         <div class="mobile-timeline-header">
           <div>
-            <div class="mobile-timeline-title">📱 TIMELINE DE LA PARTIDA</div>
-            <div class="mobile-timeline-sub">${e.handle} · ${log.length} TWEETS PUBLICADOS</div>
+            <div class="mobile-timeline-title">${tTitle}</div>
+            <div class="mobile-timeline-sub">${tSub}</div>
           </div>
           <button class="mobile-timeline-close" id="btn-close-mobile-timeline">✕</button>
         </div>
@@ -11085,7 +20844,7 @@ class UIEngine {
           ${cardsHtml}
         </div>
         <div class="mobile-timeline-footer">
-          <button class="btn btn-primary" id="btn-ok-mobile-timeline" style="width:100%;">CERRAR TIMELINE ✕</button>
+          <button class="btn btn-primary" id="btn-ok-mobile-timeline" style="width:100%;">${tClose}</button>
         </div>
       </div>
     `;

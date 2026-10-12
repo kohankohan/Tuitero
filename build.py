@@ -9,6 +9,14 @@ import os, re
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 ORDERED_MODULES = [
+    # 0. Motor de Internacionalización (i18n)
+    ("src", "i18n", "i18n.js"),
+    ("content", "i18n", "translations-ui.js"),
+    ("content", "i18n", "translations-archetypes.js"),
+    ("content", "i18n", "translations-events.js"),
+    ("content", "i18n", "translations-cards.js"),
+    ("content", "i18n", "translations-story.js"),
+
     # 1. Metadatos y configuraciones
     ("content", "archetypes.js"),
     ("content", "shop", "boosters.js"),

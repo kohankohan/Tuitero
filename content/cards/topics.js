@@ -78,12 +78,12 @@ const temaPropioContent = {
     { titulo: "Marca que rechacé", texto: "Me ofrecieron una colaboración muy buena económicamente y la rechacé porque los valores no alineaban con lo que cuido acá. No digo quiénes. Pero lo rechacé.", engagement: 62, hate: 14 },
   ],
   onlyfans: [
-    { titulo: "Detrás de escena", texto: "La gente cree que es prender la cámara y listo. En realidad son luces, edición, contratos con el estudio y seis horas de trabajo por un video de diez minutos.", engagement: 50, hate: 18 },
-    { titulo: "Mi mes en números", texto: "Transparencia total del mes: facturé bien, invertí en cámara y estudio nuevo, y me quedó bastante menos de lo que la gente imagina cuando dice 'esto es plata fácil'.", engagement: 48, hate: 20 },
-    { titulo: "Nuevo set disponible", texto: "Tres semanas armando esta producción, con vestuario y locación distinta a todo lo anterior. Es lo mejor que subí hasta ahora, se las dejo. Link en bio.", engagement: 55, hate: 15 },
-    { titulo: "El límite que puse hoy", texto: "Hoy dije que no a algo que hace seis meses hubiera aceptado por plata. Crecer también es aprender a fijar el precio correcto de tu energía y tiempo.", engagement: 54, hate: 17 },
-    { titulo: "Colaboración con otra creadora", texto: "Terminamos de editar la colaboración con una creadora que admiro hace dos años. Algo completamente diferente a lo que hago sola. Sale el viernes. Link en bio cuando esté.", engagement: 60, hate: 12 },
-    { titulo: "Carta abierta a mis subs", texto: "Les debo honestidad: el mes pasado fue durísimo emocionalmente. Acá lo que les puedo contar y lo que me reservo. Gracias por seguir ahí.", engagement: 58, hate: 14 },
+    { titulo: "Facturando con calvicie", texto: "Un sub me pagó 500 usd para que le insulte la calvicie en un audio de 15 segundos. La mejor profesión del planeta, amo mi trabajo 💅💵", engagement: 65, hate: 14 },
+    { titulo: "Al límite de las reglas", texto: "Subí un set nuevo que literalmente desafía las leyes de la física y las normas de Twitter/X. Vayan al link fijado antes de que me lo den de baja amores 🍒💦", engagement: 72, hate: 16 },
+    { titulo: "Doble moral en el feed", texto: "Los mismos que me bardean en los replies por vender contenido son los que me mandan fotopijas a las 3am pidiendo 50% de descuento. Tengan dignidad y paguen precio completo 🙄", engagement: 68, hate: 22 },
+    { titulo: "Cena con el empresario", texto: "Un 'empresario' de traje me ofreció 2000 usd por cenar y le pasé el alias de Mercado Pago sin ir al restaurante. Gracias por pagarme las expensas amor, volvé cuando quieras kjjj 💅", engagement: 75, hate: 18 },
+    { titulo: "Colaboración explosiva", texto: "Grabamos colaboración con mi amiga y terminamos rompiendo un espejo del camarín. Lo que pasó en el set no se puede contar por acá, solo en el VIP. Link abajo 🔥", engagement: 78, hate: 12 },
+    { titulo: "La envidia cotiza en dólares", texto: "Mi ex se abrió una cuenta para competir conmigo y factura 40 dólares al mes. La humillación es total. Les dejo mi link en promo por si quieren ver contenido de verdad 💋", engagement: 70, hate: 15 },
   ],
   techie: [
     { titulo: "Review honesta de la herramienta", texto: "Usé esta IA toda la semana metida en mi workflow diario, sin sponsor de por medio. Acá lo que realmente hace bien, y lo que todavía falla feo.", engagement: 40, hate: 10 },
