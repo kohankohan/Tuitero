@@ -948,6 +948,68 @@ class GameEngine {
     });
   }
 
+  // Adaptación in-character de tweets de fase temática avanzada
+  _adaptThematicTweet(item, archId) {
+  if (!item || !item.texto) return item;
+  const key = getArchKey(archId);
+
+  // Adaptaciones específicas para OnlyFans (voz picante, cero fiscal federal)
+  if (key === "onlyfans") {
+    if (item.titulo.includes("intermediarios") || item.texto.includes("coimas del 30%")) {
+      return {
+        ...item,
+        titulo: "El morbo con el expediente",
+        texto: "Me etiquetan en la causa de las coimas como si yo fuera testaferro del ministerio. El tipo me pagaba el VIP como cualquier otro cliente, no me metan en sus operetas políticas 💅"
+      };
+    }
+    if (item.titulo.includes("allanamiento") || item.texto.includes("Cayeron los fiscales")) {
+      return {
+        ...item,
+        titulo: "Clientes en los diarios",
+        texto: "Allanan el ministerio y me entero por Twitter de que uno de los secretarios imputados era el que me mandaba propinas en dólares todas las semanas. Me río para no llorar 💀"
+      };
+    }
+    if (item.titulo.includes("impunidad") || item.texto.includes("pasaje sacado")) {
+      return {
+        ...item,
+        titulo: "Doble moral al descubierto",
+        texto: "Los mismos que me decían inmoral por vender fotos ahora están prófugos por robarse un plan de viviendas. Al final la más honesta del feed era yo 💅"
+      };
+    }
+  }
+
+  // Adaptaciones específicas para Gamer Streamer
+  if (key === "gamer") {
+    if (item.titulo.includes("intermediarios") || item.texto.includes("coimas")) {
+      return {
+        ...item,
+        titulo: "Spam en el chat",
+        texto: "el chat de Twitch está insoportable con las capturas de la causa de mi viejo. gente, prendí para jugar al Counter no para hacer una conferencia de prensa rescatense"
+      };
+    }
+    if (item.titulo.includes("allanamiento")) {
+      return {
+        ...item,
+        titulo: "Móviles en la puerta",
+        texto: "hay dos móviles de Crónica en la puerta de mi casa filmando el garage. no puedo ni pedir una pizza tranquilo lpm"
+      };
+    }
+  }
+
+  // Adaptaciones específicas para Futbolero
+  if (key === "futbolero") {
+    if (item.titulo.includes("intermediarios") || item.texto.includes("coimas")) {
+      return {
+        ...item,
+        titulo: "La rosca en el club",
+        texto: "Los mismos intermediarios de la causa ministerial son los que meten jugadores falopa en el club a cambio de comisiones. Están todos entongados."
+      };
+    }
+  }
+
+  return item;
+}
+
   drawCards() {
     if(this.cachedCards?.length===3) return this.cachedCards;
     const pool=this._cardPool(), drawn=[], remaining=[...pool];
@@ -1134,11 +1196,12 @@ class GameEngine {
           if (avail.length > 0) themeItem = avail[rng(avail.length)];
         }
         if (themeItem) {
-          content.titulo = themeItem.titulo;
-          content.texto = themeItem.texto;
+          const adapted = this._adaptThematicTweet(themeItem, this.arquetipo.id);
+          content.titulo = adapted.titulo;
+          content.texto = adapted.texto;
           content.isThematicT16 = true;
-          if (themeItem.tipo && CARD_PALOS[themeItem.tipo]) {
-            meta.id = themeItem.tipo;
+          if (adapted.tipo && CARD_PALOS[adapted.tipo]) {
+            meta.id = adapted.tipo;
           }
         }
       }
@@ -1166,11 +1229,12 @@ class GameEngine {
           if (avail.length > 0) themeItem = avail[rng(avail.length)];
         }
         if (themeItem) {
-          content.titulo = themeItem.titulo;
-          content.texto = themeItem.texto;
+          const adapted = this._adaptThematicTweet(themeItem, this.arquetipo.id);
+          content.titulo = adapted.titulo;
+          content.texto = adapted.texto;
           content.isThematicT16 = true;
-          if (themeItem.tipo && CARD_PALOS[themeItem.tipo]) {
-            resolvedFbId = themeItem.tipo;
+          if (adapted.tipo && CARD_PALOS[adapted.tipo]) {
+            resolvedFbId = adapted.tipo;
           }
         }
       }

@@ -26,7 +26,7 @@ const METAHISTORY_DATA = {
       replySospechosa: {
         autor: "Seguidor Anónimo",
         handle: "@patentes_arg",
-        texto: "Dejá de vender humo. Ese auto importado que asoma en tu garage no lo pagás ni con 50 años de stream. ¿A nombre de qué empresa está?"
+        texto: "Dejá de vender humo. Ese Porsche GT3 RS violeta que asoma en tu garage no lo pagás ni con 50 años de stream. ¿A nombre de qué empresa está?"
       }
     },
     capa2: [
@@ -35,7 +35,7 @@ const METAHISTORY_DATA = {
         fase: 1,
         fecha: "16 Feb 2024",
         titulo: "La nave en el garage",
-        texto: "vieron la nave que me compré? un importado de re alta gama, de esos que hay solo DOS en todo el país. mi viejo me tiró una mano con la financiación jaja",
+        texto: "vieron la nave que me compré? un Porsche GT3 RS violeta impecable, de esos que hay solo dos en todo el país. mi viejo me tiró una mano con la financiación jaja",
         replies: [
           { autor: "Curioso de Twitter", handle: "@patentes_arg", texto: "Financiación de qué forma exactamente, a nombre de qué empresa está el auto" }
         ],
@@ -401,7 +401,7 @@ const METAHISTORY_DATA = {
       id: "periodista_act",
       fecha: "15 Jul 2024",
       titulo: "La pista del gobierno",
-      texto: "un auto importado de re alta gama, de esos que hay solo dos en el país, a nombre de una empresa fantasma, un streamer que no sabe de dónde salió la plata, y un apellido que empieza a sonar cerca del gobierno. sigan atentos",
+      texto: "un Porsche GT3 RS violeta a nombre de una empresa fantasma, con el anticipo presupuestario de las viviendas de Dock Sud, un streamer que no sabe de dónde salió la plata, y un apellido que empieza a sonar cerca del gobierno. sigan atentos",
       replySospechosa: {
         autor: "Lector Desencantado",
         handle: "@sin_filtro",
@@ -478,7 +478,7 @@ const METAHISTORY_DATA = {
         fase: 3,
         fecha: "24 Jul 2024",
         titulo: "El auto frente al ministerio",
-        texto: "ESE auto importado que subió el streamer es EL MISMO que vi estacionado en la puerta del ministerio cuando fui a hacer un trámite. no me chamuyen, en este país se conocen todos",
+        texto: "ESE Porsche GT3 RS violeta del streamer es EL MISMO que vi estacionado en la puerta del ministerio cuando fui a hacer un trámite. no me chamuyen, en este país se conocen todos",
         replies: [
           { autor: "Periodista de Investigación", handle: "@periodista_indie", texto: "¿Te acordás la fecha exacta y la calle? Te hablé al privado, es urgente" }
         ],
@@ -489,7 +489,7 @@ const METAHISTORY_DATA = {
         fase: 3,
         fecha: "05 Ago 2024",
         titulo: "La charla con el periodista",
-        texto: "un periodista me consultó por el auto importado que vi. le conté todo lo que sé, parece que hay un político metido en el medio. yo solo dije lo que vi",
+        texto: "un periodista me consultó por el Porsche violeta que vi en el ministerio. Le pasé la patente provisoria; parece que el viejo del streamer es funcionario pesado. yo solo dije lo que vi",
         replies: [
           { autor: "Amigo de la Cancha", handle: "@bostero_12", texto: "No te metas en quilombos de la política fiera, mirá si te suspenden el carnet de socio" }
         ],
@@ -528,11 +528,11 @@ const METAHISTORY_DATA = {
       id: "onlyfans_act",
       fecha: "18 Jul 2024",
       titulo: "El rumor y las suscripciones",
-      texto: "no voy a confirmar ni desmentir de quién era el importado en el que me fui de Nordelta 👀 los que están en mi VIP ya vieron las fotos sin censura. link fijado amores",
+      texto: "no voy a confirmar ni desmentir en qué Porsche violeta me fui de la fiesta con el pibe de stream 👀 los que están en mi VIP ya vieron las fotos sin censura. link fijado amores",
       replySospechosa: {
         autor: "Hater del TL",
         handle: "@moralista_x",
-        texto: "Che, ¿vos no eras la que se bajó del importado con la pareja del Secretario? ¿De esa plata no hablás?"
+        texto: "Che reina, ¿vos no te bajaste del Porsche violeta del hijo del Secretario en Nordelta? ¿De esa plata no hablás?"
       }
     },
     capa2: [
@@ -552,7 +552,7 @@ const METAHISTORY_DATA = {
         fase: 3,
         fecha: "12 Ago 2024",
         titulo: "La verdad sobre el streamer",
-        texto: "listo, ya perdí la amistad de @gamer_stream por este rumor así que ahora sí lo digo clarito: nunca tuve nada que ver con ningún político. es mi amigo, punto.",
+        texto: "ya me pudrieron con los rumores: con el pibe de stream nos conocemos de Twitch hace dos años y es mi amigo. dejen de inventar que tengo que ver con su viejo o con la política.",
         replies: [
           { autor: "Comediante", handle: "@humor_arg", texto: "La conocí hace poco y es una genia total. El chiste que hice hace unos meses fue cualquiera, posta perdón." }
         ],
@@ -615,7 +615,7 @@ const METAHISTORY_DATA = {
         fase: 3,
         fecha: "15 Ago 2024",
         titulo: "La confesión de la LLC",
-        texto: "la LLC la armé yo, para él. no fue por la comisión ni por la plata. lo hice por amor, y si tengo que hacerlo de nuevo lo vuelvo a hacer",
+        texto: "la LLC en Delaware la armé yo, para él. No me importaba la comisión, me encandiló con promesas y lo hice por amor. Cuando allanaron el ministerio me bloqueó de todos lados y me dejó como único firmante.",
         replies: [
           { autor: "Usuario Anónimo", handle: "@feed_watcher", texto: "esperen... ESTO no era sobre el exchange hackeado, ¿era la pareja del secretario?" }
         ],
@@ -700,7 +700,7 @@ const METAHISTORY_DATA = {
         fase: 4,
         fecha: "15 Abr 2026",
         titulo: "Los terrenos vacíos",
-        texto: "pasé caminando por el predio donde iban a construir las 200 viviendas populares. solo hay pasto crecido, perros callejeros y un cartel oxidado que da vergüenza ajena",
+        texto: "pasé caminando por el predio de Dock Sud donde iban a construir las 200 viviendas populares. Solo hay pasto crecido, el cartel oxidado del ministerio, perros callejeros y un cartel oxidado que da vergüenza ajena",
         replies: [
           { autor: "Vecino del Barrio", handle: "@barrio_pie", texto: "Mis hijos ya tienen 5 años y seguimos alquilando una pieza. No nos olvidamos más." }
         ],
