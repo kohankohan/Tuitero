@@ -9767,6 +9767,10 @@ const temaPropioContent = {
     { titulo: "El consenso que molesta", texto: "Estoy de acuerdo con algo que dijo alguien del otro bando y sé que esto me va a costar seguidores de los dos lados. No me importa. Acá va.", engagement: 48, hate: 26 },
     { titulo: "El ensayo de la semana", texto: "Dos días escribiendo esto, sin AI de por medio, con fuentes y todo. Puede ser la nota que más me costó publicar en años. Ahí va.", engagement: 55, hate: 20 },
     { titulo: "La tesis que incomoda", texto: "Mi argumento de hoy es que los dos lados tienen más en común de lo que admiten. Prepárense para irse enojados desde el primer párrafo.", engagement: 52, hate: 30 },
+    { titulo: "Cita a Borges descontextualizada", texto: "Como bien decía Borges, el argentino es un individuo, no un ciudadano. Lo que vimos hoy en el Congreso confirma punto por punto mi columna de 2018.", engagement: 54, hate: 24 },
+    { titulo: "Hilo de la decadencia", texto: "1/15. Por qué la pérdida del pudor en el espacio público explica desde el precio del tomate hasta las sentencias de la Corte Suprema. Abro paraguas.", engagement: 58, hate: 28 },
+    { titulo: "La soledad del que piensa", texto: "Cuando te pegan los dos extremos de la grieta al mismo tiempo sabés que estás parado en el lugar correcto. Gracias por las puteadas, me confirman todo.", engagement: 52, hate: 20 },
+    { titulo: "El síntoma cultural", texto: "No me importa la discusión de la semana, me importa el vacío existencial que refleja. Una sociedad que celebra la mediocridad no tiene futuro.", engagement: 50, hate: 22 },
   ],
   futbolero: [
     { titulo: "Análisis táctico", texto: "El 4-3-3 que pusieron ayer no es solo una formación, es una declaración de guerra. Se las explico con capturas y todo, agarren mate.", engagement: 50, hate: 10 },
@@ -9775,6 +9779,10 @@ const temaPropioContent = {
     { titulo: "El juvenil que nadie nombra", texto: "Hay un pibe de 18 años en la reserva que en 2 años va a ser titular indiscutido. Lo vengo siguiendo hace seis meses. Acá los números.", engagement: 56, hate: 8 },
     { titulo: "El DT equivocado", texto: "La formación del domingo fue una vergüenza táctica. Se lo digo con respeto al técnico, pero si seguimos así bajamos. Y lo digo yo, que lo banqué desde el primer día.", engagement: 60, hate: 18 },
     { titulo: "La dirigencia en llamas", texto: "La pelea interna de la directiva lleva 3 meses y nadie del club la reconoce públicamente. Tengo las conversaciones. No lo voy a publicar ahora, pero las tengo.", engagement: 65, hate: 12 },
+    { titulo: "El 4 que no baja a marcar", texto: "Alguien que le avise al lateral derecho que los rivales también juegan por su banda. Tres goles calcados en cuatro fechas. Es una invitación al suicidio.", engagement: 62, hate: 12 },
+    { titulo: "El choreo del VAR", texto: "Trazaron las líneas con el Paint de Windows 95 hermano. Seis minutos parando el partido para inventar un offside milimétrico. Destruyeron el fútbol.", engagement: 68, hate: 16 },
+    { titulo: "Asado en la filial", texto: "Comiendo un vacío con los muchachos de la peña antes de viajar a Córdoba. El club es de los socios, no de los gerentes con traje y perfume importado.", engagement: 55, hate: 6 },
+    { titulo: "Pidiendo la renuncia del DT", texto: "Si este tipo tiene un mínimo de dignidad hoy en conferencia de prensa tiene que dar un paso al costado. Nos eliminó un equipo de la C, viejo.", engagement: 72, hate: 20 },
   ],
   militante: [
     { titulo: "Bajada de línea del día", texto: "Lo que pasó hoy no es un error aislado, es un patrón que vengo documentando en el feed hace meses. Guarden este tweet.", engagement: 40, hate: 25 },
@@ -9783,6 +9791,10 @@ const temaPropioContent = {
     { titulo: "El compañero que falló", texto: "Voy a decir algo incómodo sobre alguien de nuestro espacio porque nadie más lo hace y hace falta. Con respeto, pero hay que decirlo.", engagement: 44, hate: 35 },
     { titulo: "La victoria que nadie cubre", texto: "Hoy ganamos algo concreto para la gente real de abajo y ningún medio hegemónico lo va a cubrir. Lo hago yo, con fuentes y todo.", engagement: 46, hate: 22 },
     { titulo: "Documento filtrado", texto: "Me llegó este documento de adentro. No lo voy a publicar completo todavía, pero lo que dice sobre la política de hoy es gravísimo. Hilo con extractos.", engagement: 52, hate: 28 },
+    { titulo: "La lluvia y las convicciones", texto: "Militando bajo el agua en el barrio mientras los opinólogos de Palermo tuitean desde el sillón con café de avellanas. Hay que tener barro en las zapatillas compañeros.", engagement: 48, hate: 26 },
+    { titulo: "El carpetazo de Clarín", texto: "Tapa armada en cinco minutos para tapar la fuga de capitales del mes pasado. No falla nunca el manual de la corpo. No les tenemos miedo.", engagement: 54, hate: 32 },
+    { titulo: "Autocrítica con lealtad", texto: "Discutir hacia adentro para construir hacia afuera. Quien no se banca el debate interno no entendió nada de la historia de nuestro movimiento.", engagement: 46, hate: 20 },
+    { titulo: "La foto que les duele", texto: "Miren esta plaza colmada de pueblo. Los medios hegemónicos la muestran de costado para que parezca vacía. Sigan participando.", engagement: 56, hate: 24 },
   ],
   humor: [
     { titulo: "Filosofía de sobremesa", texto: "No te podés levantar a las 6 am un domingo por voluntad propia culiau, salvo que seas panadero o te esté buscando la policía federal.", engagement: 55, hate: 8 },
@@ -9791,6 +9803,10 @@ const temaPropioContent = {
     { titulo: "Transporte y desquicio", texto: "Subí al bondi y el chofer venía escuchando Rodrigo a todo volumen mientras esquivaba baches con una mano y cebaba mate con la otra. 10/10 la experiencia sensorial.", engagement: 60, hate: 4 },
     { titulo: "Productividad en picada", texto: "Son las 3am, mañana tengo que laburar y acá estoy viendo un video de cómo hacerle un asador criollo a un muñeco de He-Man. Mi cerebro es una fotocopiadora de memes.", engagement: 58, hate: 3 },
     { titulo: "El verdadero lujo argentino", texto: "Olvidate de las criptomonedas y los autos importados: el verdadero estatus en este país es prender el aire en 22° y que no te salte la térmica del departamento.", engagement: 62, hate: 6 },
+    { titulo: "La siesta cordobesa sagrada", texto: "Entre las 14 y las 17 acá en Córdoba no te atiende ni el Papa culiau. Si hay una emergencia médica te ofrecen un fernet y que aguantes hasta las 18.", engagement: 64, hate: 4 },
+    { titulo: "El bot turco en menciones", texto: "Tengo un bot con foto de un soldado otomano respondiéndome 'mashallah bro' en un tweet sobre las milanesas con puré. Twitter en su pico histórico.", engagement: 62, hate: 3 },
+    { titulo: "Meme de Los Simpsons infalible", texto: "Meme del Abuelo Simpson entrando y saliendo de la taberna cada vez que entro a ver qué tendencia falopa inventaron hoy en la red.", engagement: 66, hate: 5 },
+    { titulo: "Tragedia con la SUBE", texto: "Subí al bondi, apoyé la SUBE y me tiró 'saldo insuficiente' con 40 personas mirándome la nuca en silencio. El verdadero Game Over criollo.", engagement: 60, hate: 4 },
   ],
   periodista: [
     { titulo: "Investigación exclusiva", texto: "Tres semanas cruzando facturas, contratos y testimonios. Lo que encontré sobre este expediente te va a cambiar la lectura de todo el caso. Hilo.", engagement: 62, hate: 12 },
@@ -9799,6 +9815,10 @@ const temaPropioContent = {
     { titulo: "La fuente que arriesgó todo", texto: "Una fuente me llamó esta mañana y me dio algo que nadie tiene. La protejo. La nota sale esta tarde. Aguarden.", engagement: 68, hate: 14 },
     { titulo: "Acceso exclusivo al expediente", texto: "Tuve en mis manos el expediente completo. 340 fojas. Leí todo. Lo que está en las páginas 118 a 135 cambia todo el caso. Hilo.", engagement: 72, hate: 10 },
     { titulo: "La nota que casi no publico", texto: "Dos semanas con esto encima, tres llamados de personas que me pidieron que no lo publicara. Lo publico igual. La información es pública por derecho.", engagement: 70, hate: 16 },
+    { titulo: "El Excel de los contratos", texto: "Tres semanas cruzando planillas de AFIP y contrataciones directas. La misma empresa ganó 14 licitaciones con 20 minutos de diferencia. Hilo con las pruebas.", engagement: 74, hate: 12 },
+    { titulo: "Llamada con número privado", texto: "Me llamaron de un número bloqueado a las 23:45 para advertirme sobre la nota de mañana. Les aviso que el texto ya está programado en la web. No pierdan tiempo.", engagement: 78, hate: 15 },
+    { titulo: "La foja que desapareció", texto: "Falta la foja 184 del expediente en Comodoro Py. Casualmente la foja donde figuraban las firmas de las cuentas de Delaware. Qué distracción che.", engagement: 72, hate: 14 },
+    { titulo: "Rectificación de la competencia", texto: "El canal de noticias que ayer me decía operador hoy tuvo que salir a pedir disculpas públicas y confirmar mi primicia. El archivo no perdona.", engagement: 70, hate: 10 },
   ],
   cryptobro: [
     { titulo: "Análisis del mercado semanal", texto: "BTC rompió soporte clave, ETH consolidando, los altcoins en modo espera total. Mi lectura técnica de la semana (esto no es recomendación de compra, hagan su propio DYOR).", engagement: 38, hate: 20 },
@@ -9807,6 +9827,10 @@ const temaPropioContent = {
     { titulo: "La wallet que nadie conoce", texto: "Esta dirección on-chain mueve cantidades enormes y nadie la tiene en el radar todavía. La estoy siguiendo hace 3 semanas. No es consejo financiero, es inteligencia de mercado.", engagement: 48, hate: 22 },
     { titulo: "El protocolo del mes", texto: "Estuve buildando con este protocolo nuevo de DeFi toda la semana. Si el equipo cumple el roadmap, en 12 meses nadie va a acordarse de Uniswap. DYOR igual.", engagement: 44, hate: 20 },
     { titulo: "Confirmado por on-chain", texto: "Los datos on-chain dicen lo contrario a lo que se publicó hoy en los medios tradicionales. Acá la lectura real del movimiento de las wallets grandes.", engagement: 50, hate: 18 },
+    { titulo: "Apalancado x50 en futuros", texto: "Clavé un short apalancado x50 con stop loss ajustado y me fui a dormir. Si me liquidan vendo el reloj, si sale me compro dos hectáreas en Uruguay. NFA.", engagement: 52, hate: 24 },
+    { titulo: "Gas fee por las nubes", texto: "Pagué 80 dólares de gas fee por transferir 30 dólares en mainnet. La descentralización avanza a pasos agigantados muchachos kjjj.", engagement: 56, hate: 18 },
+    { titulo: "El airdrop de la semana", texto: "Farmeando este airdrop hace 8 meses con 14 wallets distintas. Si el token lista arriba de 2 usd no laburo hasta el 2028. DYOR.", engagement: 48, hate: 16 },
+    { titulo: "Comprando el dip en sangre", texto: "Cuando hay sangre en las calles es cuando se hacen los millonarios del próximo ciclo. Los que venden en pánico después compran en el ATH llorando.", engagement: 54, hate: 22 },
   ],
   gamer: [
     { titulo: "Reseña honesta sin spoilers", texto: "40 horas de campaña completadas, sin spoilers. Gráficos un 10, la historia se cae feo en el acto 3. Ahí va mi análisis real.", engagement: 48, hate: 8 },
@@ -9815,6 +9839,10 @@ const temaPropioContent = {
     { titulo: "Speedrun récord roto", texto: "Personal best nuevo: 2:14:38 en Any%. 6 semanas de práctica. El clip completo ya está subido, el momento del skip en el minuto 47 es la clave.", engagement: 55, hate: 4 },
     { titulo: "El bug que los devs no van a parchar", texto: "Encontré un bug que rompe completamente el balance del mapa más popular. Lo reporté hace tres semanas. Cero respuesta. Lo hago público ahora.", engagement: 58, hate: 8 },
     { titulo: "Análisis de diseño profundo", texto: "¿Por qué este juego se siente distinto a todo lo demás? Hilo de 15 tweets sobre filosofía de diseño de niveles, para los que se quedaron mirando el crédito final.", engagement: 50, hate: 5 },
+    { titulo: "El lag de Fibertel en promo", texto: "380ms de ping fijo en los servidores de Brasil. Te juro que es imposible jugar al Counter con esta conexión tercermundista, llamo y me dicen que reinicie el módem.", engagement: 58, hate: 8 },
+    { titulo: "Rage quit en vivo", texto: "apagué stream de la calentura después de comer un tiro a través de una pared de humo en la ronda 24. mañana prendo más tranquilo perdón a los subs.", engagement: 62, hate: 10 },
+    { titulo: "El mate con Monster de uva", texto: "desayunando mate amargo con una lata de Monster helada al lado a las dos de la tarde. la salud mental en niveles récord pero la mira está filosa.", engagement: 65, hate: 6 },
+    { titulo: "El clip que se hizo viral", texto: "subí a TikTok el clip donde grito como un desquiciado en el torneo y ya metió medio millón de vistas. el cringe me da de comer qué le vamos a hacer.", engagement: 60, hate: 7 },
   ],
   conspiranoico: [
     { titulo: "Conectando los puntos", texto: "Nadie lo dijo en la tele, pero el apagón de ayer, el cambio de directorio de la semana pasada y el viaje sorpresa de hoy tienen un patrón clarísimo. Los conecto.", engagement: 35, hate: 22 },
@@ -9823,6 +9851,10 @@ const temaPropioContent = {
     { titulo: "La reunión que no existió", texto: "Hay una cena que se hizo el miércoles pasado en una estancia privada del norte con representantes de 4 países. No hay fotos porque pidieron los celulares en la entrada.", engagement: 44, hate: 24 },
     { titulo: "El documento desclasificado", texto: "Encontré en los archivos públicos de un organismo internacional un documento del 2019 que explica lo que está pasando ahora mejor que cualquier analista. Hilo.", engagement: 42, hate: 26 },
     { titulo: "El patrón que se repite", texto: "Busquen lo que pasó en 2001, en 2018 y compárenlo con esto. Es el mismo manual de 3 actos. Estamos en el acto 2 ahora mismo.", engagement: 46, hate: 30 },
+    { titulo: "Los cables submarinos en Las Toninas", texto: "Nadie se pregunta por qué toda la fibra óptica del país entra por la misma playa de la costa. Fíjense qué base militar extranjera compró terrenos a 3 kilómetros.", engagement: 52, hate: 26 },
+    { titulo: "El apagón sincronizado", texto: "Se cortó la luz al mismo tiempo en cinco ministerios mientras se actualizaba la base de datos fiscal. Si creés que fue una paloma en un transformador sos un ingenuo.", engagement: 55, hate: 28 },
+    { titulo: "Las patentes clonadas del poder", texto: "Tengo fotos de tres camionetas distintas con la misma patente diplomática circulando por Puerto Madero en la misma hora. No busquen en el registro que no existen.", engagement: 58, hate: 25 },
+    { titulo: "El foro de la Dark Web", texto: "Un usuario anónimo en un foro cifrado publicó los balances contables de la constructora antes de que caigan los fiscales. Los mismos que me decían loco.", engagement: 54, hate: 30 },
   ],
   influencer: [
     { titulo: "Mi rutina de la semana", texto: "5:30am, la gente hermosa de una marca de skincare me mandó este sérum de vitamina C para probarlo y contarles, más 40 minutos de pilates antes del primer meeting.", engagement: 52, hate: 10 },
@@ -9831,6 +9863,10 @@ const temaPropioContent = {
     { titulo: "El día que salió todo mal", texto: "Me parece importante mostrares también cuando el día fue un desastre total. Hoy la sesión se canceló, el canje se cayó y llovió en el peor momento. Acá el resumen.", engagement: 58, hate: 6 },
     { titulo: "Mi palabra del año", texto: "La palabra que va a definir mi 2025 es 'presencia'. No me cuesta ponerlo, me cuesta vivirlo. Acá el hilo de por qué lo elegí.", engagement: 55, hate: 9 },
     { titulo: "Marca que rechacé", texto: "Me ofrecieron una colaboración muy buena económicamente y la rechacé porque los valores no alineaban con lo que cuido acá. No digo quiénes. Pero lo rechacé.", engagement: 62, hate: 14 },
+    { titulo: "Haul de canjes incomprables", texto: "Amores, me mandaron esta cafetera italiana de mármol de Carrara que sale dos sueldos mínimos pero te juro que la vibra que le da a la cocina es de otro plano ☕✨", engagement: 60, hate: 12 },
+    { titulo: "Disculpa pública con cara lavada", texto: "Aparezco sin filtro ni maquillaje para aclarar lo que pasó en el evento del viernes. La gente proyecta sus propias inseguridades cuando una brilla con luz propia 🙏", engagement: 66, hate: 18 },
+    { titulo: "Manifestando el viaje a Tulum", texto: "Escribí tres veces en mi diario de manifestación que el universo me iba a llevar a México y hoy me cerraron el pasaje por canje. Creer es crear hermosas ✨🧘‍♀️", engagement: 58, hate: 10 },
+    { titulo: "Detox digital de 3 horas", texto: "Estuve tres horas sin tocar el celular mientras me hacían drenaje linfático en Nordelta. Sentí que me reconecté con la Pachamama a un nivel supremo.", engagement: 62, hate: 14 },
   ],
   onlyfans: [
     { titulo: "Facturando con calvicie", texto: "Un sub me pagó 500 usd para que le insulte la calvicie en un audio de 15 segundos. La mejor profesión del planeta, amo mi trabajo 💅💵", engagement: 65, hate: 14 },
@@ -9839,6 +9875,10 @@ const temaPropioContent = {
     { titulo: "Cena con el empresario", texto: "Un 'empresario' de traje me ofreció 2000 usd por cenar y le pasé el alias de Mercado Pago sin ir al restaurante. Gracias por pagarme las expensas amor, volvé cuando quieras kjjj 💅", engagement: 75, hate: 18 },
     { titulo: "Colaboración explosiva", texto: "Grabamos colaboración con mi amiga y terminamos rompiendo un espejo del camarín. Lo que pasó en el set no se puede contar por acá, solo en el VIP. Link abajo 🔥", engagement: 78, hate: 12 },
     { titulo: "La envidia cotiza en dólares", texto: "Mi ex se abrió una cuenta para competir conmigo y factura 40 dólares al mes. La humillación es total. Les dejo mi link en promo por si quieren ver contenido de verdad 💋", engagement: 70, hate: 15 },
+    { titulo: "Captura de DM del moralista", texto: "El tipo con bio 'Dios, Patria y Familia' me mandó tres audios rogando que le mande un video pisando uvas descalza. 300 dólares la sesión rey, pagá o te doxeo 💅", engagement: 76, hate: 16 },
+    { titulo: "Alias de Mercado Pago fijado", texto: "Si me vas a mandar mensajes quejándote del precio de la suscripción, primero transferime 5 mil pesos por hacerme perder el tiempo. Besitos a la señora.", engagement: 74, hate: 18 },
+    { titulo: "Set nuevo sin censura", texto: "Subí a la plataforma el set que me hicieron con luces de neón en el hotel de Recoleta. Elon Musk me llega a ver esto y me borra la cuenta en 30 segundos 🔥", engagement: 82, hate: 14 },
+    { titulo: "Facturando en dólares en Argentina", texto: "La AFIP me mandó una notificación preguntando de qué trabajo. Les mandé el link del perfil con 20% de descuento para que el inspector se suscriba con la del Estado kjjj.", engagement: 85, hate: 15 },
   ],
   techie: [
     { titulo: "Review honesta de la herramienta", texto: "Usé esta IA toda la semana metida en mi workflow diario, sin sponsor de por medio. Acá lo que realmente hace bien, y lo que todavía falla feo.", engagement: 40, hate: 10 },
@@ -9847,6 +9887,10 @@ const temaPropioContent = {
     { titulo: "El feature que tardó 3 meses", texto: "Shippeé algo hoy que debería haber tardado 3 semanas y tardó 3 meses. Hilo de todo lo que salió mal en el proceso y qué haría diferente.", engagement: 48, hate: 5 },
     { titulo: "El prompt que cambió mi workflow", texto: "Llevo 6 meses probando prompts distintos para la misma tarea. El de hoy es el primero que realmente me ahorró tiempo medible. Lo comparto sin guardármelo.", engagement: 50, hate: 7 },
     { titulo: "La startup que cerró y lo que aprendí", texto: "Dos años trabajando en un proyecto que cerramos el mes pasado. Postmortem completo, sin mentiras de LinkedIn. Qué falló realmente.", engagement: 55, hate: 6 },
+    { titulo: "Deploy a producción el viernes", texto: "Metiendo un merge a master a las 18:45 de un viernes sin tests de integración porque la vida es una sola y el cliente quiere la demo el lunes. Qué puede salir mal.", engagement: 58, hate: 8 },
+    { titulo: "Recruiter de LinkedIn desubicado", texto: "Me ofrecen liderar un equipo de 8 personas pagando en pesos con 'excelente clima laboral y frutas los miércoles'. Hermano, cobro 6k verdes en remoto, no me insultes.", engagement: 66, hate: 12 },
+    { titulo: "La superioridad moral de Rust", texto: "Reescribí un microservicio de Node a Rust y bajé la latencia de 120ms a 4ms consumiendo la memoria de un microondas. La gente que sigue usando JS es masoquista.", engagement: 62, hate: 16 },
+    { titulo: "Bootcampers en pánico", texto: "Hicieron un curso de 6 meses de HTML y CSS y se sorprenden de que una IA les coma el laburo junior. Hay que aprender algoritmos y estructuras de datos muchachos.", engagement: 64, hate: 22 },
   ],
   podcaster: [
     { titulo: "Adelanto del próximo episodio", texto: "El invitado del jueves me dejó sin palabras tres veces en la misma grabación. Ya escuché el corte crudo dos veces y sigue siendo la entrevista más difícil que tuve.", engagement: 45, hate: 8 },
@@ -9867,6 +9911,10 @@ const temaAjenoContent = {
     { titulo: "Crítica gastronómica improvisada", texto: "Nunca escribí de gastronomía pero fui a ese restaurante del que habla todo el mundo y no entiendo el hype. Un revuelto de papa con huevo a precio de tasting menu.", engagement: 11, hate: 36 },
     { titulo: "Reseña de película que no vi completa", texto: "Vi los primeros 40 minutos y los últimos 20. Con eso alcanza y sobra para tener una opinión, honestamente.", engagement: 9, hate: 44 },
     { titulo: "Opinando de salud sin ser médico", texto: "No necesito ser médico para ver que ese tratamiento que recomiendan los grandes medios tiene más intereses económicos detrás que evidencia clínica.", engagement: 10, hate: 46 },
+    { titulo: "Clip descontextualizado en TikTok", texto: "Cortaron 15 segundos donde digo una barbaridad sacada de contexto y ya tengo 3 mil comentarios diciéndome nazi. Escuchen las dos horas completas manga de vagos.", engagement: 58, hate: 14 },
+    { titulo: "El invitado que canceló 10 min antes", texto: "El tipo me canceló cuando ya teníamos los micrófonos prendidos y las pizzas pedidas. Metí episodio solo tomando birra y puteando al aire, quedó el mejor del año.", engagement: 64, hate: 8 },
+    { titulo: "Setup de garage casero", texto: "Colgamos cajas de huevo en las paredes para acustizar y compramos dos Shure usados en Once. Si el contenido tiene nafta no te hace falta un estudio en Miami.", engagement: 62, hate: 5 },
+    { titulo: "Entrevista al personaje prohibido", texto: "Mañana a las 20hs se estrena la charla con el ex funcionario que nadie se anima a entrevistar. Nos contó con nombres y apellidos cómo se maneja la pauta en este país.", engagement: 70, hate: 12 },
   ],
   futbolero:    [
     { titulo: "Opinando de política", texto: "No soy politólogo, pero soy ciudadano y voté, y con eso me alcanza para decir que todos mienten por igual.", engagement: 8, hate: 42 },
@@ -13414,7 +13462,7 @@ const METAHISTORY_DATA = {
       replySospechosa: {
         autor: "Seguidor Anónimo",
         handle: "@patentes_arg",
-        texto: "Dejá de vender humo. Ese auto importado que asoma en tu garage no lo pagás ni con 50 años de stream. ¿A nombre de qué empresa está?"
+        texto: "Dejá de vender humo. Ese Porsche GT3 RS violeta que asoma en tu garage no lo pagás ni con 50 años de stream. ¿A nombre de qué empresa está?"
       }
     },
     capa2: [
@@ -13423,7 +13471,7 @@ const METAHISTORY_DATA = {
         fase: 1,
         fecha: "16 Feb 2024",
         titulo: "La nave en el garage",
-        texto: "vieron la nave que me compré? un importado de re alta gama, de esos que hay solo DOS en todo el país. mi viejo me tiró una mano con la financiación jaja",
+        texto: "vieron la nave que me compré? un Porsche GT3 RS violeta impecable, de esos que hay solo dos en todo el país. mi viejo me tiró una mano con la financiación jaja",
         replies: [
           { autor: "Curioso de Twitter", handle: "@patentes_arg", texto: "Financiación de qué forma exactamente, a nombre de qué empresa está el auto" }
         ],
@@ -13789,7 +13837,7 @@ const METAHISTORY_DATA = {
       id: "periodista_act",
       fecha: "15 Jul 2024",
       titulo: "La pista del gobierno",
-      texto: "un auto importado de re alta gama, de esos que hay solo dos en el país, a nombre de una empresa fantasma, un streamer que no sabe de dónde salió la plata, y un apellido que empieza a sonar cerca del gobierno. sigan atentos",
+      texto: "un Porsche GT3 RS violeta a nombre de una empresa fantasma, con el anticipo presupuestario de las viviendas de Dock Sud, un streamer que no sabe de dónde salió la plata, y un apellido que empieza a sonar cerca del gobierno. sigan atentos",
       replySospechosa: {
         autor: "Lector Desencantado",
         handle: "@sin_filtro",
@@ -13866,7 +13914,7 @@ const METAHISTORY_DATA = {
         fase: 3,
         fecha: "24 Jul 2024",
         titulo: "El auto frente al ministerio",
-        texto: "ESE auto importado que subió el streamer es EL MISMO que vi estacionado en la puerta del ministerio cuando fui a hacer un trámite. no me chamuyen, en este país se conocen todos",
+        texto: "ESE Porsche GT3 RS violeta del streamer es EL MISMO que vi estacionado en la puerta del ministerio cuando fui a hacer un trámite. no me chamuyen, en este país se conocen todos",
         replies: [
           { autor: "Periodista de Investigación", handle: "@periodista_indie", texto: "¿Te acordás la fecha exacta y la calle? Te hablé al privado, es urgente" }
         ],
@@ -13877,7 +13925,7 @@ const METAHISTORY_DATA = {
         fase: 3,
         fecha: "05 Ago 2024",
         titulo: "La charla con el periodista",
-        texto: "un periodista me consultó por el auto importado que vi. le conté todo lo que sé, parece que hay un político metido en el medio. yo solo dije lo que vi",
+        texto: "un periodista me consultó por el Porsche violeta que vi en el ministerio. Le pasé la patente provisoria; parece que el viejo del streamer es funcionario pesado. yo solo dije lo que vi",
         replies: [
           { autor: "Amigo de la Cancha", handle: "@bostero_12", texto: "No te metas en quilombos de la política fiera, mirá si te suspenden el carnet de socio" }
         ],
@@ -13916,11 +13964,11 @@ const METAHISTORY_DATA = {
       id: "onlyfans_act",
       fecha: "18 Jul 2024",
       titulo: "El rumor y las suscripciones",
-      texto: "no voy a confirmar ni desmentir de quién era el importado en el que me fui de Nordelta 👀 los que están en mi VIP ya vieron las fotos sin censura. link fijado amores",
+      texto: "no voy a confirmar ni desmentir en qué Porsche violeta me fui de la fiesta con el pibe de stream 👀 los que están en mi VIP ya vieron las fotos sin censura. link fijado amores",
       replySospechosa: {
         autor: "Hater del TL",
         handle: "@moralista_x",
-        texto: "Che, ¿vos no eras la que se bajó del importado con la pareja del Secretario? ¿De esa plata no hablás?"
+        texto: "Che reina, ¿vos no te bajaste del Porsche violeta del hijo del Secretario en Nordelta? ¿De esa plata no hablás?"
       }
     },
     capa2: [
@@ -13940,7 +13988,7 @@ const METAHISTORY_DATA = {
         fase: 3,
         fecha: "12 Ago 2024",
         titulo: "La verdad sobre el streamer",
-        texto: "listo, ya perdí la amistad de @gamer_stream por este rumor así que ahora sí lo digo clarito: nunca tuve nada que ver con ningún político. es mi amigo, punto.",
+        texto: "ya me pudrieron con los rumores: con el pibe de stream nos conocemos de Twitch hace dos años y es mi amigo. dejen de inventar que tengo que ver con su viejo o con la política.",
         replies: [
           { autor: "Comediante", handle: "@humor_arg", texto: "La conocí hace poco y es una genia total. El chiste que hice hace unos meses fue cualquiera, posta perdón." }
         ],
@@ -14003,7 +14051,7 @@ const METAHISTORY_DATA = {
         fase: 3,
         fecha: "15 Ago 2024",
         titulo: "La confesión de la LLC",
-        texto: "la LLC la armé yo, para él. no fue por la comisión ni por la plata. lo hice por amor, y si tengo que hacerlo de nuevo lo vuelvo a hacer",
+        texto: "la LLC en Delaware la armé yo, para él. No me importaba la comisión, me encandiló con promesas y lo hice por amor. Cuando allanaron el ministerio me bloqueó de todos lados y me dejó como único firmante.",
         replies: [
           { autor: "Usuario Anónimo", handle: "@feed_watcher", texto: "esperen... ESTO no era sobre el exchange hackeado, ¿era la pareja del secretario?" }
         ],
@@ -14088,7 +14136,7 @@ const METAHISTORY_DATA = {
         fase: 4,
         fecha: "15 Abr 2026",
         titulo: "Los terrenos vacíos",
-        texto: "pasé caminando por el predio donde iban a construir las 200 viviendas populares. solo hay pasto crecido, perros callejeros y un cartel oxidado que da vergüenza ajena",
+        texto: "pasé caminando por el predio de Dock Sud donde iban a construir las 200 viviendas populares. Solo hay pasto crecido, el cartel oxidado del ministerio, perros callejeros y un cartel oxidado que da vergüenza ajena",
         replies: [
           { autor: "Vecino del Barrio", handle: "@barrio_pie", texto: "Mis hijos ya tienen 5 años y seguimos alquilando una pieza. No nos olvidamos más." }
         ],
@@ -15765,6 +15813,68 @@ class GameEngine {
     });
   }
 
+  // Adaptación in-character de tweets de fase temática avanzada
+  _adaptThematicTweet(item, archId) {
+  if (!item || !item.texto) return item;
+  const key = getArchKey(archId);
+
+  // Adaptaciones específicas para OnlyFans (voz picante, cero fiscal federal)
+  if (key === "onlyfans") {
+    if (item.titulo.includes("intermediarios") || item.texto.includes("coimas del 30%")) {
+      return {
+        ...item,
+        titulo: "El morbo con el expediente",
+        texto: "Me etiquetan en la causa de las coimas como si yo fuera testaferro del ministerio. El tipo me pagaba el VIP como cualquier otro cliente, no me metan en sus operetas políticas 💅"
+      };
+    }
+    if (item.titulo.includes("allanamiento") || item.texto.includes("Cayeron los fiscales")) {
+      return {
+        ...item,
+        titulo: "Clientes en los diarios",
+        texto: "Allanan el ministerio y me entero por Twitter de que uno de los secretarios imputados era el que me mandaba propinas en dólares todas las semanas. Me río para no llorar 💀"
+      };
+    }
+    if (item.titulo.includes("impunidad") || item.texto.includes("pasaje sacado")) {
+      return {
+        ...item,
+        titulo: "Doble moral al descubierto",
+        texto: "Los mismos que me decían inmoral por vender fotos ahora están prófugos por robarse un plan de viviendas. Al final la más honesta del feed era yo 💅"
+      };
+    }
+  }
+
+  // Adaptaciones específicas para Gamer Streamer
+  if (key === "gamer") {
+    if (item.titulo.includes("intermediarios") || item.texto.includes("coimas")) {
+      return {
+        ...item,
+        titulo: "Spam en el chat",
+        texto: "el chat de Twitch está insoportable con las capturas de la causa de mi viejo. gente, prendí para jugar al Counter no para hacer una conferencia de prensa rescatense"
+      };
+    }
+    if (item.titulo.includes("allanamiento")) {
+      return {
+        ...item,
+        titulo: "Móviles en la puerta",
+        texto: "hay dos móviles de Crónica en la puerta de mi casa filmando el garage. no puedo ni pedir una pizza tranquilo lpm"
+      };
+    }
+  }
+
+  // Adaptaciones específicas para Futbolero
+  if (key === "futbolero") {
+    if (item.titulo.includes("intermediarios") || item.texto.includes("coimas")) {
+      return {
+        ...item,
+        titulo: "La rosca en el club",
+        texto: "Los mismos intermediarios de la causa ministerial son los que meten jugadores falopa en el club a cambio de comisiones. Están todos entongados."
+      };
+    }
+  }
+
+  return item;
+}
+
   drawCards() {
     if(this.cachedCards?.length===3) return this.cachedCards;
     const pool=this._cardPool(), drawn=[], remaining=[...pool];
@@ -15951,11 +16061,12 @@ class GameEngine {
           if (avail.length > 0) themeItem = avail[rng(avail.length)];
         }
         if (themeItem) {
-          content.titulo = themeItem.titulo;
-          content.texto = themeItem.texto;
+          const adapted = this._adaptThematicTweet(themeItem, this.arquetipo.id);
+          content.titulo = adapted.titulo;
+          content.texto = adapted.texto;
           content.isThematicT16 = true;
-          if (themeItem.tipo && CARD_PALOS[themeItem.tipo]) {
-            meta.id = themeItem.tipo;
+          if (adapted.tipo && CARD_PALOS[adapted.tipo]) {
+            meta.id = adapted.tipo;
           }
         }
       }
@@ -15983,11 +16094,12 @@ class GameEngine {
           if (avail.length > 0) themeItem = avail[rng(avail.length)];
         }
         if (themeItem) {
-          content.titulo = themeItem.titulo;
-          content.texto = themeItem.texto;
+          const adapted = this._adaptThematicTweet(themeItem, this.arquetipo.id);
+          content.titulo = adapted.titulo;
+          content.texto = adapted.texto;
           content.isThematicT16 = true;
-          if (themeItem.tipo && CARD_PALOS[themeItem.tipo]) {
-            resolvedFbId = themeItem.tipo;
+          if (adapted.tipo && CARD_PALOS[adapted.tipo]) {
+            resolvedFbId = adapted.tipo;
           }
         }
       }
