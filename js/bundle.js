@@ -20045,10 +20045,9 @@ cc @kohantoys #Tuitero
     const cashMet = currentCash >= targetCash;
     const cashPct = Math.min(100, Math.round((currentCash / targetCash) * 100));
 
-    const storyMet = !!(e.storyFinished || (f.id && f.id.startsWith("metahistoria_")));
+    const isGameOver = !!e.gameOver && (f.id === "finale_deuda" || f.id === "finale_burnout" || f.id === "finale_cancelacion_3strikes" || f.id === "finale_cancelacion_zonaroja");
+    const storyMet = !isGameOver && !!(e.storyFinished || (f.id && f.id.startsWith("metahistoria_")));
     const storyPct = storyMet ? 100 : (e.storyModeActivated ? Math.min(100, Math.round(((e.storyCardsPlayed || 0) / 4) * 100)) : 0);
-
-    const isGameOver = e.gameOver && (f.id === "finale_deuda" || f.id === "finale_burnout" || f.id === "finale_cancelacion_3strikes" || f.id === "finale_cancelacion_zonaroja");
     const isTotalVictory = !isGameOver && (segsMet || cashMet);
     const isSurvivor = !isGameOver && !isTotalVictory;
 
@@ -20124,9 +20123,13 @@ cc @kohantoys #Tuitero
       storyFillEl.className = storyMet ? "goal-fill goal-fill-success" : "goal-fill goal-fill-warning";
     }
     if (storySubEl) {
-      storySubEl.textContent = storyMet
-        ? t("end_goals.story_done", null, "Desentrañaste la trama de corrupción ministerial.")
-        : t("end_goals.story_missing", null, "No lograste desentrañar la causa a tiempo.");
+      if (storyMet) {
+        storySubEl.textContent = t("end_goals.story_done", null, "Desentrañaste la trama de corrupción ministerial.");
+      } else if (isGameOver && e.storyModeActivated) {
+        storySubEl.textContent = `La investigación judicial quedó inconclusa tras tu salida del feed en el turno ${e.turno}.`;
+      } else {
+        storySubEl.textContent = t("end_goals.story_missing", null, "No lograste desentrañar la causa a tiempo.");
+      }
     }
 
     // ── HORIZONTAL TELEMETRY STRIP ──
@@ -20150,7 +20153,7 @@ cc @kohantoys #Tuitero
         }
       }
       // Clave normalizada: los arcos de historia se identifican por arquetipo para no duplicar por género
-      const finaleKey = e.storyFinished ? `historia_${getArchKey(e.arquetipo?.id)}` : (f.id || f.titulo);
+      const finaleKey = (!isGameOver && e.storyFinished) ? `historia_${getArchKey(e.arquetipo?.id)}` : (f.id || f.titulo);
       if (finaleKey && !unlocked.includes(finaleKey)) {
         unlocked.push(finaleKey);
         localStorage.setItem(storageKey, JSON.stringify(unlocked));
@@ -20180,7 +20183,8 @@ cc @kohantoys #Tuitero
       opinologo: "gamer"
     };
 
-    if (e.storyModeActivated || e.storyFinished) {
+    // Solo abrir el epílogo de caso resuelto si NO es Game Over y se completó efectivamente la historia
+    if (!isGameOver && (e.storyFinished || (f.id && f.id.startsWith("metahistoria_")))) {
       const archId = e.arquetipo?.id || "periodista";
       const nextArchId = NEXT_STORY_ARCH[archId] || "periodista";
       const recText = (typeof i18n !== "undefined" && i18n.t(`story_recs.${archId}`)) || "";
